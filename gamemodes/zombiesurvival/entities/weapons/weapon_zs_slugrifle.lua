@@ -105,10 +105,6 @@ GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_FIRE_DELAY, -0.09, 1)
 
 -- ==== IsScoped - 判断是否已开镜 ====
 -- 处于机瞄状态且开镜动画已完成 0.25 秒以上才算开镜
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
-
 -- ==== SecondaryAttack - 右键：开镜 ====
 -- 直接调用霰弹枪母本（再往上一级）的副攻击逻辑
 function SWEP:SecondaryAttack()
@@ -124,27 +120,13 @@ function SWEP:Think()
 
 	BaseClass.Think(self)
 end
+-- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
 SWEP.SniperRifle = true -- 标记为狙击步枪（启用狙击相关机制）
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 4
 if CLIENT then -- 客户端专属设置
-	SWEP.IronsightsMultiplier = 0.25 -- 开镜视野缩放倍率
-
-	-- ==== GetViewModelPosition - 开镜时隐藏第一人称模型 ====
-	function SWEP:GetViewModelPosition(pos, ang)
-		if GAMEMODE.DisableScopes then return end -- 禁用狙击镜时保持默认
-
-		if self:IsScoped() then return end -- 开镜时不绘制枪模
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-
-	-- ==== DrawHUDBackground - 绘制狙击镜 HUD ====
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end -- 禁用狙击镜时保持默认
-
-		if self:IsScoped() then
-			self:DrawRegularScope() -- 绘制常规狙击镜画面
-		end
-	end
+	SWEP.IronsightsMultiplier = 0.25 -- 经典模式 FOV 缩放倍率（<1=放大；灵敏度由基座按此推导，勿直接当灵敏度参数）
 end
 
 -- ==== BulletCallback - 子弹命中回调：爆头额外伤害 ====

@@ -18,31 +18,20 @@ SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotBolt")
 SWEP.SlotGroup = WEPSELECT_BOLT
 SWEP.SlotPos = 0
 
--- 机瞄缩放倍率（配合狙击镜使用）
+-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
 SWEP.IronsightsMultiplier = 0.25
 -- 标记为狙击步枪，启用开镜判定逻辑
 SWEP.SniperRifle = true
 
--- ==== GetViewModelPosition - 开镜时隐藏第一人称模型，避免遮挡瞄准画面 ====
-function SWEP:GetViewModelPosition(pos, ang)
-	-- 游戏模式禁用了瞄准镜则不处理
-	if GAMEMODE.DisableScopes then return end
+-- ==== 瞄准镜配置（重构：基座统一实现） ====
+-- PIP 画中画 + 屏幕空间合成回退（十字弓暂无镜片元素，后续加镜模可配 ScopeLensElement）
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 4
 
-	-- 已开镜时不返回位置（即隐藏模型）
-	if self:IsScoped() then return end
-
-	return self.BaseClass.GetViewModelPosition(self, pos, ang)
-end
-
--- 开镜时的瞄准镜圆形贴图
-local texScope = surface.GetTextureID("zombiesurvival/scope")
-
--- ==== DrawHUDBackground - 绘制狙击镜画面：红色十字刻线 + 圆形镜片遮罩 ====
-function SWEP:DrawHUDBackground()
-	-- 游戏模式禁用了瞄准镜则不绘制
-	if GAMEMODE.DisableScopes then return end
-	-- 未开镜时不绘制
-	if not self:IsScoped() then return end
+-- 原版独有遮罩（红色刻线 + 圆形镜贴图）保留为经典模式回退绘制
+SWEP.ScopeLegacyStyle = function(wep)
+	local texScope = surface.GetTextureID("zombiesurvival/scope")
 
 	local scrw, scrh = ScrW(), ScrH()
 	-- 取屏幕短边作为镜片直径，保证圆形完整

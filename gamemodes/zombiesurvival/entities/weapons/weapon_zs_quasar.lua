@@ -120,9 +120,7 @@ GAMEMODE:AddNewRemantleBranch(SWEP, 1, ""..translate.Get("weapon_zs_quasar_r1"),
 	end
 end)
 
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua；经典模式配置见文件尾 CLIENT 块
 
 function SWEP:EmitFireSound()
 	self:EmitSound(self.Primary.Sound)
@@ -150,21 +148,11 @@ function SWEP.BulletCallback(attacker, tr, dmginfo)
 	end
 end
 SWEP.SniperRifle = true
+-- ==== 瞄准镜配置（重构：基座统一实现） ====
+-- 能量武器保留经典瞄准镜观感：不启用 PIP，遮罩走基座的未来风回退
+SWEP.Scoped = true
+SWEP.ScopeLegacyStyle = "futuristic"
+
 if CLIENT then
 	SWEP.IronsightsMultiplier = 0.25
-
-	function SWEP:GetViewModelPosition(pos, ang)
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then return end
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-		if not self:IsScoped() then return end
-
-		self:DrawFuturisticScope()
-	end
 end

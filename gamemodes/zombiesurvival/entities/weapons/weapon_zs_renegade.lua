@@ -161,10 +161,6 @@ function SWEP:EmitFireSound()
 	self:EmitSound("weapons/sg552/sg552-1.wav", 80, 145, 0.75, CHAN_WEAPON + 20)
 end
 
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
-
 function SWEP:OnZombieKilled(zombie)
 	local killer = self:GetOwner()
 
@@ -177,25 +173,12 @@ function SWEP:OnZombieKilled(zombie)
 		end
 	end
 end
+-- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
 SWEP.SniperRifle = true
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 6
+
 if CLIENT then
 	SWEP.IronsightsMultiplier = 0.25
-    --[[
-	function SWEP:GetViewModelPosition(pos, ang)
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then
-			return pos + ang:Up() * 256, ang
-		end
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-    ]]
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then
-			self:DrawFuturisticScope()
-		end
-	end
 end

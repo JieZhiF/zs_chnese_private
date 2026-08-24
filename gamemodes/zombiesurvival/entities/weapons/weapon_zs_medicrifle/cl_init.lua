@@ -70,31 +70,10 @@ SWEP.WElements = {
 	["stuff"] = { type = "Model", model = "models/props_c17/FurnitureDrawer001a_Chunk05.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "scope", pos = Vector(0.046, 0, -6.447), angle = Angle(90, 0, 0), size = Vector(0.05, 0.035, 0.061), color = Color(255, 255, 195, 255), surpresslightning = false, material = "models/props_combine/masterinterface_alert", skin = 0, bodygroup = {} }
 }
 
--- ==== IsScoped - 是否处于瞄准镜状态 ====
--- 机瞄开启且持续超过 0.25 秒后判定为已进入瞄准镜
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
-
--- ==== GetViewModelPosition - 瞄准镜状态下的视图模型定位 ====
--- 禁用瞄准镜时或瞄准中返回 nil（保持当前镜头），否则走父类默认偏移
-function SWEP:GetViewModelPosition(pos, ang)
-	if GAMEMODE.DisableScopes then return end
-
-	if self:IsScoped() then return end
-
-	return BaseClass.GetViewModelPosition(self, pos, ang)
-end
-
--- ==== DrawHUDBackground - 绘制瞄准镜背景 ====
--- 进入瞄准镜状态且未禁用瞄准镜时绘制未来风格瞄准镜（遮罩屏幕）
-function SWEP:DrawHUDBackground()
-	if GAMEMODE.DisableScopes then return end
-
-	if self:IsScoped() then
-		self:DrawFuturisticScope()
-	end
-end
+-- ==== 瞄准镜配置（重构：IsScoped/藏枪模/遮罩已收敛进基座 sh_scope.lua） ====
+-- 治疗步枪保留经典瞄准镜观感：不启用 PIP，遮罩走基座的未来风回退
+SWEP.Scoped = true
+SWEP.ScopeLegacyStyle = "futuristic"
 
 -- ==== Draw2DHUD - 绘制 2D HUD（智能锁定目标名） ====
 -- 激活"智能锁定"技能时，在屏幕右侧显示当前锁定目标的名字

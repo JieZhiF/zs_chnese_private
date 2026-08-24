@@ -55,6 +55,11 @@ SWEP.Primary.DefaultClip = 0 --默认送的弹匣数目，如果不为零最终�
 SWEP.Primary.Automatic = false --全自动设置
 SWEP.Primary.Ammo = "pistol" --左键开火需要的弹药
 SWEP.RequiredClip = 1
+SWEP.TracerName = "zs_tracer" -- 曳光效果：ZS 适配版 ARC9 曳光（置 nil 回引擎默认；激光等特殊武器可各自覆盖）
+SWEP.TracerSpeed = 15000       -- 曳光飞行速度（units/s，越大尾迹越短）
+-- SWEP.TracerColor = Color(255,255,255) -- 可选：曳光颜色覆写
+-- SWEP.TracerSize = 1                   -- 可选：曳光粗细倍率
+SWEP.MuzzleFlashEffect = "zs_muzzleflash" -- 枪口焰：框架开火统一生成（序列内置引擎火光已被屏蔽；置 false 回引擎原版）
 ---------------- [右键设置] ----------------
 SWEP.Secondary.ClipSize = 1
 SWEP.Secondary.DefaultClip = 1
@@ -67,22 +72,22 @@ SWEP.HUD3DAng = Angle(180, 0, 0)
 SWEP.HUD3DPos = Vector(0, 0, 0)
 SWEP.CooldownExtraSize = 1 --冷却环大小
 ---------------- [后坐力系统] ----------------
-SWEP.Recoil_Enabled = false -- 设为 true 来为武器启用此系统
-SWEP.Recoil = 0
-SWEP.RecoilUp = 0.4 -- 基础垂直后坐力
-SWEP.RecoilSide = 0.2  -- 基础水平后坐力
-SWEP.RecoilRandomUp = 0.2  -- 垂直后坐力随机范围    
-SWEP.RecoilRandomSide = 0.2  -- 水平后坐力随机范围
-SWEP.RecoilAutoControl = 1  -- 自动回正速度 (越高越稳)
-SWEP.RecoilAutoControlTime = 0.08 -- 停火后多少秒开始回正
-SWEP.RecoilAutoControl_DontTryToReturnBack = false
-SWEP.RecoilResetTime = 0.12   -- 停火后多久重置后坐力计数
-SWEP.RecoilDissipationRate = 1 -- 连续射击时后坐力增加的速度
-SWEP.RecoilRecoveryPercentage = 0.6 -- 连续射击后恢复到原始位置的百分比
+SWEP.Recoil_Enabled = false -- 设为 true 来为武器启用此系统（不启用则镜头/枪模弹簧层全部无效）
+SWEP.Recoil = 0 -- [旧系统遗留] 当前无任何消费者，仅为兼容保留
+SWEP.RecoilUp = 0.4 -- 基础垂直后坐力（度，经 cl_recoil_handler 注入真实视角）
+SWEP.RecoilSide = 0.2 -- 基础水平后坐力（度）
+SWEP.RecoilRandomUp = 0.2 -- 垂直后坐力随机附加范围（度）
+SWEP.RecoilRandomSide = 0.2 -- 水平后坐力随机附加范围（度）
+SWEP.RecoilAutoControl = 1 -- 停火自动回正强度（越大回正越快；消费点 cl_recoil_handler 阶段4）
+SWEP.RecoilAutoControlTime = 0.08 -- 停火后多久重置连发计数（恢复首发倍率与 fire_N 变体判定）
+SWEP.RecoilAutoControl_DontTryToReturnBack = false -- true=禁用手动压枪抵扣与自动回正（永久踢枪风格）
+SWEP.RecoilResetTime = 0.12 -- 停火后多久开始冷却热度（RecoilAmount 渐进衰减的启动延迟）
+SWEP.RecoilDissipationRate = 1 -- 热度冷却速率（停火后每秒按此倍率衰减 RecoilAmount，越大回落越快）
+SWEP.RecoilRecoveryPercentage = 0.6 -- [旧系统遗留] 当前无任何消费者，仅为兼容保留
 
 -- 后坐力曲线系统（渐进式递增）
 SWEP.RecoilFirstShotMult = 1.0 -- 首发后坐力倍率（第一发通常较大）
-SWEP.RecoilSideBias = 0 -- 水平偏移倾向 (-1到1, 负=偏左, 正=偏右, 0=随机)
+SWEP.RecoilSideBias = 0 -- 水平漂移方向偏好：正=视角向左漂移、负=向右（Source yaw 轴向）；0=随连射图案自然摆动
 SWEP.RecoilPerShot = 1 -- 每发子弹增加的热度
 SWEP.RecoilMax = 6 -- 热度上限
 SWEP.RecoilModifierCap = 1.2 -- 满热度时的后坐力倍率上限
@@ -90,7 +95,7 @@ SWEP.RecoilMaxTotalUp = 45 -- [实际轨] 弹道垂直爬升累积上限(度)
 
 -- ====== [双轨分离·实际轨] ARC9 移植参数（累积量经 cl_recoil_handler 渐进注入视角） ======
 SWEP.RecoilPatternDrift = 0.35 -- 连射方向图案逐发漂移幅度(度)，越大水平走位越飘
-SWEP.RecoilAccumScale = 1      -- 累积量总乘数（服务器平衡旋钮，不影响视觉层）
+SWEP.RecoilAccumScale = 1      -- 实际轨累积量总乘数（服务器平衡旋钮；显式设定弹簧参数后不影响视觉层）
 SWEP.RecoilRiseSpeed = 25      -- 视角上抬速率乘数（ARC9 的 m=25），越大抬头越猛
 SWEP.RecoilTimeStep = 0.06     -- 注入采样步长(秒)，越小上抬越平滑
 
@@ -101,7 +106,7 @@ SWEP.CamRecoilRoll = 0.01 -- 镜头滚转后坐力 (射击时屏幕倾斜)
 SWEP.CamRecoilFOV = 1.2   -- 镜头FOV后坐力 (射击时FOV微变化)
 SWEP.CamRecoilFOVStiffness = 200 -- FOV弹簧刚度
 SWEP.CamRecoilFOVDamping = 12 -- FOV弹簧阻尼
-SWEP.CamRecoilLerpSpeed = 22 -- 镜头回正速度
+SWEP.CamRecoilLerpSpeed = 22 -- [旧系统遗留] 当前无消费者（镜头回正已由 cl_camera Verlet 弹簧接管），仅为兼容保留
 SWEP.CamRecoilADSMult = 2.0 --开镜时镜头后坐力增强倍率（随开镜进度线性生效；枪模侧比例由 *HipFire 双参数组承担）
 
 ---枪模视觉效果（ARC9 式双参数组：* 为开镜组，配对 *HipFire 另定义腰射组，注入时按开镜进度插值）
@@ -121,7 +126,8 @@ SWEP.AimDownSightsTime = 0.25 --完成一次开镜/收镜的平滑过渡秒数�
 SWEP.IronSightsPos = Vector(0, 0, 0)
 SWEP.IronSightsAng = Angle(0, 0, 0)
 SWEP.IronSpeed = 8
-SWEP.IronsightsMultiplier = 0.6 --开镜的放大倍数
+SWEP.IronsightsMultiplier = 0.6 --开镜的 FOV 缩放倍数（<1=视野放大）。仅作用于 FOV；
+                               --灵敏度由基座 AdjustMouseSensitivity 按此值推导，勿直接当灵敏度参数用
 SWEP.Breathmult = 1.3 -- 呼吸强度系数
 
 -- 动态运动参数 (Sway/Bob)
@@ -136,6 +142,11 @@ SWEP.InspectSpeed = 1
 SWEP.ReloadSpeed = 1.0
 SWEP.FireAnimSpeed = 1.0
 SWEP.IdleActivity = ACT_VM_IDLE
+
+-- [ARC9 动画框架] 开火动画开镜抑制（逻辑见 sh_anim.lua；条目表 SWEP.Animations 同文件）
+SWEP.SightsDedicatedAnimScale = 1  -- 有 _sights/_iron 专用动画时：随开镜进度的附加缩放（默认不缩放）
+SWEP.DoFireAnimation = true        -- [ARC9 解耦开关] false=开火不播任何关键帧，纯弹簧表现（链内第3层的显式形态）
+SWEP.SuppressedFireFX = true       -- 纯弹簧开火时手动补发枪口火焰/弹壳特效（补偿被抑制的动画事件；仅第一人称）
 
 
 -- =============================================================================

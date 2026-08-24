@@ -149,30 +149,15 @@ SWEP.IronSightsAng = Vector(0, 0, 0)
 
 SWEP.WalkSpeed = SPEED_SLOW
 
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
-
 function SWEP:EmitFireSound()
 	self:EmitSound(self.Primary.Sound, 85, 100)
 end
 SWEP.SniperRifle = true
+-- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 4
+
 if CLIENT then
 	SWEP.IronsightsMultiplier = 0.25
-	
-	function SWEP:GetViewModelPosition(pos, ang)
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then return end
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-	
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then
-			self:DrawRegularScope()
-		end
-	end
 end

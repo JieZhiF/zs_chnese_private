@@ -181,6 +181,7 @@ AddCSLuaFile("cl_dermaskin.lua")
 AddCSLuaFile("cl_hint.lua")
 AddCSLuaFile("cl_thirdperson.lua")
 AddCSLuaFile("cl_voicesets.lua")
+AddCSLuaFile("cl_tpik.lua")
 
 AddCSLuaFile("skillweb/sh_skillweb.lua")
 AddCSLuaFile("skillweb/cl_skillweb.lua")
@@ -431,6 +432,15 @@ function GM:AddResources()
 
 	for _, filename in pairs(file.Find("materials/zombiesurvival/killicons/*.png", "GAME")) do
 		resource.AddFile("materials/zombiesurvival/killicons/"..filename)
+	end
+
+	-- PIP 瞄准镜管线（镜片 shader/画面材质 + 阴影叠层贴图）
+	for _, filename in pairs(file.Find("materials/zombiesurvival/pip/*.vmt", "GAME")) do
+		resource.AddFile("materials/zombiesurvival/pip/"..filename)
+	end
+
+	for _, filename in pairs(file.Find("materials/zombiesurvival/pip/*.png", "GAME")) do
+		resource.AddFile("materials/zombiesurvival/pip/"..filename)
 	end
 	
 	for _, filename in pairs(file.Find("materials/botavatar/*.vmt", "GAME")) do

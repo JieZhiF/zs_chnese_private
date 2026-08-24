@@ -20,8 +20,8 @@ SWEP.SlotPos = 0
 if CLIENT then
 	-- 武器栏位：步枪栏
 	SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotRifles")
--- 武器类型与栏位分组（同一行两个属性，不可拆分）
-SWEP.WeaponType = "rifle"	SWEP.SlotGroup = WEPSELECT_RIFLE
+	SWEP.WeaponType = "rifle"	
+	SWEP.SlotGroup = WEPSELECT_RIFLE
 	-- 视图模型不镜像翻转
 	SWEP.ViewModelFlip = false
 	-- 第一人称视野角度
@@ -35,20 +35,22 @@ SWEP.WeaponType = "rifle"	SWEP.SlotGroup = WEPSELECT_RIFLE
 
 	-- 视图模型附加模型（SCK 元素）：拼接重型枪身、支架、弹匣、枪管与瞄准镜
 	SWEP.VElements = {
-		["kickstand_hold"] = { type = "Model", model = "models/Mechanics/robotics/a1.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "canister_front", pos = Vector(-0.242, 0, 4.394), angle = Angle(0, 90, 90), size = Vector(0.254, 0.144, 0.144), color = Color(75, 75, 75, 255), surpresslightning = false, material = "models/props_c17/metalladder001", skin = 0, bodygroup = {} },
-		["scopebase"] = { type = "Model", model = "models/Mechanics/roboticslarge/g1.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(-2.064, 0, -0.262), angle = Angle(0, 0, 90), size = Vector(0.061, 0.037, 0.129), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["kickstand"] = { type = "Model", model = "models/props_c17/metalladder002b.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "barrel", pos = Vector(-6.031, 0, 25.576), angle = Angle(135, 0, 180), size = Vector(0.164, 0.245, 0.368), color = Color(75, 75, 75, 255), surpresslightning = false, material = "models/props_c17/metalladder001", skin = 0, bodygroup = {} },
-		["clip"] = { type = "Model", model = "models/props_c17/consolebox01a.mdl", bone = "v_weapon.sg550_Clip", rel = "", pos = Vector(0.902, 3.177, 0.266), angle = Angle(0, 90, -90), size = Vector(0.104, 0.134, 0.15), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["canister_front"] = { type = "Model", model = "models/props_c17/canister_propane01a.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(0.779, 0, -1.066), angle = Angle(-90, 0, 0), size = Vector(0.1, 0.1, 0.15), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["scope"] = { type = "Model", model = "models/props_lab/citizenradio.mdl", bone = "v_weapon.sg550_Parent", rel = "", pos = Vector(0, -6.222, -4.554), angle = Angle(-90, 90, 0), size = Vector(0.731, 0.127, 0.182), color = Color(75, 65, 55, 255), surpresslightning = false, material = "models/props_combine/metal_combinebridge001", skin = 0, bodygroup = {} },
-		["bottom_grip"] = { type = "Model", model = "models/weapons/w_pist_elite_single.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "bottom", pos = Vector(0, -2.5, -6.072), angle = Angle(0, -90, 0), size = Vector(0.882, 0.865, 0.992), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["barrel"] = { type = "Model", model = "models/props_rooftop/roof_vent001.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "canister_front", pos = Vector(0, 0, 36.013), angle = Angle(180, 0, 0), size = Vector(0.173, 0.36, 0.727), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["thing_that_moves_back_when_you_shoot"] = { type = "Model", model = "models/props_rooftop/roof_vent001.mdl", bone = "v_weapon.sg550_Chamber", rel = "", pos = Vector(-0.077, 1.86, -2.192), angle = Angle(90, 0, 0), size = Vector(0.18, 0.18, 0.063), color = Color(75, 75, 75, 255), surpresslightning = false, material = "models/props_c17/metalladder001", skin = 0, bodygroup = {} },
-		["blackbars"] = { type = "Model", model = "models/props_c17/playground_teetertoter_stan.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "canister_front", pos = Vector(0, 0, 4.34), angle = Angle(0, -90, 90), size = Vector(0.179, 0.5, 0.25), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["scope_screen"] = { type = "Model", model = "models/props_junk/cardboard_box001a.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(-3.105, 0, 1.746), angle = Angle(0, -90, 0), size = Vector(0.078, 0.116, 0.064), color = Color(115, 115, 115, 255), surpresslightning = false, material = "models/props_combine/masterinterface_alert", skin = 0, bodygroup = {} },
-		["bottom_back"] = { type = "Model", model = "models/props_c17/furniturefridge001a.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "bottom", pos = Vector(0, -12.132, 0.768), angle = Angle(0, -90, 0), size = Vector(0.057, 0.133, 0.052), color = Color(65, 65, 65, 255), surpresslightning = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
-		["bottom"] = { type = "Model", model = "models/props_trainstation/train003.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "barrel", pos = Vector(-1.348, 0, 39.881), angle = Angle(0, 90, 90), size = Vector(0.027, 0.048, 0.019), color = Color(75, 85, 95, 255), surpresslightning = false, material = "models/props_pipes/valve001_skin2", skin = 0, bodygroup = {} }
+		["barrel"] = { type = "Model", model = "models/props_rooftop/roof_vent001.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "canister_front", pos = Vector(0, 0, 36.013), angle = Angle(180, 0, 0), size = Vector(0.173, 0.36, 0.727), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["blackbars"] = { type = "Model", model = "models/props_c17/playground_teetertoter_stan.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "canister_front", pos = Vector(0, 0, 4.34), angle = Angle(0, -90, 90), size = Vector(0.179, 0.5, 0.25), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["bottom"] = { type = "Model", model = "models/props_trainstation/train003.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "barrel", pos = Vector(-1.348, 0, 39.881), angle = Angle(0, 90, 90), size = Vector(0.027, 0.048, 0.019), color = Color(75, 85, 95, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/props_pipes/valve001_skin2", skin = 0, bodygroup = {} },
+		["bottom_back"] = { type = "Model", model = "models/props_c17/furniturefridge001a.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "bottom", pos = Vector(0, -12.132, 0.768), angle = Angle(0, -90, 0), size = Vector(0.057, 0.133, 0.052), color = Color(65, 65, 65, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["bottom_grip"] = { type = "Model", model = "models/weapons/w_pist_elite_single.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "bottom", pos = Vector(0, -2.5, -6.072), angle = Angle(0, -90, 0), size = Vector(0.882, 0.865, 0.992), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["canister_front"] = { type = "Model", model = "models/props_c17/canister_propane01a.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(0.779, 0, -1.066), angle = Angle(-90, 0, 0), size = Vector(0.1, 0.1, 0.15), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["clip"] = { type = "Model", model = "models/props_c17/consolebox01a.mdl", bone = "v_weapon.sg550_Clip", rel = "", pos = Vector(0.902, 3.177, 0.266), angle = Angle(0, 90, -90), size = Vector(0.104, 0.134, 0.15), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["kickstand"] = { type = "Model", model = "models/props_c17/metalladder002b.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "barrel", pos = Vector(-6.031, 0, 25.576), angle = Angle(135, 0, 180), size = Vector(0.164, 0.245, 0.368), color = Color(75, 75, 75, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/props_c17/metalladder001", skin = 0, bodygroup = {} },
+		["kickstand_hold"] = { type = "Model", model = "models/Mechanics/robotics/a1.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "canister_front", pos = Vector(-0.242, 0, 4.394), angle = Angle(0, 90, 90), size = Vector(0.254, 0.144, 0.144), color = Color(75, 75, 75, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/props_c17/metalladder001", skin = 0, bodygroup = {} },
+		["pip_lens"] = { type = "Quad", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(-5.532, 0, 1.637), angle = Angle(0, -90, 90), size = 0.05, draw_func = nil}, -- 直径=size×40=2.0，收进筒口内
+		["scope"] = { type = "Model", model = "models/props_lab/citizenradio.mdl", bone = "v_weapon.sg550_Parent", rel = "", pos = Vector(0, -6.222, -4.554), angle = Angle(-90, 90, 0), size = Vector(0.731, 0.127, 0.182), color = Color(75, 65, 55, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/props_combine/metal_combinebridge001", skin = 0, bodygroup = {} },
+		["scope_screen"] = { type = "Model", model = "models/props_junk/cardboard_box001a.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(-3.105, 0, 1.746), angle = Angle(0, -90, 0), size = Vector(0.078, 0.116, 0.064), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/props_combine/masterinterface_alert", skin = 0, bodygroup = {} },
+		["scopebase"] = { type = "Model", model = "models/Mechanics/roboticslarge/g1.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "scope", pos = Vector(-2.064, 0, -0.262), angle = Angle(0, 0, 90), size = Vector(0.061, 0.037, 0.129), color = Color(115, 115, 115, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/weapons/v_stunbaton/w_shaft01a", skin = 0, bodygroup = {} },
+		["thing_that_moves_back_when_you_shoot"] = { type = "Model", model = "models/props_rooftop/roof_vent001.mdl", bone = "v_weapon.sg550_Chamber", rel = "", pos = Vector(-0.077, 1.86, -2.192), angle = Angle(90, 0, 0), size = Vector(0.18, 0.18, 0.063), color = Color(75, 75, 75, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "models/props_c17/metalladder001", skin = 0, bodygroup = {} }
 	}
+
 
 	-- 世界模型附加模型（SCK 元素）：第三人称下的重型枪身组件
 	SWEP.WElements = {
@@ -68,6 +70,9 @@ SWEP.WeaponType = "rifle"	SWEP.SlotGroup = WEPSELECT_RIFLE
 	}
 end
 
+		-- [PIP 镜片面片] Unity Quad 方案：开镜时此面片实时显示放大画面（draw_func 由基座自动注入）
+		-- 调参指南：pos 沿镜筒轴向挪到目镜内侧；angle 让面片正对眼睛（看不见就 roll 加 180）；
+		-- size 即面片物理半宽；调好可删掉上面的 scope_screen 纸箱
 -- 注册音效：重型狙击枪开火声
 sound.Add(
 {
@@ -129,7 +134,7 @@ SWEP.ReloadSpeed = 0.85
 -- 标记为狙击步枪
 SWEP.SniperRifle = true
 -- 机瞄（开镜）时的位置偏移与角度
-SWEP.IronSightsPos = Vector(11, -9, -2.2)
+SWEP.IronSightsPos = Vector(-7.364, -9.007, 1.419)
 SWEP.IronSightsAng = Vector(0, 0, 0)
 
 -- 移动速度：最缓慢（重型狙击枪）
@@ -151,11 +156,6 @@ function SWEP:EmitFireSound()
 	self:EmitSound("weapons/sg552/sg552-1.wav", 80, 145, 0.75, CHAN_WEAPON + 20)
 end
 
--- ==== IsScoped - 判断是否已完成开镜（机瞄开启且经过 0.25 秒稳定时间） ====
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
-
 -- ==== OnZombieKilled - 连续爆头击杀 3 只僵尸后，给予"叛徒"强化状态 ====
 function SWEP:OnZombieKilled(zombie)
 	local killer = self:GetOwner()
@@ -172,29 +172,17 @@ function SWEP:OnZombieKilled(zombie)
 	end
 end
 
--- 客户端专属：开镜时的视图模型与 HUD 处理
+-- ==== 瞄准镜配置（重构说明） ====
+-- IsScoped / 隐藏枪模 / 遮罩绘制已收敛进 weapon_zs_base（sh_scope.lua + cl_scope.lua），
+-- 武器只需声明配置：PIP 画中画 + 3D 镜片（scope_screen 元素开镜时贴 RT 画面）
+SWEP.SniperRifle = true
+SWEP.Scoped = true
+SWEP.PIPScope = true
+-- Unity Quad 方案：VElements 里的 pip_lens 面片开镜时显示 RT 放大画面（draw_func 基座自动注入）
+SWEP.ScopeLensElement = "pip_lens"
+SWEP.ScopeMagnification = 4 -- 默认 4×（室内可用）；开镜后滚轮可在 2~8× 间调节
+
 if CLIENT then
-	-- 机瞄时的灵敏度倍率
+	-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
 	SWEP.IronsightsMultiplier = 0.25
-
-	-- ==== GetViewModelPosition - 开镜时隐藏视图模型，避免遮挡瞄准视野 ====
-	function SWEP:GetViewModelPosition(pos, ang)
-		-- 若模式禁用瞄准镜则不做处理
-		if GAMEMODE.DisableScopes then return end
-
-		-- 开镜状态下隐藏模型（返回空值）
-		if self:IsScoped() then return end
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-
-	-- ==== DrawHUDBackground - 开镜时在 HUD 背景绘制未来风瞄准镜遮罩 ====
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then
-			-- 绘制未来风瞄准镜效果
-			self:DrawFuturisticScope()
-		end
-	end
 end

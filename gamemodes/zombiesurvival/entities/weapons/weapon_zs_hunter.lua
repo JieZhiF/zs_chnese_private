@@ -47,6 +47,14 @@ SWEP.HoldType = "ar2"
 
 -- 第一人称/世界模型（AWP 狙击枪）
 SWEP.ViewModel = "models/weapons/cstrike/c_snip_awp.mdl"
+SWEP.VElements = {
+	["pip_lens"] = { type = "Quad", bone = "v_weapon.awm_parent", rel = "", pos = Vector(0, -6.545, 1.723), angle = Angle(0, 0, 0), size = 0.05}
+}
+SWEP.Scoped = true
+SWEP.PIPScope = true
+-- Unity Quad 方案：VElements 里的 pip_lens 面片开镜时显示 RT 放大画面（draw_func 基座自动注入）
+SWEP.ScopeLensElement = "pip_lens"
+SWEP.ScopeMagnification = 2 -- 默认 4×（室内可用）；开镜后滚轮可在 2~8× 间调节
 SWEP.WorldModel = "models/weapons/w_snip_awp.mdl"
 -- 使用 C 模型手部
 SWEP.UseHands = true
@@ -76,7 +84,7 @@ SWEP.ConeMax = 5.75
 SWEP.ConeMin = 0
 
 -- 机瞄位置与角度
-SWEP.IronSightsPos = Vector(5.015, -8, 2.52)
+SWEP.IronSightsPos = Vector(-7.435, -9, 2.326)
 SWEP.IronSightsAng = Vector(0, 0, 0)
 
 -- 持有时的移动速度（较慢）
@@ -124,10 +132,7 @@ GAMEMODE:AddNewRemantleBranch(SWEP, 1, ""..translate.Get("weapon_zs_hunter_r1"),
 end)
 
 -- ==== IsScoped - 判断是否处于开镜瞄准状态 ====
-function SWEP:IsScoped()
-	-- 需要开启机瞄且机瞄开始超过0.25秒后才算完全开镜
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua；本武器 PIP 配置见下方
 
 -- ==== SendWeaponAnimation - 发送武器开火动画 ====
 function SWEP:SendWeaponAnimation()
@@ -204,26 +209,12 @@ function SWEP.BulletCallback(attacker, tr, dmginfo)
 	util.Effect("hit_hunter", effectdata)
 end
 
+-- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 4
+
 if CLIENT then
-	-- 机瞄时视野移动倍率（降低灵敏度）
+	-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
 	SWEP.IronsightsMultiplier = 0.25
-
-	-- ==== GetViewModelPosition - 获取视角模型位置（开镜时隐藏模型） ====
-	function SWEP:GetViewModelPosition(pos, ang)
-		-- 禁用瞄准镜或已开镜时跳过基类位置计算（隐藏枪身）
-		if GAMEMODE.DisableScopes or self:IsScoped() then return end
-
-		return self.BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-
-	-- ==== DrawHUDBackground - 绘制 HUD 背景（开镜时绘制瞄准镜） ====
-	function SWEP:DrawHUDBackground()
-		-- 禁用瞄准镜时跳过
-		if GAMEMODE.DisableScopes then return end
-
-		-- 完全开镜时绘制标准狙击瞄准镜
-		if self:IsScoped() then
-			self:DrawRegularScope()
-		end
-	end
 end

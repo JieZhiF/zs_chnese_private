@@ -13,18 +13,33 @@ function SWEP:PrimaryAttack()
     self:EmitFireSound()
     self:TakeAmmo()
     
+    -- 连发计数先于 ShootBullets 递增：动画框架的 fire_N 连发变体探测依赖本帧新值
     self.ShotCount = (self.ShotCount or 0) + 1
     
     self:ShootBullets(self.Primary.Damage, self.Primary.NumShots, self:GetCone())
     
-    self.IdleAnimation = CurTime() + self:SequenceDuration()
+    -- [动画框架] IdleAnimation 已由 PlayAnimation 按实际播放时长精确写入；
+    -- 此处仅兜底：子类 override SendWeaponAnimation / 抑制路径未写时维持旧行为
+    -- （SequenceDuration() 取刚播放序列的时长，与旧版语义一致）
+    if not self.m_bIdleFromAnim then
+        self.IdleAnimation = CurTime() + self:SequenceDuration()
+    end
+    self.m_bIdleFromAnim = nil
 end
 
 function SWEP:ShootBullets(dmg, numbul, cone)
     local owner = self:GetOwner()
     
+    -- [ARC9 动画框架] 开镜抑制逻辑已内化到 SendWeaponAnimation 基座实现；
+    -- CustomSightsAttackAnim=true 且开镜时走完全抑制（不播关键帧，纯弹簧表现）
     if not self:GetIronsights() or not self.CustomSightsAttackAnim then 
         self:SendWeaponAnimation()
+    else
+        self:SuppressFireAnimation()
+        -- [特效补位] 该分支绕过 SendWeaponAnimation，枪口焰需在此单独生成
+        --（SendWeaponAnimation 顶部的生成点对本分支不可达——akbar 开镜无焰的根源）
+        self.m_bFrameworkFire = true
+        self:SpawnMuzzleFX()
     end
     
     owner:DoAttackEvent()
@@ -54,12 +69,29 @@ function SWEP:ShootBullets(dmg, numbul, cone)
     self:ApplyRecoil()
 end
 
+-- [ARC9 风格特效] 屏蔽枪模序列内置的引擎枪口焰动画事件（5001~5003，
+-- CS:S 原版火光的来源），改由 SendWeaponAnimation 统一生成的
+-- MuzzleFlashEffect 特效替代。注意不能扩到 5004——那是 AE_CL_PLAYSOUND
+-- 序列声音事件，换弹的 clipin/clipout/boltpull 音效走它。
+-- 仅在框架开火过的武器上生效——未接入框架的子类保持引擎原版行为不受
+-- 影响；置 MuzzleFlashEffect=false 可整体退回
+function SWEP:FireAnimationEvent(pos, ang, event, name)
+    if self.m_bFrameworkFire
+        and self.MuzzleFlashEffect ~= false
+        and event >= 5001 and event <= 5003 then
+        return true
+    end
+end
+
 function SWEP:CanPrimaryAttack()
     local owner = self:GetOwner()
     if owner:IsHolding() or owner:GetBarricadeGhosting() or self:GetReloadFinish() > 0 then return false end
 
     -- 完全冻结状态下无法攻击
     if owner:IsFrozenFull() then return false end
+
+    -- [动画框架] lock 播放的动画在 MinProgress 进度点前锁攻击（默认调用不设锁）
+    if self.AnimLockTime and self.AnimLockTime > CurTime() then return false end
 
     if self:Clip1() < self.RequiredClip then
         self:EmitSound(self.DryFireSound)

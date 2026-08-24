@@ -81,6 +81,12 @@ if CLIENT then
 
 		self:UpdateBonePositions(vm)
 
+		-- [视模型手部 IK] LHIK 左手跟随（opt-in，见 cl_viewik.lua）：
+		-- 与 SCK 骨骼修改同一管线，矩阵改动进入本帧渲染
+		if self.ApplyLeftHandIK then
+			self:ApplyLeftHandIK(vm)
+		end
+
 		if (not self.VElements) then return end
 		if (not self.vRenderOrder) then
 
@@ -188,6 +194,13 @@ if CLIENT then
 		if (self.ShowWorldModel == nil or self.ShowWorldModel) then
 			self:DrawModel()
 		end
+
+		self:Anim_DrawWElements()
+
+	end
+
+	-- 绘制 SCK 世界模型挂件（WElements）；供 Anim_DrawWorldModel 与 TPIK 镜像路径共用
+	function SWEP:Anim_DrawWElements()
 
 		if (not self.WElements) then return end
 
@@ -528,6 +541,13 @@ function SWEP:DrawWorldModel()
 	local owner = self:GetOwner()
 	-- 在特定情况下（如玩家为隐形人或处于出生保护）不绘制世界模型。
 	if owner:IsValid() and (owner.ShadowMan or owner.SpawnProtection) then return end
+
+	-- ZS TPIK：由客户端镜像世界模型接管第三人称绘制（见 gamemode/cl_tpik.lua）。
+	-- 镜像 bonemerge 到玩家，位置与原生引擎绘制一致；返回 true 时跳过引擎模型。
+	if ZSTPIK and ZSTPIK.DrawMirror and ZSTPIK.DrawMirror(self, owner) then
+		self:Anim_DrawWElements() -- 镜像已代替引擎模型，SCK 挂件仍需绘制
+		return
+	end
 
 	self:Anim_DrawWorldModel()
 end

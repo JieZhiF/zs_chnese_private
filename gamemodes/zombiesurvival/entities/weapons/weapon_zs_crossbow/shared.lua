@@ -45,9 +45,7 @@ function SWEP:EmitReloadSound()
 	end
 end
 
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua（PIP 配置见 cl_init.lua）
 
 function SWEP:ProcessReloadEndTime()
 	local reloadspeed = self.ReloadSpeed * self:GetReloadSpeedMultiplier()

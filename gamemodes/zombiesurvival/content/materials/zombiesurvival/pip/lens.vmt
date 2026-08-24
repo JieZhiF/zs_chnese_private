@@ -1,0 +1,14 @@
+"screenspace_general"
+{
+	$pixshader "arc9lens_experemental_10_optimiz_ps30"
+	$vertexshader "arc9_pp_vs30"
+	$basetexture "_rt_zs_pip_pic"
+	$ignorez 1
+	$vertextransform 1
+	$model 1
+
+	"<dx90"
+	{
+		$no_draw 1
+	}
+}

@@ -412,6 +412,17 @@ local pbuttons = SimplePanel( pmodels )
 pbuttons:DockMargin(0,5,0,5)
 pbuttons:Dock(TOP)
 
+-- 粘贴导入入口：解析武器源码中的 SWEP.VElements / SWEP.WElements 片段并一键生成元素
+local ppaste_v = vgui.Create( "DButton", pmodels )
+	ppaste_v:SetTall( 25 )
+	ppaste_v:SetText( "Paste import elements (SWEP.VElements / WElements)" )
+	ppaste_v:SetTooltip( "Paste weapon lua code containing SWEP.VElements / SWEP.WElements blocks,\nand generate the corresponding view/world elements.\n\n粘贴包含 SWEP.VElements / SWEP.WElements 的武器源码，一键生成对应元素模型。" )
+ppaste_v:DockMargin(0,0,0,5)
+ppaste_v:Dock(TOP)
+ppaste_v.DoClick = function()
+	OpenSCKPasteImport()
+end
+
 -- 修改面板交替背景色
 local pCol = 0
 local function PanelBackgroundReset()
@@ -490,6 +501,9 @@ end
 
 -- ==== undoredolisten - 监听 Ctrl+Z / Ctrl+Y 按键 ====
 local function undoredolisten()
+	-- 粘贴导入窗口打开期间暂停监听：输入框内的按键不应触发撤销/重做
+	if wep.pasteImportActive then return end
+
 	if nextregister < CurTime() and input.IsKeyDown(KEY_LCONTROL) then
 		if input.WasKeyPressed(KEY_Z) then
 			handle_undo()
@@ -2145,6 +2159,17 @@ local pwbuttons = SimplePanel( pwmodels )
 pwbuttons:DockMargin(0,5,0,5)
 pwbuttons:Dock(TOP)
 
+-- 粘贴导入入口：与第一人称页面共用同一个粘贴导入对话框
+local ppaste_w = vgui.Create( "DButton", pwmodels )
+	ppaste_w:SetTall( 25 )
+	ppaste_w:SetText( "Paste import elements (SWEP.VElements / WElements)" )
+	ppaste_w:SetTooltip( "Paste weapon lua code containing SWEP.VElements / SWEP.WElements blocks,\nand generate the corresponding view/world elements.\n\n粘贴包含 SWEP.VElements / SWEP.WElements 的武器源码，一键生成对应元素模型。" )
+ppaste_w:DockMargin(0,0,0,5)
+ppaste_w:Dock(TOP)
+ppaste_w.DoClick = function()
+	OpenSCKPasteImport()
+end
+
 --[[** Model panel for adjusting models ***
 Name:
 Model:
@@ -2538,4 +2563,522 @@ end
 -- duplicate line
 copybtn.DoClick = function()
 	copy_element("w", mwtree)
+end
+
+--[[*************************************************************************
+
+					Paste import (SWEP.VElements / SWEP.WElements)
+
+	从任意武器源码或 SCK 导出文本中提取 SWEP.VElements / SWEP.WElements 表，
+	安全求值后批量生成对应的第一/第三人称元素模型。
+
+*************************************************************************]]
+
+-- 支持导入的元素类型白名单
+local import_valid_types = {
+	Model = true,
+	Sprite = true,
+	Quad = true,
+	ClipPlane = true
+}
+
+-- 元素类型 -> 树节点图标
+local import_type_icons = {
+	Model = icon_model,
+	Sprite = icon_sprite,
+	Quad = icon_quad,
+	ClipPlane = icon_clip
+}
+
+-- 示例代码（供"Fill example"按钮填入粘贴框）
+local import_example_code = [[
+SWEP.VElements = {
+	["example"] = { type = "Model", model = "models/props_junk/PopCan01a.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "", pos = Vector(0, 0, 0), angle = Angle(0, 0, 0), size = Vector(0.5, 0.5, 0.5), color = Color(255, 255, 255, 255), surpresslightning = false, bonemerge = false, highrender = false, nocull = false, material = "", skin = 0, bodygroup = {} },
+}
+]]
+
+-- ==== StripLuaComments - 去除代码中的块注释与行注释，避免误匹配 ====
+-- 同时兼容仓库内遗留的 C 风格注释（/* */）
+local function StripLuaComments(str)
+	str = string.gsub(str, "/%*.-%*/", "")
+	str = string.gsub(str, "/%*.*", "")
+	str = string.gsub(str, "%-%-%[%[.-%]%]", "")
+	str = string.gsub(str, "%-%-%[%[.*", "")
+	str = string.gsub(str, "%-%-[^\n]*", "")
+
+	return str
+end
+
+-- ==== SkipQuotedString - 跳过引号字符串内容，返回结束后的位置 ====
+local function SkipQuotedString(str, start_pos)
+	local len = #str
+	local quote = string.sub(str, start_pos, start_pos)
+	local i = start_pos + 1
+
+	while i <= len do
+		local c = string.sub(str, i, i)
+
+		if c == "\\" then
+			i = i + 2
+		elseif c == quote then
+			return i + 1
+		else
+			i = i + 1
+		end
+	end
+
+	return len + 1
+end
+
+-- ==== FindMatchingBrace - 从左花括号扫描到配对的右花括号 ====
+-- 跳过引号字符串与 [==[ 长字符串]，保证嵌套表结构完整；不闭合时返回 nil
+local function FindMatchingBrace(str, open_pos)
+	local len = #str
+	local depth = 0
+	local i = open_pos
+
+	while i <= len do
+		local c = string.sub(str, i, i)
+
+		if c == "{" then
+			depth = depth + 1
+			i = i + 1
+		elseif c == "}" then
+			depth = depth - 1
+
+			if depth == 0 then return i end
+
+			i = i + 1
+		elseif c == "\"" or c == "'" then
+			i = SkipQuotedString(str, i)
+		elseif c == "[" then
+			local equals = string.match(str, "^%[(=*)%[", i)
+
+			if equals then
+				local token_len = #equals + 2
+				local close_pos = string.find(str, "]" .. equals .. "]", i + token_len, true)
+
+				if not close_pos then return nil end
+
+				i = close_pos + token_len
+			else
+				i = i + 1
+			end
+		else
+			i = i + 1
+		end
+	end
+
+	return nil
+end
+
+-- ==== ExtractElementsBlock - 提取字段名（VElements/WElements）对应的表源码块 ====
+local function ExtractElementsBlock(str, field_name)
+	local init = 1
+
+	while true do
+		local _, brace_pos = string.find(str, "%f[%w_]" .. field_name .. "%f[^%w_]%s*=%s*%{", init)
+
+		if not brace_pos then return nil end
+
+		local close_pos = FindMatchingBrace(str, brace_pos)
+
+		if close_pos then
+			return string.sub(str, brace_pos, close_pos)
+		end
+
+		init = brace_pos + 1
+	end
+end
+
+-- ==== ToImportVector - 把导入值安全转换为 Vector ====
+local function ToImportVector(src, default)
+	if isvector(src) then
+		return Vector(src.x, src.y, src.z)
+	end
+
+	if istable(src) and src.x and src.y and src.z then
+		return Vector(tonumber(src.x) or 0, tonumber(src.y) or 0, tonumber(src.z) or 0)
+	end
+
+	if isnumber(src) then
+		return Vector(src, src, src)
+	end
+
+	return default
+end
+
+-- ==== ToImportAngle - 把导入值安全转换为 Angle ====
+-- 注意：GMod 的 Angle 对象不是普通 table（istable 为 false），必须先用 isangle 判断
+local function ToImportAngle(src)
+	if isangle(src) then
+		return Angle(src.p, src.y, src.r)
+	end
+
+	if istable(src) and src.p then
+		return Angle(tonumber(src.p) or 0, tonumber(src.y) or 0, tonumber(src.r) or 0)
+	end
+
+	return Angle(0, 0, 0)
+end
+
+-- ==== ToImportColor - 把导入值安全转换为 Color ====
+local function ToImportColor(src)
+	if istable(src) and src.r then
+		return Color(tonumber(src.r) or 255, tonumber(src.g) or 255, tonumber(src.b) or 255, tonumber(src.a) or 255)
+	end
+
+	return Color(255, 255, 255, 255)
+end
+
+-- ==== SanitizeImportedElement - 校验并补全单个导入元素的必需字段 ====
+-- 不支持类型的元素返回 nil（调用方跳过）
+local function SanitizeImportedElement(src, is_world)
+	if not istable(src) or not import_valid_types[src.type] then return nil end
+
+	local out = {}
+	out.type = src.type
+	out.bone = tostring(src.bone or "")
+	out.rel = tostring(src.rel or "")
+
+	-- 第三人称元素缺省挂在右手骨骼上（与存档加载逻辑保持一致）
+	if is_world and out.bone == "" then
+		out.bone = "ValveBiped.Bip01_R_Hand"
+	end
+
+	out.pos = ToImportVector(src.pos, Vector(0, 0, 0))
+	out.angle = ToImportAngle(src.angle)
+
+	if src.type == "Model" then
+		out.model = tostring(src.model or "")
+		out.size = ToImportVector(src.size, Vector(0.5, 0.5, 0.5))
+		out.color = ToImportColor(src.color)
+		out.surpresslightning = tobool(src.surpresslightning)
+		out.bonemerge = tobool(src.bonemerge)
+		out.highrender = tobool(src.highrender)
+		out.nocull = tobool(src.nocull)
+		out.material = tostring(src.material or "")
+		out.skin = tonumber(src.skin) or 0
+
+		out.bodygroup = {}
+		if istable(src.bodygroup) then
+			for bg_index, bg_value in pairs(src.bodygroup) do
+				if isnumber(bg_index) and isnumber(bg_value) then
+					out.bodygroup[bg_index] = math.floor(bg_value)
+				end
+			end
+		end
+	elseif src.type == "Sprite" then
+		out.sprite = tostring(src.sprite or "")
+		out.color = ToImportColor(src.color)
+		out.nocull = tobool(src.nocull)
+		out.additive = tobool(src.additive)
+		out.vertexalpha = tobool(src.vertexalpha)
+		out.vertexcolor = tobool(src.vertexcolor)
+		out.ignorez = tobool(src.ignorez)
+
+		local size_x = 1
+		local size_y = 1
+
+		if istable(src.size) or isvector(src.size) then
+			size_x = tonumber(src.size.x) or 1
+			size_y = tonumber(src.size.y) or 1
+		end
+
+		out.size = { x = size_x, y = size_y }
+	elseif src.type == "Quad" then
+		out.model = tostring(src.model or "")
+		out.size = tonumber(src.size) or 0.05
+	end
+
+	-- ClipPlane 只需要 bone / rel / pos / angle，上面已处理完毕
+	return out
+end
+
+-- ==== ParsePastedElementCode - 从粘贴文本解析并净化 V/W 元素表 ====
+-- 失败返回 nil + 错误信息；成功返回 { v = {[名字]=元素数据}, w = {[名字]=元素数据} }
+local function ParsePastedElementCode(text)
+	if not isstring(text) or string.Trim(text) == "" then
+		return nil, "Paste is empty!"
+	end
+
+	local stripped = StripLuaComments(text)
+	local v_block = ExtractElementsBlock(stripped, "VElements")
+	local w_block = ExtractElementsBlock(stripped, "WElements")
+
+	if not v_block and not w_block then
+		return nil, "No SWEP.VElements or SWEP.WElements block found!"
+	end
+
+	-- 只把提取出的表代码包进隔离片段执行，避免粘贴文件中的其他语句产生副作用
+	local chunks = {}
+	chunks[#chunks + 1] = "local __SCK_IMPORT = {}"
+
+	if v_block then
+		chunks[#chunks + 1] = "__SCK_IMPORT.VElements = " .. v_block
+	end
+
+	if w_block then
+		chunks[#chunks + 1] = "__SCK_IMPORT.WElements = " .. w_block
+	end
+
+	chunks[#chunks + 1] = "return __SCK_IMPORT"
+
+	local ok_compile, func, compile_err = pcall(CompileString, table.concat(chunks, "\n"), "SCKPasteImport")
+
+	if not ok_compile or not isfunction(func) then
+		return nil, "Code syntax error: " .. tostring(compile_err or func)
+	end
+
+	local ok_run, result = pcall(func)
+
+	if not ok_run or not istable(result) then
+		return nil, "Code runtime error: " .. tostring(result)
+	end
+
+	local parsed = { v = {}, w = {} }
+
+	for realm, raw_table in pairs({ v = result.VElements, w = result.WElements }) do
+		if istable(raw_table) then
+			for name, element in pairs(raw_table) do
+				local clean = SanitizeImportedElement(element, realm == "w")
+
+				if clean then
+					parsed[realm][tostring(name)] = clean
+				end
+			end
+		end
+	end
+
+	return parsed
+end
+
+-- ==== InjectImportedElements - 批量注入元素到第一(v)/第三(w)人称页面 ====
+-- 返回成功生成的元素数量
+local function InjectImportedElements(realm, elements)
+	if not istable(elements) or next(elements) == nil then return 0 end
+
+	local is_v = realm == "v"
+	local tree = is_v and mtree or mwtree
+	local model_tab = is_v and wep.v_models or wep.w_models
+	local panel_cache = is_v and wep.v_panelCache or wep.w_panelCache
+	local render_order_field = is_v and "vRenderOrder" or "wRenderOrder"
+	local temp_nodes = {}
+	local final_names = {}
+
+	-- 已占用名字集合：现有元素 + 本次导入的其他元素，防止导入内部互相顶名
+	local claimed_names = {}
+	for existing_name in pairs(model_tab) do
+		claimed_names[existing_name] = true
+	end
+
+	-- 第一遍：为每个元素确定最终名字（重名自动追加数字后缀）
+	for orig_name in pairs(elements) do
+		local base_name = tostring(orig_name)
+		local desired = base_name ~= "" and base_name or "imported_element"
+		local final_name = desired
+
+		if claimed_names[final_name] then
+			local index = 1
+
+			while claimed_names[desired .. index] do
+				index = index + 1
+			end
+
+			final_name = desired .. index
+		end
+
+		claimed_names[final_name] = true
+		final_names[base_name] = final_name
+	end
+
+	-- 第二遍：同步修正被重命名元素之间的 rel 相对引用
+	for _, element in pairs(elements) do
+		if element.rel and element.rel ~= "" and final_names[element.rel] then
+			element.rel = final_names[element.rel]
+		end
+	end
+
+	-- 第三遍：创建数据、编辑面板与树节点（流程与手动添加/互导按钮一致）
+	local count = 0
+
+	for orig_name, element in SortedPairs(elements) do
+		local name = final_names[tostring(orig_name)]
+
+		model_tab[name] = {}
+
+		if is_v then
+			if element.type == "Model" then
+				panel_cache[name] = CreateModelPanel(name, element)
+			elseif element.type == "Sprite" then
+				panel_cache[name] = CreateSpritePanel(name, element)
+			elseif element.type == "Quad" then
+				panel_cache[name] = CreateQuadPanel(name, element)
+			elseif element.type == "ClipPlane" then
+				panel_cache[name] = CreateClipPanel(name, element)
+			end
+		else
+			if element.type == "Model" then
+				panel_cache[name] = CreateWorldModelPanel(name, element)
+			elseif element.type == "Sprite" then
+				panel_cache[name] = CreateWorldSpritePanel(name, element)
+			elseif element.type == "Quad" then
+				panel_cache[name] = CreateWorldQuadPanel(name, element)
+			elseif element.type == "ClipPlane" then
+				panel_cache[name] = CreateWorldClipPanel(name, element)
+			end
+		end
+
+		if not IsValid(panel_cache[name]) then
+			model_tab[name] = nil
+		else
+			panel_cache[name]:SetVisible(false)
+
+			local node = tree:AddNode(name, import_type_icons[element.type])
+			node.Type = element.type
+			node.InsertNode = FixInsertNode
+			node.DoRightClick = node_do_rclick
+			node.realm = realm
+			node.DoChildrenOrder = FixDoChildrenOrder
+			node._ParentNode = node:GetParentNode()
+			node:SetDrawLines(true)
+
+			local old_DroppedOn = node.DroppedOn
+			node.DroppedOn = function(s, pnl)
+				old_DroppedOn(s, pnl)
+				SetRelativeForNode(pnl, s, realm)
+				wep[render_order_field] = nil
+			end
+
+			node.OnModified = function(s)
+				for _, child in pairs(s:GetChildNodes()) do
+					SetRelativeForNode(child, s, realm)
+				end
+				wep[render_order_field] = nil
+			end
+
+			temp_nodes[name] = node
+			count = count + 1
+		end
+	end
+
+	-- 第四遍：恢复本次导入范围内的相对父子层级
+	for name, data in SortedPairs(model_tab) do
+		if data.rel and data.rel ~= ""
+			and temp_nodes[data.rel] and temp_nodes[name] and model_tab[data.rel] then
+			temp_nodes[data.rel]:InsertNode(temp_nodes[name])
+		end
+	end
+
+	wep[render_order_field] = nil
+
+	return count
+end
+
+local paste_import_frame = nil
+
+-- ==== OpenSCKPasteImport - 打开粘贴导入窗口（供第一/第三人称页按钮调用） ====
+function OpenSCKPasteImport()
+	if IsValid(paste_import_frame) then
+		paste_import_frame:Remove()
+		wep.pasteImportActive = nil
+	end
+
+	-- 挂在菜单框架下：关闭武器菜单时对话框随之销毁
+	local menu_frame = IsValid(wep.Frame) and wep.Frame or nil
+	local frame = vgui.Create("DFrame", menu_frame)
+	frame:SetSize(640, 520)
+	frame:Center()
+	frame:SetTitle("Paste import - SWEP.VElements / SWEP.WElements")
+	frame:SetSizable(true)
+	frame:SetDeleteOnClose(true)
+	frame:MakePopup()
+
+	paste_import_frame = frame
+	wep.pasteImportActive = true
+
+	-- 弹出层关闭后恢复菜单框架的键鼠输入，防止输入焦点残留导致 CTRL 快捷键失效
+	frame.OnClose = function()
+		wep.pasteImportActive = nil
+
+		timer.Simple(0, function()
+			if not IsValid(wep.Frame) then return end
+
+			wep.Frame:SetKeyboardInputEnabled(true)
+			wep.Frame:SetMouseInputEnabled(true)
+		end)
+	end
+
+	local infolabel = vgui.Create("DLabel", frame)
+	infolabel:SetTall(32)
+	infolabel:SetWrap(true)
+	infolabel:SetText("Paste weapon lua code containing SWEP.VElements and/or SWEP.WElements blocks (from any weapon file or \"Copy SCK to clipboard\"). Elements will be added to the current session.")
+	infolabel:DockMargin(8, 4, 8, 0)
+	infolabel:Dock(TOP)
+
+	local textentry = vgui.Create("DTextEntry", frame)
+	textentry:SetMultiline(true)
+	textentry:SetTall(360)
+	textentry:DockMargin(8, 4, 8, 4)
+	textentry:Dock(FILL)
+
+	local statuslabel = vgui.Create("DLabel", frame)
+	statuslabel:SetTall(18)
+	statuslabel:SetText("")
+	statuslabel:DockMargin(8, 0, 8, 0)
+	statuslabel:Dock(TOP)
+
+	local btnrow = vgui.Create("DPanel", frame)
+	btnrow:SetTall(28)
+	btnrow.Paint = function() end
+	btnrow:DockMargin(8, 2, 8, 8)
+	btnrow:Dock(BOTTOM)
+
+	local closebtn = vgui.Create("DButton", btnrow)
+	closebtn:SetText("Close")
+	closebtn:SetWide(90)
+	closebtn:Dock(RIGHT)
+	closebtn.DoClick = function()
+		frame:Close()
+	end
+
+	local examplebtn = vgui.Create("DButton", btnrow)
+	examplebtn:SetText("Fill example")
+	examplebtn:SetWide(110)
+	examplebtn:DockMargin(0, 0, 5, 0)
+	examplebtn:Dock(RIGHT)
+	examplebtn.DoClick = function()
+		textentry:SetText(import_example_code)
+	end
+
+	local confirmbtn = vgui.Create("DButton", btnrow)
+	confirmbtn:SetText("Import and generate models")
+	confirmbtn:DockMargin(0, 0, 5, 0)
+	confirmbtn:Dock(FILL)
+
+	confirmbtn.DoClick = function()
+		local parsed, err = ParsePastedElementCode(textentry:GetValue())
+
+		if not parsed then
+			statuslabel:SetTextColor(Color(255, 100, 100))
+			statuslabel:SetText("Import failed: " .. tostring(err))
+			surface.PlaySound("buttons/button10.wav")
+			return
+		end
+
+		local num_v = InjectImportedElements("v", parsed.v)
+		local num_w = InjectImportedElements("w", parsed.w)
+
+		if num_v + num_w == 0 then
+			statuslabel:SetTextColor(Color(255, 160, 60))
+			statuslabel:SetText("No valid elements found! Supported types: Model / Sprite / Quad / ClipPlane.")
+			surface.PlaySound("buttons/button10.wav")
+			return
+		end
+
+		surface.PlaySound("buttons/button14.wav")
+		LocalPlayer():ChatPrint("[SCK] Imported " .. num_v .. " view element(s) and " .. num_w .. " world element(s)!")
+
+		frame:Close()
+	end
 end

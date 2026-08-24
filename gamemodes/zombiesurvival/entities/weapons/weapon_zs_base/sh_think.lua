@@ -54,7 +54,6 @@ function SWEP:ThinkRecoil()
 	local ct = CurTime()
 	local ft = FrameTime()
 	if ft == 0 then return end
-	local rft = CLIENT and RealFrameTime() or ft
 
 	local last_shot = self.last_shot_time or 0
 	local recoil_amount = self.RecoilAmount or 0
@@ -84,28 +83,6 @@ function SWEP:ThinkRecoil()
 		self.ShotCount = 0
 	end
 
-	-- 4. 客户端视觉平滑 (快速回位)
-	if CLIENT then
-		self.CamRecoilCurrent = self.CamRecoilCurrent or Angle(0, 0, 0)
-		self.CamRecoilTarget = self.CamRecoilTarget or Angle(0, 0, 0)
-
-		local lerpSpeed = self.CamRecoilLerpSpeed or 22
-
-		-- 当前值追赶目标值 (射击时瞬间弹跳)
-		self.CamRecoilCurrent = LerpAngle(rft * lerpSpeed * 1.5, self.CamRecoilCurrent, self.CamRecoilTarget)
-
-		-- 目标值快速归零 (弹跳后迅速回稳)
-		self.CamRecoilTarget = LerpAngle(rft * 15, self.CamRecoilTarget, Angle(0, 0, 0))
-
-		-- 镜头Roll回正
-		self.CamRecoilRollVal = math.Approach(self.CamRecoilRollVal or 0, 0, rft * 60)
-
-		-- 清理微小残留
-		if self.CamRecoilCurrent and math.abs(self.CamRecoilCurrent.p) < 0.0001 and math.abs(self.CamRecoilCurrent.y) < 0.0001 then
-			self.CamRecoilCurrent = Angle(0, 0, 0)
-		end
-		if self.CamRecoilTarget and math.abs(self.CamRecoilTarget.p) < 0.0001 and math.abs(self.CamRecoilTarget.y) < 0.0001 then
-			self.CamRecoilTarget = Angle(0, 0, 0)
-		end
-	end
+	-- [镜头弹跳/枪模弹簧] 已迁移：镜头角度与滚转由 cl_camera.lua Verlet 积分，
+	-- 枪模双层弹簧由 cl_viewmodel.lua ThinkVisualRecoil 驱动，此处不再做 LerpAngle 平滑
 end

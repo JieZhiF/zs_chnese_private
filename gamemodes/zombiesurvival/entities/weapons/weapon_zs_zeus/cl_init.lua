@@ -52,23 +52,10 @@ SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotBolt")
 SWEP.SlotGroup = WEPSELECT_BOLT
 SWEP.SlotPos = 0
 
--- ==== GetViewModelPosition - 开镜时隐藏第一人称模型，避免遮挡瞄准画面 ====
-function SWEP:GetViewModelPosition(pos, ang)
-	if GAMEMODE.DisableScopes then return end
-
-	if self:IsScoped() then return end
-
-	return BaseClass.GetViewModelPosition(self, pos, ang)
-end
-
-
--- ==== DrawHUDBackground - 开镜时绘制未来风格瞄准镜 HUD ====
-function SWEP:DrawHUDBackground()
-	if GAMEMODE.DisableScopes then return end
-	if not self:IsScoped() then return end
-
-	self:DrawFuturisticScope()
-end
+-- ==== 瞄准镜配置（重构：基座统一实现） ====
+-- 特殊武器保留经典瞄准镜观感：不启用 PIP，遮罩走基座的未来风回退
+SWEP.Scoped = true
+SWEP.ScopeLegacyStyle = "futuristic"
 
 -- 电弧光束材质
 local matBeam = Material("trails/electric")

@@ -125,34 +125,15 @@ function SWEP:EmitFireSound()
 end
 
 -- ==== IsScoped - 机瞄保持 0.25 秒后进入狙击镜状态 ====
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua
 -- 标记为狙击步枪（走通用狙击镜 UI）
 SWEP.SniperRifle = true
--- 客户端：狙击镜画面参数与镜内视图模型处理
+-- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 5
+
 if CLIENT then
-	-- 机瞄时视场角倍率（放大效果）
+	-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
 	SWEP.IronsightsMultiplier = 0.25
-
-	-- ==== GetViewModelPosition - 狙击状态下隐藏视图模型（避免遮挡镜头） ====
-	function SWEP:GetViewModelPosition(pos, ang)
-		-- 服务器禁用狙击镜时不干预
-		if GAMEMODE.DisableScopes then return end
-
-		-- 狙击中：不返回位置即隐藏视图模型
-		if self:IsScoped() then return end
-
-		-- 其余情况走基类默认位置
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-
-	-- ==== DrawHUDBackground - 机瞄狙击时绘制狙击镜画面 ====
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then
-			self:DrawRegularScope()
-		end
-	end
 end

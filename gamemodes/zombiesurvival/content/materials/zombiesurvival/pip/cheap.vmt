@@ -1,0 +1,8 @@
+"UnlitGeneric"
+{
+	"$basetexture"	"_rt_zs_pip_zoom"
+	"$translucent"	"0"
+	"$vertexcolor"	"1"
+	"$vertexalpha"	"1"
+	"$model"		"1"
+}

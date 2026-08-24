@@ -96,19 +96,16 @@ sound.Add(
 	sound = {"weapons/nexus_fire.wav"}
 })
 
--- 判断是否处于“完全开镜”状态的函数 (开镜动画结束后)
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- ==== 瞄准镜配置（重构：IsScoped/藏枪模已收敛进基座 sh_scope.lua） ====
+SWEP.SniperRifle = true
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 6
 
--- 客户端代码 (只在客户端运行)
 if CLIENT then
-	local texScope = surface.GetTextureID("zombiesurvival/scope")
-	
-	-- 绘制瞄准镜UI的函数
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-		if not self:IsScoped() then return end
+	-- 原版独有遮罩（十字刻线 + 圆形镜贴图）保留为经典模式回退绘制
+	SWEP.ScopeLegacyStyle = function(wep)
+		local texScope = surface.GetTextureID("zombiesurvival/scope")
 
 		local scrw, scrh = ScrW(), ScrH()
 		local size = math.min(scrw, scrh)

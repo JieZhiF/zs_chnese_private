@@ -219,24 +219,12 @@ local branch = GAMEMODE:AddNewRemantleBranch(SWEP, 2, ""..translate.Get("weapon_
 		wept.SniperRifle = true
 		wept.IronsightsMultiplier = 0.25
 
-		-- ==== GetViewModelPosition - 开镜时锁定视角位置 ====
-		-- 禁用瞄准镜时或已开镜时不做视角偏移，保持瞄准画面稳定
-		wept.GetViewModelPosition = function(self, pos, ang)
-			if GAMEMODE.DisableScopes then return end
-
-			if self:IsScoped() then return end
-
-			return BaseClass.GetViewModelPosition(self, pos, ang)
-		end
-
-		-- ==== DrawHUDBackground - 绘制狙击镜画面 ====
-		wept.DrawHUDBackground = function(self)
-			if GAMEMODE.DisableScopes then return end
-
-			if self:IsScoped() then
-				self:DrawRegularScope()
-			end
-		end
+		-- ==== 瞄准镜配置（重构：基座统一实现） ====
+		-- glass 元素开镜时贴渲染纹理（3D 镜片），收镜自动还原
+		wept.Scoped = true
+		wept.PIPScope = true
+		wept.ScopeLensElement = "glass"
+		wept.ScopeMagnification = 4
 	end
 end)
 -- 分支2 的分级配色、等级名称与击杀图标
@@ -244,11 +232,7 @@ branch.Colors = {Color(110, 160, 170), Color(90, 140, 150), Color(70, 120, 130)}
 branch.NewNames = {""..translate.Get("weapon_zs_amigo_r2_l1"), ""..translate.Get("weapon_zs_amigo_r2_l2"), ""..translate.Get("weapon_zs_amigo_r2_l3")}
 branch.Killicon = "weapon_zs_battlerifle"
 
--- ==== IsScoped - 是否处于开镜状态 ====
--- 机瞄开启且持续超过 0.25 秒才视为开镜
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua
 
 -- ==== SetNextShot - 设置下一次点射子弹的时间 ====
 -- 通过网络变量同步（DT 槽 5）

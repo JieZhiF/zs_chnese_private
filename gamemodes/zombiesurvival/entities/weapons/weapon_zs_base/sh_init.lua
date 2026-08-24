@@ -46,10 +46,14 @@ function SWEP:ResetRecoilState(isReload)
 	self.last_frame_total_offset = Angle(0, 0, 0)
 	self.CamRecoilRollVal = 0
 	self.CamRecoilCurrent = Angle(0, 0, 0)
-	self.CamRecoilTarget = Angle(0, 0, 0)
+	self.CamRecoilAngVel = Angle(0, 0, 0)
+	self.CamRecoilAngAcc = Angle(0, 0, 0)
+	self.CamRecoilRollVel = 0
+	self.CamRecoilRollAcc = 0
 	self.CamFOV_Val = 0
 	self.CamFOV_Vel = 0
 	self.LastEyeAngles = nil
+	self.m_fSmoothedFOVMult = nil
 
 	self.RecoilAccumUp = 0
 	self.RecoilAccumSide = 0
@@ -66,6 +70,14 @@ function SWEP:ResetRecoilState(isReload)
 	self.VisRecoilAng = Angle(0, 0, 0)
 	self.VisRecoilAngVel = Angle(0, 0, 0)
 	self.VisRecoilAngAcc = Angle(0, 0, 0)
+
+	-- 微抖层（ARC9 SubtleVisualRecoil）独立状态
+	self.SubVisRecoilPos = Vector(0, 0, 0)
+	self.SubVisRecoilVel = Vector(0, 0, 0)
+	self.SubVisRecoilAcc = Vector(0, 0, 0)
+	self.SubVisRecoilAng = Vector(0, 0, 0)
+	self.SubVisRecoilAngVel = Vector(0, 0, 0)
+	self.SubVisRecoilAngAcc = Vector(0, 0, 0)
 
 	self.CurrentSwayAngle = Angle(0, 0, 0)
 	self.CurrentBobVector = Vector(0, 0, 0)

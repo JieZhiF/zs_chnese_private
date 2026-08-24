@@ -78,10 +78,7 @@ function SWEP:EmitReloadFinishSound()
 	end
 end
 
--- ==== IsScoped - 开镜判定：机瞄状态且开镜超过 0.25 秒后才算开镜 ====
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua；经典模式配置见 cl_init.lua
 
 -- 预缓存装填音效，避免首次播放卡顿
 util.PrecacheSound("weapons/crossbow/bolt_load1.wav")

@@ -44,6 +44,21 @@ function SWEP:GetIronsights()
 	return self:GetDTBool(0)
 end
 
+--[机瞄配置 · ARC9 形式] 支持 SWEP.IronSights 表：
+--  SWEP.IronSights = { Pos = Vector(...), Ang = Angle(...),
+--                      Magnification = 1.15, ViewModelFOV = 55 }
+--表优先、旧字段（IronSightsPos/Ang/IronsightsMultiplier）逐项回退：
+--Pos/Ang 经 GetIronSightOffset 统一出口；Magnification 在 GetAimFOVTarget 折算。
+--ViewModelFOV 字段接受但暂无消费者（自绘管线已按需求移除，视模型走引擎原生渲染）。
+
+function SWEP:GetIronSightOffset()
+	local t = self.IronSights
+	if istable(t) and t.Pos ~= nil then
+		return t.Pos, t.Ang
+	end
+	return self.IronSightsPos, self.IronSightsAng
+end
+
 function SWEP:GetWalkSpeed()
 	if self:GetIronsights() then
 		return math.min(self.WalkSpeed, math.max(90, self.WalkSpeed * (self:GetOwner().Wooism and 0.75 or 0.5)))
@@ -90,32 +105,89 @@ if CLIENT then
 		end
 	end
 
-	-- [FOV 缩放] 基于平滑过渡进度的每武器倍率（全游戏唯一的机瞄 FOV 缩放实现）
-	function SWEP:GetAimFOVMultiplier()
+	--[FOV 缩放 · ARC9 GetSmoothedFOVMag 移植] 双轴缓动混合 + 指数逼近
+	--[框架陷阱修复] 旧版以 self.IsScoped（方法存在性）判断狙击武器，基座统一提供
+	--IsScoped 后该判断对所有武器恒真，改用显式标志位 self.Scoped（见 sh_scope.lua）
+	--[PIP 全程一致] 目标倍率必须整段过渡不变：UsesPIPScope 与进度无关，
+	--若按进度中段切换目标会出现"先深缩放再弹回"的断裂感
+	local function GetAimFOVTarget(self)
+		if self.Scoped and not GAMEMODE.DisableScopes then
+			if self.UsesPIPScope and self:UsesPIPScope() then
+				-- PIP：放大交给镜内画面，主视角全程只做轻微变焦保持周边视野
+				return self.PIPMainFOVMult or 0.75
+			end
+			return self.IronsightsMultiplier or 0.25
+		end
+
+		local zoom = GAMEMODE.IronsightZoomScale or 1
+
+		-- [ARC9 倍率语义] Magnification：FOV ÷ 倍率（×0.95 与 ARC9 cl_camera 同因子）；
+		-- 同样受全局缩放阻尼约束
+		local magnification = istable(self.IronSights) and tonumber(self.IronSights.Magnification)
+		if magnification and magnification > 0 then
+			return 1 - (1 - math.Clamp(1 / (magnification * 0.95), 0.05, 1)) * zoom
+		end
+
+		return 1 - (1 - (self.IronsightsMultiplier or 0.6)) * zoom
+	end
+
+	function SWEP:GetSmoothedFOVMult()
 		local delta = self:GetIronsightDelta()
 		if delta <= 0 then return 1 end
 
-		local eased = math.ease.OutQuart(delta)
-		local target
-		if self.IsScoped and not GAMEMODE.DisableScopes then
-			target = self.IronsightsMultiplier or 0.25
-		else
-			local zoom = GAMEMODE.IronsightZoomScale or 1
-			target = 1 - (1 - (self.IronsightsMultiplier or 0.6)) * zoom
+		-- [三重缓动链] OutQuart → InOutQuad 推进开镜前段；InCirc 独立轴控制后段收尾
+		local d1 = math.ease.InOutQuad(math.ease.OutQuart(delta))
+		local d2 = math.ease.InCirc(delta)
+
+		local target = GetAimFOVTarget(self)
+
+		-- [换弹回退] 换弹动作期间倍率回退 5%，枪身上抬不遮挡视野（ARC9 reloadanim 同款）
+		if self.GetReloadFinish and self:GetReloadFinish() > 0 then
+			target = target * 0.95
 		end
 
-		return Lerp(eased, 1, target)
+		-- 双轴混合（ARC9: Lerp(d1, 1, Lerp(d2, target2, target))；ZS 无双段变倍，两轴同目标）
+		local mag = Lerp(d1, 1, Lerp(d2, target, target))
+
+		-- [指数逼近] 目标突变（滚轮变焦/换弹起止）时按差值比例追赶，深倍率追得更快
+		local cur = self.m_fSmoothedFOVMult or 1
+		local speed = (target < 0.5 and d2 < 1) and 50 or 10
+		cur = math.Approach(cur, mag, RealFrameTime() * math.abs(cur - mag) * speed)
+		self.m_fSmoothedFOVMult = cur
+
+		return cur
+	end
+
+	function SWEP:GetAimFOVMultiplier()
+		return self:GetSmoothedFOVMult()
 	end
 
 	function SWEP:TranslateFOV(fov)
-		return self:GetAimFOVMultiplier() * fov
+		return self:GetSmoothedFOVMult() * fov
 	end
 
+	-- [ARC9 移植 · cl_sight_autosolve AdjustMouseSensitivity]
+	-- amt = sqrt(1 / (1 - (delta * (1 - mag))))：开方感知补偿——比线性缩放"跟手"，
+	-- 高倍率下不会慢得拖泥带水。总放大率 = 主视角变焦 × 镜内光学倍率。
+	local CVAR_MULT_SENS = CreateClientConVar("zs_mult_sens", "1", true, false, "开镜灵敏度总倍率", 0.1, 10)
+
 	function SWEP:AdjustMouseSensitivity()
-		-- 过渡期间灵敏度随 FOV 倍率同步缩放；未瞄准时返回 nil 使用引擎默认值
-		if self:GetIronsightDelta() > 0 then
-			return self:GetAimFOVMultiplier()
+		local delta = self:GetIronsightDelta()
+		if delta <= 0 then return end
+
+		local mag
+		if self.Scoped and self.UsesPIPScope and self:UsesPIPScope() then
+			local mainzoom = 1 / math.max(self.PIPMainFOVMult or 0.75, 0.01)
+			local optical = self.GetEffectiveScopeMagnification and self:GetEffectiveScopeMagnification() or self.ScopeMagnification or 4
+			mag = mainzoom * optical
+		else
+			mag = 1 / math.max(GetAimFOVTarget(self), 0.01)
 		end
+
+		local amt = 1 / (1 - (delta * (1 - mag)))
+		amt = math.sqrt(math.max(amt, 0.001))
+
+		return amt * CVAR_MULT_SENS:GetFloat()
 	end
 end
 

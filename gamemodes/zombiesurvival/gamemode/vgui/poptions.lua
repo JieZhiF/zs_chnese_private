@@ -180,6 +180,7 @@ function PANEL:PopulateOptionsData()
             { type = "checkbox", label = "Option_HideViewModels", convar = "zs_hideviewmodels" },
             { type = "checkbox", label = "Option_DamageFloatersWalls", convar = "zs_damagefloaterswalls" },
             { type = "checkbox", label = "Option_GhostMode", convar = "zs_nailplacer_ghostmode" },--预制防线显示
+            { type = "checkbox", label = "Option_EnableTPIK", convar = "zs_tpik" },--第三人称持枪逆向运动学
             { type = "slider", label = "Option_InterfaceHUDScale", convar = "zs_interfacesize", min = 0.7, max = 1.6, decimals = 1 },
             { type = "slider", label = "Option_IronsightZoom", convar = "zs_ironsightzoom", min = 0, max = 1, decimals = 2 },
             { type = "slider", label = "Option_FilmGrain", convar = "zs_filmgrainopacity", min = 0, max = 255, decimals = 0 },
@@ -290,6 +291,13 @@ function PANEL:PopulateOptionsData()
             { type = "checkbox", label = "Option_DisablePropPickup", convar = "zs_nopickupprops" },
             { type = "checkbox", label = "Option_DisableIronSights", convar = "zs_noironsights" },
             { type = "checkbox", label = "Option_DisableScopes", convar = "zs_disablescopes" },
+            -- 画中画（PIP）瞄准镜：质量模式与锁帧
+            { type = "combobox", label = "Option_PIPScopeMode", choices = {
+                { text = translate.Get("Option_PIPClassic"), value = 0 },
+                { text = translate.Get("Option_PIPCheap"), value = 1 },
+                { text = translate.Get("Option_PIPExpensive"), value = 2 }
+            }, onselect = function(index, value) RunConsoleCommand("zs_pipscope", value) end, getdefault = function() return GetConVarNumber("zs_pipscope") end },
+            { type = "slider", label = "Option_PIPFPSLock", convar = "zs_pip_fpslock", min = 0, max = 120, decimals = 0 },
             { type = "checkbox", label = "Option_PreventBossPick", convar = "zs_nobosspick" },
             { type = "checkbox", label = "Option_OneClickUnluck", convar = "zs_one_click_unlock" },
             { type = "slider", label = "Option_DamageNumberSize", convar = "zs_dmgnumberscale", min = 0.5, max = 2, decimals = 1 },

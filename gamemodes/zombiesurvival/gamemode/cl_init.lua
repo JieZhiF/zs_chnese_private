@@ -30,6 +30,7 @@ include("cl_targetid.lua")  -- 目标标识
 include("cl_postprocess.lua")  -- 后处理特效
 include("cl_instinct.lua")  -- 僵尸声呐扫描/透视标记 (Instinct 移植)
 include("cl_voicesets.lua")  -- 语音集
+include("cl_tpik.lua")  -- 第三人称逆向运动学（TPIK，移植自 ARC9）
 include("cl_net.lua")  -- 网络消息
 include("skillweb/cl_skillweb.lua")  -- 技能树客户端
 

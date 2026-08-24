@@ -83,35 +83,15 @@ GAMEMODE:AddNewRemantleBranch(SWEP, 1, ""..translate.Get("weapon_zs_quicksilver_
 	wept.ConeMin = 3
 end)
 
--- ==== IsScoped - 判断是否已完成开镜 ====
--- 进入机瞄并经过 0.25 秒后视为已开镜
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- [重构] IsScoped 已收敛进 weapon_zs_base/sh_scope.lua
 -- 标记为狙击步枪（系统对狙击枪的通用处理）
 SWEP.SniperRifle = true
+-- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 4
+
 if CLIENT then
-	-- 客户端专属：机瞄缩放倍率
+	-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
 	SWEP.IronsightsMultiplier = 0.25
-
-	-- ==== GetViewModelPosition - 开镜时锁定第一人称视角 ====
-	function SWEP:GetViewModelPosition(pos, ang)
-		-- 游戏模式禁用狙击镜时恢复默认
-		if GAMEMODE.DisableScopes then return end
-
-		-- 开镜期间返回 nil（保持当前镜头位置，模拟狙击镜）
-		if self:IsScoped() then return end
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-	end
-
-	-- ==== DrawHUDBackground - 开镜时绘制狙击镜黑幕 ====
-	function SWEP:DrawHUDBackground()
-		if GAMEMODE.DisableScopes then return end
-
-		-- 已开镜时绘制圆形狙击镜遮罩
-		if self:IsScoped() then
-			self:DrawRegularScope()
-		end
-	end
 end

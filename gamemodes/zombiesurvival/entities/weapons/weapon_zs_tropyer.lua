@@ -195,36 +195,13 @@ function SWEP:SecondaryAttack()
 	end
 end
 
--- ==== IsScoped - 判断是否已完成开镜（机瞄开启且经过 0.25 秒稳定时间） ====
-function SWEP:IsScoped()
-	return self:GetIronsights() and self.fIronTime and self.fIronTime + 0.25 <= CurTime()
-end
+-- ==== 瞄准镜配置（重构：IsScoped/藏枪模/遮罩已收敛进基座 sh_scope.lua） ====
+SWEP.Scoped = true
+SWEP.PIPScope = true
+SWEP.ScopeMagnification = 4
 
--- 客户端专属：开镜时的视图模型与 HUD 处理
 if CLIENT then
-
--- ==== GetViewModelPosition - 开镜时隐藏视图模型，避免遮挡瞄准视野 ====
-function SWEP:GetViewModelPosition(pos, ang)
-		-- 若模式禁用瞄准镜则不做处理
-		if GAMEMODE.DisableScopes then return end
-
-		-- 开镜状态下隐藏模型（返回空值）
-		if self:IsScoped() then return end
-
-		return BaseClass.GetViewModelPosition(self, pos, ang)
-end
-
--- ==== DrawHUDBackground - 开镜时在 HUD 背景绘制瞄准镜遮罩 ====
-function SWEP:DrawHUDBackground()
-		-- 若模式禁用瞄准镜则不做处理
-		if GAMEMODE.DisableScopes then return end
-
-		if self:IsScoped() then
-			-- 绘制常规瞄准镜效果
-			self:DrawRegularScope()
-		end
-end
-
+	SWEP.IronsightsMultiplier = 0.25
 end
 
 -- 标记为近战可用武器（支持枪托打击）

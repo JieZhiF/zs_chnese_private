@@ -49,6 +49,15 @@ function SWEP:GetRecoilPatternDirection(shot)
 	return dir
 end
 
+-- [作者量纲] 枪模振幅参数（VisualRecoilPunch/Up/Roll/Back 及其 *HipFire）
+-- 填入值为放大十倍后的数值：SWEP 填 1 = 内部量 0.1。换算集中在此处，
+-- 调参者只面对 0~1 区间的小数，避免"填 0.04 实际位移却很大"的错位
+local AMP10 = 0.1
+local function ScaleAmp(v, fallback)
+	if v == nil then return fallback end
+	return v * AMP10
+end
+
 -- ==== ApplyRecoil - 开火时累积实际弹道偏移并驱动视觉层 ====
 function SWEP:ApplyRecoil()
 	if not self.Recoil_Enabled then return end
@@ -113,43 +122,69 @@ function SWEP:ApplyRecoil()
 				self.CamFOV_Vel = (self.CamFOV_Vel or 0) - math.abs(kick) * fovPunch * 8 * camBoost
 			end
 
-			-- 5.2 镜头角度弹跳 —— 单轴未显式配置时由弹道踢量自动演绎
+			-- 5.2 镜头角度弹跳 —— 注入弹簧速度（cl_camera Verlet 积分回正），单轴未显式配置时由弹道踢量自动演绎
 			local camUp   = self.CamRecoilUp   or math.abs(kick) * (self.KickCameraGain or 1.2)
 			local camSide = self.CamRecoilSide or math.abs(kick) * (self.KickCameraSideGain or 1.6)
 			local camRoll = self.CamRecoilRoll or math.abs(kick) * (self.KickCameraRollGain or 1.5)
 
-			self.CamRecoilTarget = self.CamRecoilTarget or Angle(0, 0, 0)
-			self.CamRecoilCurrent = self.CamRecoilCurrent or Angle(0, 0, 0)
+			self.CamRecoilAngVel = self.CamRecoilAngVel or Angle(0, 0, 0)
+			self.CamRecoilAngVel.p = self.CamRecoilAngVel.p - (camUp * finalMod * 40 * camBoost)
+			self.CamRecoilAngVel.y = self.CamRecoilAngVel.y + util.SharedRandom(seed .. "cam_y", -1, 1) * camSide * finalMod * 40 * camBoost
+			self.CamRecoilRollVel = (self.CamRecoilRollVel or 0) + util.SharedRandom(seed .. "roll", -1, 1) * camRoll * finalMod * 30 * camBoost
 
-			self.CamRecoilTarget.p = self.CamRecoilTarget.p - (camUp * finalMod * 40 * camBoost)
-			self.CamRecoilTarget.y = self.CamRecoilTarget.y + util.SharedRandom(seed .. "cam_y", -1, 1) * camSide * finalMod * 40 * camBoost
-
-			self.CamRecoilRollVal = (self.CamRecoilRollVal or 0) + util.SharedRandom(seed .. "roll", -1, 1) * camRoll * finalMod * 30 * camBoost
-
-			-- 5.3 枪模弹簧注入 —— ARC9 式双参数组：*（开镜组）与 *HipFire（腰射组）随开镜进度交叉渐变
+			-- 5.3 枪模弹簧注入 —— ARC9 式双参数组：`*` 仅作开镜终值、*HipFire 为腰射终值，
+			-- 随开镜进度插值（未声明 HipFire 时腰射端为 0）。填入值经 ScaleAmp ÷10 折算
 			if self.UseVisualRecoil then
 				self.VisRecoilAngVel = self.VisRecoilAngVel or Angle(0, 0, 0)
 				self.VisRecoilVel = self.VisRecoilVel or Vector(0, 0, 0)
 
-				local v_up = self.VisualRecoilUp or (-math.abs(kick) * (self.KickModelGain or 4.5))
-				local v_punch = self.VisualRecoilPunch or (math.abs(kick) * (self.KickModelPunchGain or 3.75))
-				local v_roll = self.VisualRecoilRoll or (math.abs(kick) * (self.KickModelRollGain or 6.25))
+				local v_up = ScaleAmp(self.VisualRecoilUp, -math.abs(kick) * (self.KickModelGain or 4.5))
+				local v_punch = ScaleAmp(self.VisualRecoilPunch, math.abs(kick) * (self.KickModelPunchGain or 3.75))
+				local v_roll = ScaleAmp(self.VisualRecoilRoll, math.abs(kick) * (self.KickModelRollGain or 6.25))
+				local v_back = ScaleAmp(self.VisualRecoilBack, 0) -- 沿枪身向后（朝射手）的主体位移
 
-				local hip_up = self.VisualRecoilUpHipFire
-				local hip_punch = self.VisualRecoilPunchHipFire
-				local hip_roll = self.VisualRecoilRollHipFire
-				if hip_up or hip_punch or hip_roll then
-					v_up = Lerp(ads, hip_up or v_up, v_up)
-					v_punch = Lerp(ads, hip_punch or v_punch, v_punch)
-					v_roll = Lerp(ads, hip_roll or v_roll, v_roll)
-				end
+				-- [组语义] `*` 仅作开镜终值，`*HipFire` 为腰射终值，随开镜进度插值；
+				-- 未声明 HipFire 组时腰射端按 0 处理（"开镜组"字面生效：腰射无枪模动作）
+				v_up = Lerp(ads, ScaleAmp(self.VisualRecoilUpHipFire, 0), v_up)
+				v_punch = Lerp(ads, ScaleAmp(self.VisualRecoilPunchHipFire, 0), v_punch)
+				v_roll = Lerp(ads, ScaleAmp(self.VisualRecoilRollHipFire, 0), v_roll)
+				v_back = Lerp(ads, ScaleAmp(self.VisualRecoilBackHipFire, 0), v_back)
+
+				-- [随机幅度] 四轴每发在基准上叠加对称随机量：把"固定值"
+				-- 变成"基准值 ± 范围"的落点分布，消除逐发完全一致的机械感
+				local up_rand = ScaleAmp(self.VisualRecoilUpRandom, 0)
+				if up_rand ~= 0 then v_up = v_up + math.Rand(-up_rand, up_rand) end
+
+				local punch_rand = ScaleAmp(self.VisualRecoilPunchRandom, 0)
+				if punch_rand ~= 0 then v_punch = v_punch + math.Rand(-punch_rand, punch_rand) end
+
+				local roll_rand = ScaleAmp(self.VisualRecoilRollRandom, 0)
+				if roll_rand ~= 0 then v_roll = v_roll + math.Rand(-roll_rand, roll_rand) end
+
+				local back_rand = ScaleAmp(self.VisualRecoilBackRandom, 0)
+				if back_rand ~= 0 then v_back = v_back + math.Rand(-back_rand, back_rand) end
+
+				-- [ARC9 VisualRecoilPositionBump] 开镜越满枪模向眼轴冲程越大；PIP 镜另有上抬分量
+				local bump = Lerp(ads, 1, self.VisualRecoilPositionBump or 1.5)
+				local pip_on = self.IsPIPActive and self:IsPIPActive()
+				local bumpup = pip_on and (self.VisualRecoilPositionBumpUpRTScope or 0.12) or 0
 
 				self.VisRecoilAngVel.p = self.VisRecoilAngVel.p + (v_up * 10)
 				-- 水平抖动方向跟随实际轨走向（ARC9：视觉 side 取自实际 RecoilSide 的符号）
+				-- [注意] 本项与三个振幅参数解耦——即使振幅全零也会踢，故设独立增益开关
 				local side_sign = (self.RecoilAccumSide or 0) >= 0 and 1 or -1
-				self.VisRecoilAngVel.y = self.VisRecoilAngVel.y + (side_sign * util.SharedRandom(seed .. "vr_y", 0.3, 0.6) * 5 * finalMod)
+				local yawfollow = self.VisualRecoilYawFollow
+				if yawfollow == nil then yawfollow = 1 end
+				self.VisRecoilAngVel.y = self.VisRecoilAngVel.y + (side_sign * util.SharedRandom(seed .. "vr_y", 0.3, 0.6) * 5 * finalMod * yawfollow)
 				self.VisRecoilAngVel.r = self.VisRecoilAngVel.r + (v_roll * util.SharedRandom(seed .. "vr_r", -1, 1) * 10)
-				self.VisRecoilVel = self.VisRecoilVel + Vector(0, -v_punch * 15, math.abs(v_up) * 2.5)
+				-- 位移注入（视轴坐标系）：x 右 / y 前（负＝向射手后坐）/ z 上
+				self.VisRecoilVel = self.VisRecoilVel
+					+ Vector(-v_back * 15 * bump, -v_punch * 15 * bump, math.abs(v_up) * 2.5 + bumpup * 30)
+
+				-- [ARC9 SubtleVisualRecoil] 高频微抖层注入
+				if CLIENT then
+					self:DoSubtleVisualRecoil()
+				end
 			end
 		end
 	end
