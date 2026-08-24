@@ -73,7 +73,7 @@ SWEP.LastVel = 0
 
 -- 机瞄时的准星偏移与旋转
 SWEP.IronSightsPos = Vector(1.24, 0, 2.359)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 -- ==== Think - 客户端每帧逻辑（检查预转状态） ====
 function SWEP:Think()
@@ -126,9 +126,9 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 	local Offset = self.IronSightsPos
 	if self.IronSightsAng then
 		ang = Angle(ang.p, ang.y, ang.r)
-		ang:RotateAroundAxis(ang:Right(), self.IronSightsAng.x)
+		ang:RotateAroundAxis(ang:Right(), self.IronSightsAng.p)
 		ang:RotateAroundAxis(ang:Up(), self.IronSightsAng.y)
-		ang:RotateAroundAxis(ang:Forward(), self.IronSightsAng.z)
+		ang:RotateAroundAxis(ang:Forward(), self.IronSightsAng.r)
 	end
 
 	pos = pos + Offset.x * ang:Right() + Offset.y * ang:Forward() + Offset.z * ang:Up()

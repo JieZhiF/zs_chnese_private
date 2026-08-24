@@ -102,7 +102,7 @@ SWEP.Recoil = 5
 
 -- 机瞄位置与角度
 SWEP.IronSightsPos = Vector(5.015, -8, 2.52)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 -- 持枪移动速度（较慢）
 SWEP.WalkSpeed = SPEED_SLOWER

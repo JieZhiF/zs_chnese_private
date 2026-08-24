@@ -11,7 +11,7 @@ SWEP.ViewModelBoneMods = {
 }
 -- 机瞄（开镜）时的位置偏移与角度（自定义机瞄，零偏移）
 SWEP.IronSightsPos = Vector(0, 0, 0)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 -- 视图模型附加模型（SCK 元素）：拼接枪身、电池、握把与枪口
 SWEP.VElements = {
 	["back"] = { type = "Model", model = "models/gibs/gunship_gibs_nosegun.mdl", bone = "ValveBiped.Bip01_Spine4", rel = "base", pos = Vector(-0.8, 0, 2.874), angle = Angle(90, -180, -90), size = Vector(0.35, 0.2, 0.25), color = Color(161, 255, 74, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} },
@@ -81,7 +81,7 @@ SWEP.HUD3DAng = Angle(175, 0, -15)
 SWEP.HUD3DScale = 0.016
 -- 机瞄（开镜）时的位置偏移与角度
 SWEP.IronSightsPos = Vector(-6.64, -0.488, -0.12)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 
 

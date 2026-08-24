@@ -93,7 +93,7 @@ SWEP.ConeMin = 0
 SWEP.HeadshotMulti = 1.85
 SWEP.ReloadSpeed = 1.2
 SWEP.IronSightsPos = Vector(11, -9, -2.2)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 SWEP.WalkSpeed = SPEED_SLOWEST
 

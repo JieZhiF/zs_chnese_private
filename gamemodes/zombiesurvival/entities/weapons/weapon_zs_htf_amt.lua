@@ -208,12 +208,12 @@ sound.Add( {
 	sound = "weapons/aug/aug-1.wav"
 } )
 SWEP.IronSightsPos = Vector(-6.05, -6.532, 2.2)
-SWEP.IronSightsAng = Vector(0,0,0)
+SWEP.IronSightsAng = Angle(0,0,0)
 --[[
 SWEP.IronSightsPos_Rumor = Vector(-6.05, -6.532, 2.2)
-SWEP.IronSightsAng_Rumor = Vector(0, 0, 0)
+SWEP.IronSightsAng_Rumor = Angle(0, 0, 0)
 SWEP.IronSightsPos = Vector(-6.06, -0.784, 2.579)
-SWEP.IronSightsAng = Vector(0.094, -0.08, -0.737)
+SWEP.IronSightsAng = Angle(0.094, -0.08, -0.737)
 ]]
 sound.Add( {
 	name = "Weapon_HArdballsere.Silende",

@@ -16,8 +16,7 @@ if CLIENT then
 	-- 武器栏槽位（归类为部署物分类），减少手持晃动与摆动
 	SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotDeployables")
 	SWEP.SlotGroup = WEPSELECT_DEPLOYABLES
-	SWEP.BobScale = 0.5
-	SWEP.SwayScale = 0.5
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 end
 
 -- 第一人称与第三人称模型（使用 SLAM 遥控器模型），使用玩家的手部模型

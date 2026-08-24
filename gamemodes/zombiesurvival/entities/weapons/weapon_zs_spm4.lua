@@ -312,27 +312,27 @@ SWEP.WElements = {
 --[[
 -- 默认机械瞄准位置和角度
 SWEP.IronSightsPos = Vector(-7.461, -7.408, 0.959)
-SWEP.IronSightsAng = Vector(1.08, -1.371, -2.358)
+SWEP.IronSightsAng = Angle(1.08, -1.371, -2.358)
 
 -- "Reflux" 瞄具的瞄准位置和角度
 SWEP.IronSightsPos_Reflux = Vector(-7.2175, -7.408, 1.4859)
-SWEP.IronSightsAng_Reflux = Vector( 0, 0, -2.358)
+SWEP.IronSightsAng_Reflux = Angle( 0, 0, -2.358)
 
 -- "Tango" 瞄具的瞄准位置和角度
 SWEP.IronSightsPos_Tango = Vector(-7.289, -9.008, 1.03)
-SWEP.IronSightsAng_Tango = Vector(0, 0, -2.358)
+SWEP.IronSightsAng_Tango = Angle(0, 0, -2.358)
 
 -- "Pritsel" 瞄具的瞄准位置和角度
 SWEP.IronSightsPos_Pritsel= Vector(-7.2589, -9.408, 1.153)
-SWEP.IronSightsAng_Pritsel = Vector(0, 0, -2.358)
+SWEP.IronSightsAng_Pritsel = Angle(0, 0, -2.358)
 
 -- 检视武器的位置和角度
 SWEP.InspectPos = Vector(5.464, -4.119, -4.261)
-SWEP.InspectAng = Vector(24.42, 37.2, 6.224)
+SWEP.InspectAng = Angle(24.42, 37.2, 6.224)
 
 -- 跑动时的瞄准位置和角度
 SWEP.RunSightsPos = Vector(-4.415, -6.211, -6.408)
-SWEP.RunSightsAng = Vector(31.179, 1.087, -13.81)
+SWEP.RunSightsAng = Angle(31.179, 1.087, -13.81)
 ]]
 SWEP.IronSightsPos = Vector(-7.63, -2, 1.495)
 SWEP.IronSightsAng = Angle( 0, -1.5, -1.23)

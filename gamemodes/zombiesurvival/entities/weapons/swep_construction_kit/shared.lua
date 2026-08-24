@@ -79,7 +79,7 @@ SWEP.Primary.Automatic	= false
 SWEP.IronsightTime = 0.2
 
 SWEP.IronSightsPos = Vector(0, 0, 0)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 -- ==== Initialize - 初始化持枪姿势、机瞄状态与数据目录 ====
 function SWEP:Initialize()
@@ -258,9 +258,9 @@ function SWEP:GetViewModelPosition(pos, ang)
 
 	if (self.IronSightsAng) then
 		ang = ang * 1
-		ang:RotateAroundAxis(ang:Right(), 		self.IronSightsAng.x * Mul)
+		ang:RotateAroundAxis(ang:Right(), 		self.IronSightsAng.p * Mul)
 		ang:RotateAroundAxis(ang:Up(), 		self.IronSightsAng.y * Mul)
-		ang:RotateAroundAxis(ang:Forward(), 	self.IronSightsAng.z * Mul)
+		ang:RotateAroundAxis(ang:Forward(), 	self.IronSightsAng.r * Mul)
 	end
 
 	local Right 	= ang:Right()
@@ -281,10 +281,10 @@ SWEP.ir_p = CreateConVar( "_sp_ironsight_pitch", 0.0 )
 SWEP.ir_yw = CreateConVar( "_sp_ironsight_yaw", 0.0 )
 SWEP.ir_r = CreateConVar( "_sp_ironsight_roll", 0.0 )
 
--- ==== GetIronSightCoordination - 从 ConVar 读取当前机瞄偏移量 ====
+-- ==== GetIronSightCoordination - 从 ConVar 读取当前机瞄偏移量（位置 Vector + 角度 Angle） ====
 function SWEP:GetIronSightCoordination()
 	local vec = Vector( self.ir_x:GetFloat(), self.ir_y:GetFloat(), self.ir_z:GetFloat() )
-	local ang = Vector( self.ir_p:GetFloat(), self.ir_yw:GetFloat(), self.ir_r:GetFloat() )
+	local ang = Angle( self.ir_p:GetFloat(), self.ir_yw:GetFloat(), self.ir_r:GetFloat() )
 	return vec, ang
 end
 

@@ -98,7 +98,7 @@ SWEP.Tier = 2
 
 -- 机瞄位置
 SWEP.IronSightsPos = Vector(-7, 15, 0)
-SWEP.IronSightsAng = Vector(3, -3, -10)
+SWEP.IronSightsAng = Angle(3, -3, -10)
 
 -- 强化：扩散降低 + 射速提升
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_MAX_SPREAD, -0.7, 1)

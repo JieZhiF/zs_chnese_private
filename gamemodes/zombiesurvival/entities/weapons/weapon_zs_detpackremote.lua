@@ -17,8 +17,7 @@ if CLIENT then -- 客户端专属设置
 	-- 栏位组：可部署物品栏
 	SWEP.SlotGroup = WEPSELECT_DEPLOYABLES
 	SWEP.ViewModelFOV = 50 -- 第一人称视野大小
-	SWEP.BobScale = 0.5 -- 走路时的模型摆动幅度
-	SWEP.SwayScale = 0.5 -- 移动鼠标时的模型晃动幅度
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 end
 
 SWEP.ViewModel = "models/weapons/c_slam.mdl" -- 第一人称模型（SLAM 遥控器）

@@ -82,7 +82,7 @@ SWEP.MaxStock = 3
 
 -- 铁瞄（机瞄）偏移
 SWEP.IronSightsPos = Vector(-4.65, 4, 0.25)
-SWEP.IronSightsAng = Vector(0, 0, 1)
+SWEP.IronSightsAng = Angle(0, 0, 1)
 
 -- 弹跳后伤害衰减除数
 SWEP.WallDivide = 6

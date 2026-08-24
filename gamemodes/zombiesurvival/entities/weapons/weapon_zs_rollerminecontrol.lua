@@ -12,8 +12,7 @@ if CLIENT then
 	-- 客户端：第一人称视野与武器晃动幅度
 	SWEP.ViewModelFOV = 50
 
-	SWEP.BobScale = 0.5
-	SWEP.SwayScale = 0.5
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 
 
 	-- 归类到部署物选择栏

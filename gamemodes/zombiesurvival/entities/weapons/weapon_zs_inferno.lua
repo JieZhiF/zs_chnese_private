@@ -78,7 +78,7 @@ SWEP.Tier = 4
 SWEP.MaxStock = 3
 
 -- 机瞄时的准星偏移
-SWEP.IronSightsAng = Vector(-1, -1, 0)
+SWEP.IronSightsAng = Angle(-1, -1, 0)
 SWEP.IronSightsPos = Vector(-3, 4, 3)
 
 -- 附加改装：换弹速度提升 10%

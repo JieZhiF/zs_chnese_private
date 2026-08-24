@@ -86,7 +86,7 @@ SWEP.MaxStock = 3
 -- 机瞄位置偏移
 SWEP.IronSightsPos = Vector(-2, 6, 3)
 -- 机瞄旋转角度
-SWEP.IronSightsAng = Vector(0, 2, 0)
+SWEP.IronSightsAng = Angle(0, 2, 0)
 
 -- 附加武器强化修改器：换弹速度 +0.1
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_RELOAD_SPEED, 0.1)

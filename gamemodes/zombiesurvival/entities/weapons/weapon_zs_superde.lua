@@ -70,7 +70,7 @@ SWEP.Primary.Ammo = "pistol"
 GAMEMODE:SetupDefaultClip(SWEP.Primary)
 
 -- 机瞄（开镜）时的角度与位置偏移
-SWEP.IronSightsAng = Vector(-1, -1, 0)
+SWEP.IronSightsAng = Angle(-1, -1, 0)
 SWEP.IronSightsPos = Vector(-3, 4, 3)
 
 

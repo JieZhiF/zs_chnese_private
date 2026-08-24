@@ -156,7 +156,7 @@ SWEP.WalkSpeed = SPEED_SLOW
 SWEP.Tier = 3
 
 SWEP.IronSightsPos = Vector(-5.338, -4.637, 1.48)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 function SWEP:Think()
 	self.BaseClass.Think(self)

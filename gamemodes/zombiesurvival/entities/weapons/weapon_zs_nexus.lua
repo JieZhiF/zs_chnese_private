@@ -39,7 +39,7 @@ SWEP.Primary.Automatic 		= true
 --                      开镜设置 (Iron Sights)
 -- =================================================================
 SWEP.IronSightsPos          = Vector(0,0,0)--Vector(-7.32, -8.78, 0.08)
-SWEP.IronSightsAng          = Vector(0, 0, 0)
+SWEP.IronSightsAng          = Angle(0, 0, 0)
 SWEP.IronsightsMultiplier   = 0.25
 SWEP.SniperRifle = true
 -- =================================================================

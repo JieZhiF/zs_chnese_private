@@ -79,7 +79,6 @@ function SWEP:ResetRecoilState(isReload)
 	self.SubVisRecoilAngVel = Vector(0, 0, 0)
 	self.SubVisRecoilAngAcc = Vector(0, 0, 0)
 
-	self.CurrentSwayAngle = Angle(0, 0, 0)
-	self.CurrentBobVector = Vector(0, 0, 0)
+	-- [旧版摇摆已移除] CurrentSwayAngle/CurrentBobVector 不再使用（ARC9 系统见 cl_sway.lua）
 	self.Breath = 0
 end

@@ -33,7 +33,7 @@ SWEP.ReloadSpeed = 0.85
 SWEP.BuffDuration = 10
 
 SWEP.IronSightsPos = Vector(-5.95, 3, 2.75)
-SWEP.IronSightsAng = Vector(-0.15, -1, 2)
+SWEP.IronSightsAng = Angle(-0.15, -1, 2)
 
 SWEP.AllowQualityWeapons = true
 

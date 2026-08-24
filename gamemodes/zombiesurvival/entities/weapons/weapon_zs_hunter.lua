@@ -85,7 +85,7 @@ SWEP.ConeMin = 0
 
 -- 机瞄位置与角度
 SWEP.IronSightsPos = Vector(-7.435, -9, 2.326)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 -- 持有时的移动速度（较慢）
 SWEP.WalkSpeed = SPEED_SLOWER

@@ -12,9 +12,7 @@ SWEP.SlotGroup = WEPSELECT_DEPLOYABLE
 SWEP.ViewModelFOV = 45
 SWEP.ViewModelFlip = false
 
--- 行走/摆动幅度（持摄像机时画面更稳）
-SWEP.BobScale = 0.15
-SWEP.SwayScale = 0.15
+-- [旧版引擎摇摆已移除] BobScale/SwayScale 不再使用，摆动统一由基座 cl_sway.lua 接管
 
 -- 隐藏原始模型（用附加模型替代显示）
 SWEP.ShowViewModel = false

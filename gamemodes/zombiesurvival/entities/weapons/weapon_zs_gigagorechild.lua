@@ -10,7 +10,7 @@ SWEP.WorldModel	= ""
 if CLIENT then
 	SWEP.UseHands = true
 	SWEP.ViewModelFOV = 40
-	SWEP.BobScale = 2
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 end
 
 SWEP.MeleeReach = 90

@@ -17,8 +17,7 @@ SWEP.VMPos = Vector(0, 0, 0)
 SWEP.VMAng = Angle(0, 0, 0)
 SWEP.ViewModelFOV = 60 --第一人称镜头的大小
 SWEP.ViewModelFlip = true
-SWEP.BobScale = 1
-SWEP.SwayScale = 1
+-- [旧版引擎摇摆已移除] BobScale/SwayScale 不再使用，摆动统一由 cl_sway.lua（ARC9 系统）接管
 
 -- SCK 元素容器
 SWEP.VElements = {}
@@ -130,10 +129,15 @@ SWEP.IronsightsMultiplier = 0.6 --开镜的 FOV 缩放倍数（<1=视野放大�
                                --灵敏度由基座 AdjustMouseSensitivity 按此值推导，勿直接当灵敏度参数用
 SWEP.Breathmult = 1.3 -- 呼吸强度系数
 
--- 动态运动参数 (Sway/Bob)
-SWEP.SwayAmount = 0.02
-SWEP.BobAmount = 0.001
-SWEP.MovementLerpSpeed = 4
+-- 视模型摇摆/步摆（ARC9 移植，实现在 cl_sway.lua；详细说明见该文件头）
+SWEP.MouseSway = true -- 鼠标摇摆总开关：视角转动时枪身惯性滞后
+SWEP.MouseSwayMult = 1 -- 鼠标摇摆强度倍率
+SWEP.MouseSwayInertia = true -- true=惯性变体（仅旋转、回中快）；false=经典位移+整体旋转
+SWEP.BobWalkMult = 1 -- 走路摆动倍率
+SWEP.BobSprintMult = 1 -- 奔跑摆动倍率
+-- 逐枪微调六元表 {x, y, z, pitch, yaw, roll}，不写则用 ARC9 标准默认值：
+-- SWEP.BobSettingsMove = {0.5, 0.25, 1, 0.75, 2, 0.875}
+-- SWEP.BobSettingsSpeed = {1, 0.75, 1, 1, 1, 0.75}
 
 -- 检视与动画
 SWEP.InspectOnDeploy = false

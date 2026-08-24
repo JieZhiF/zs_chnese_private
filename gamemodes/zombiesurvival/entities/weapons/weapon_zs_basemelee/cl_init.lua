@@ -104,11 +104,11 @@ function SWEP:GetViewModelPosition(pos, ang)
 	-- i mostly use this to give the GMOD cs weapons (which are ported like ass), a cs:source feeling.
 	if self.VMAng and self.VMPos then
 
-			ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
+			ang:RotateAroundAxis(ang:Right(), self.VMAng.p)
 
 			ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
 
-			ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
+			ang:RotateAroundAxis(ang:Forward(), self.VMAng.r)
 
 
 

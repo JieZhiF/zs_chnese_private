@@ -82,7 +82,7 @@ end
 
 
 SWEP.IronSightsPos 			= Vector(-0.76, -9.68, 2.4)
-SWEP.IronSightsAng 			= Vector(0, 0, 0)
+SWEP.IronSightsAng 			= Angle(0, 0, 0)
 
 
 --[[

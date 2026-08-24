@@ -1791,6 +1791,12 @@ local function CreateMenu( preset )
 			wep.save_data[k] = v
 		end
 
+		-- 兼容旧版存档：旧版机瞄角度以 Vector 存储（x=pitch, y=yaw, z=roll），统一转为 Angle
+		if isvector( wep.save_data.IronSightsAng ) then
+			local oldang = wep.save_data.IronSightsAng
+			wep.save_data.IronSightsAng = Angle( oldang.x, oldang.y, oldang.z )
+		end
+
 		--clean up materials now!!
 		for k, v in pairs(wep.save_data.v_models) do
 			if SCKMaterialCompat[v.material] then

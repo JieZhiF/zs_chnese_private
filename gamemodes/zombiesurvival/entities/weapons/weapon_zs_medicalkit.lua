@@ -11,8 +11,7 @@ if CLIENT then
 	SWEP.ViewModelFOV = 57
 	SWEP.ViewModelFlip = false
 
-	SWEP.BobScale = 2
-	SWEP.SwayScale = 1.5
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 end
 
 SWEP.Base = "weapon_zs_base"

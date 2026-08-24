@@ -355,9 +355,9 @@ local function GetWeaponPrintText( wep )
 end
 
 
--- ==== GetIronSightPrintText - 生成机瞄偏移代码文本 ====
+-- ==== GetIronSightPrintText - 生成机瞄偏移代码文本（pos 为 Vector，ang 为 Angle） ====
 local function GetIronSightPrintText( vec, ang )
-	return "SWEP.IronSightsPos = "..PrintVec( vec ).."\nSWEP.IronSightsAng = "..PrintVec( ang )
+	return "SWEP.IronSightsPos = "..PrintVec( vec ).."\nSWEP.IronSightsAng = "..PrintAngle( ang )
 end
 
 -- ==== GetVModelsText - 生成 VElements（第一人称元素）代码文本 ====

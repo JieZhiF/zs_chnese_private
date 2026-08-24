@@ -18,7 +18,7 @@ if CLIENT then -- 客户端专属设置
 
 	-- 机瞄视角位置与角度
 	SWEP.IronSightsPos = Vector(-8.8, 10, 4.32)
-	SWEP.IronSightsAng = Vector(1.4, 0.1, 5)
+	SWEP.IronSightsAng = Angle(1.4, 0.1, 5)
 
 	-- HUD 3D 武器展示图：绑定骨骼与位置/角度/缩放
 	SWEP.HUD3DBone = "ValveBiped.Gun"

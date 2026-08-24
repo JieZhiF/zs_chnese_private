@@ -28,7 +28,7 @@ SWEP.HUD3DScale = 0.017
 
 -- 机瞄时视图模型位置与角度偏移
 SWEP.IronSightsPos = Vector(5.015, -8, 2.52)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 -- 第一人称视图模型的 SCK 自定义部件（蓝色科技风格医疗步枪拼装）
 SWEP.VElements = {

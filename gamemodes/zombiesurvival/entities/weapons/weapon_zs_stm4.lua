@@ -57,7 +57,7 @@ SWEP.ShowWorldModel = true
 SWEP.UseHands = true
 SWEP.ViewModelBoneMods = {}
 SWEP.IronSightsPos = Vector(0, 0, 0)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 SWEP.VElements = {
 }
  

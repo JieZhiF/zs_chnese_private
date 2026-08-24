@@ -48,7 +48,7 @@ SWEP.WalkSpeed = SPEED_SLOW
 
 -- 机瞄时视角偏移位置与角度
 SWEP.IronSightsPos = Vector(-4.65, 4, 0.25)
-SWEP.IronSightsAng = Vector(0, 0, 1)
+SWEP.IronSightsAng = Angle(0, 0, 1)
 
 -- 武器等级 2
 SWEP.Tier = 2

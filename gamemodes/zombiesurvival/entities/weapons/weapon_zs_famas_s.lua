@@ -55,7 +55,7 @@ SWEP.HUD3DPos = Vector(1.9, -1, 11.5)
 SWEP.HUD3DAng = Angle(175, 0, -15)
 SWEP.HUD3DScale = 0.015
 SWEP.IronSightsPos 			= Vector(-6.2, -8.78, 0.65)
-SWEP.IronSightsAng 			= Vector(0, 0, 0)
+SWEP.IronSightsAng 			= Angle(0, 0, 0)
 SWEP.Tier = 4
 
 function SWEP:GetDamage()

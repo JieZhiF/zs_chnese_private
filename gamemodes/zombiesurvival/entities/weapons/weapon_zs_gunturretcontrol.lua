@@ -12,8 +12,7 @@ if CLIENT then
 	SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotDeployables")
 	SWEP.SlotGroup = WEPSELECT_DEPLOYABLES
 	SWEP.ViewModelFOV = 50
-    SWEP.BobScale = 0.5
-	SWEP.SwayScale = 0.5
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 end
 
 SWEP.ViewModel = "models/weapons/c_slam.mdl"

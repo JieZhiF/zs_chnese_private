@@ -143,17 +143,15 @@ SWEP.VisualRecoilCenter = Vector(0, 0, 0)
 SWEP.SubtleVisualRecoil = false
 SWEP.VisualRecoilYawFollow = 0 -- 水平跟随抖动：枪模偏航随实际轨水平漂移摆动（与三振幅参数解耦；0=关闭）
 
--- 鼠标摇摆：视角转动时枪身惯性滞后，产生武器惯性质感（ARC9 同款观感）
+-- 鼠标摇摆：视角转动时枪身惯性滞后（默认惯性变体；经典变体 MouseSwayInertia=false）
 SWEP.MouseSway = true -- 总开关（false=关闭）
--- SWEP.MouseSwayInertia = true -- 备选变体：仅角度惯性旋转（无位移、回中更快）
 SWEP.MouseSwayMult = 1 -- 强度倍率
--- SWEP.MouseSwayInertia = false -- 切换经典位移变体（默认惯性：仅角度旋转、快速回中、无拖尾）
+-- SWEP.MouseSwayInertia = false -- 切换经典位移+整体旋转变体
 
--- 移动摇摆（ARC9 DarsuBob 步行循环：六轴正弦节奏 + 跳跃惯性 + 横移倾斜 + 下蹲变化）
-SWEP.UseARC9Bob = true -- false=回退旧版速度侧倾/前倾
+-- 移动摇摆（ARC9 DarsuBob 步行循环：六轴正弦节奏 + 跳跃惯性 + 横移倾斜 + 下蹲变化；基座统一启用）
 SWEP.BobWalkMult = 1 -- 走路摇摆倍率
 SWEP.BobSprintMult = 1 -- 奔跑摇摆倍率
--- SWEP.BobSettingsMove = {0.5, 0.25, 1, 0.75, 2, 0.875} -- [逐枪微调] x y z pitch yaw roll
+-- SWEP.BobSettingsMove = {0.5, 0.25, 1, 0.75, 2, 0.875} -- [逐枪微调] x y z pitch yaw roll 幅度表
 -- SWEP.BobSettingsSpeed = {1, 0.75, 1, 1, 1, 0.75} -- 各轴节奏倍率
 
 -- [5/5 弹道与特效·可选，不拷即继承基座默认]

@@ -10,8 +10,7 @@ SWEP.Description = ""..translate.Get("weapon_zs_manhackcontrol_description") -- 
 if CLIENT then
 	SWEP.ViewModelFOV = 50 -- 第一人称镜头大小
 
-	SWEP.BobScale = 0.5 -- 走路晃动幅度
-	SWEP.SwayScale = 0.5 -- 视角摆动幅度
+	-- 摆动统一由基座 cl_sway.lua（ARC9 系统）接管
 
 
 	SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotDeployables") -- 部署物武器栏

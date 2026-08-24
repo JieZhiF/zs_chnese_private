@@ -210,9 +210,9 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 
     -- 1. 基础 VM 修正 (Offset)
     if self.VMAng and self.VMPos then
-        ang:RotateAroundAxis(ang:Right(), self.VMAng.x)
+        ang:RotateAroundAxis(ang:Right(), self.VMAng.p)
         ang:RotateAroundAxis(ang:Up(), self.VMAng.y)
-        ang:RotateAroundAxis(ang:Forward(), self.VMAng.z)
+        ang:RotateAroundAxis(ang:Forward(), self.VMAng.r)
         pos = pos + (ang:Right() * self.VMPos.x) + (ang:Forward() * self.VMPos.y) + (ang:Up() * self.VMPos.z)
     end
 
@@ -267,22 +267,9 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 	self.CurrentIronAng = LerpAngle(ft * (self.IronSpeed or 10), self.CurrentIronAng, target_ang)
 
     -- 3. 动态晃动 (Sway & Bob)
-    if self.UseARC9Bob ~= false then
-        -- [ARC9 移植·DarsuBob] 六轴步行循环（跳跃惯性/横移倾斜/下蹲节奏），
-        -- 直接改写 pos/ang；UseARC9Bob=false 回退旧版速度侧倾
-        pos, ang = self:ApplyARC9Bob(pos, ang, eased)
-    else
-        local vel = owner:GetVelocity()
-        local vel_len = vel:Length2D()
-        local vel_forward = vel:Dot(oldang:Forward())
-        local vel_right = vel:Dot(oldang:Right())
-
-        local sway_roll = -vel_right * (self.SwayAmount or 0.5) * Lerp(eased, 1, 0.3)
-        local bob_forward = -vel_forward * (self.BobAmount or 0.5) * Lerp(eased, 1, 0.1)
-
-        self.CurrentSwayAngle = LerpAngle(ft * (self.MovementLerpSpeed or 5), self.CurrentSwayAngle or Angle(0,0,0), Angle(0, 0, sway_roll))
-        self.CurrentBobVector = LerpVector(ft * (self.MovementLerpSpeed or 5), self.CurrentBobVector or Vector(0,0,0), Vector(0, bob_forward, 0))
-    end
+    -- [ARC9 移植·DarsuBob] 六轴步行循环（跳跃惯性/横移倾斜/下蹲节奏），唯一摆动来源：
+    -- 直接改写 pos/ang 并清零引擎 BobScale/SwayScale（见 cl_sway.lua）
+    pos, ang = self:ApplyARC9Bob(pos, ang, eased)
 
     -- 4. 呼吸效果
     self.Breath = math.sin(CurTime()) / ((self.Breathmult or 1) * Lerp(eased, 4, 80))
@@ -314,16 +301,12 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
     end
     -- ===========================================================
 
-    -- 7. 叠加 Sway/Bob/呼吸/Offset（旧摇摆量仅回退模式应用；ARC9Bob 路径已在第 3 步内联）
-    if self.UseARC9Bob == false then
-        ang:RotateAroundAxis(ang:Forward(), self.CurrentSwayAngle.r)
-        pos = pos + (ang:Forward() * self.CurrentBobVector.y)
-    end
+    -- 7. 叠加呼吸/Offset（摇摆已在第 3 / 7.3 步由 ARC9 系统处理）
     pos = pos + (ang:Up() * self.Breath)
     pos = pos + (ang:Forward() * (self.offset or 0))
 
     -- 7.3 [ARC9 移植·鼠标摇摆] 视角转动时枪身惯性滞后（MouseSway=false 关闭；
-    --      MouseSwayInertia=true 切换惯性旋转变体，总强度乘 MouseSwayMult）
+    --      MouseSwayInertia=false 切经典位移变体，总强度乘 MouseSwayMult）
     if self.MouseSway ~= false then
         pos, ang = self:ApplyMouseSway(pos, ang, eased)
     end

@@ -39,7 +39,7 @@ SWEP.ReloadSpeed = 0.43 -- 换弹速度倍率
 SWEP.FireAnimSpeed = 1.3 -- 开火动画播放速度
 
 SWEP.IronSightsPos = Vector(-5.95, 3, 2.75) -- 机瞄时视角位置偏移
-SWEP.IronSightsAng = Vector(-0.15, -1, 2) -- 机瞄时视角角度偏移
+SWEP.IronSightsAng = Angle(-0.15, -1, 2) -- 机瞄时视角角度偏移
 
 SWEP.AllowQualityWeapons = true -- 允许品质强化
 

@@ -62,5 +62,5 @@ SWEP.HUD3DAng = Angle(180, 0, -15)
 SWEP.HUD3DScale = 0.015
 SWEP.TracerName = "AR2Tracer"
 SWEP.IronSightsPos = Vector(-5.88, -13.76, 1.8)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 

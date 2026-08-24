@@ -72,7 +72,7 @@ SWEP.Tier = 5
 SWEP.MaxStock = 2
 
 -- 机瞄时视角偏移位置与角度
-SWEP.IronSightsAng = Vector(-1, -1, 0)
+SWEP.IronSightsAng = Angle(-1, -1, 0)
 SWEP.IronSightsPos = Vector(-3, 4, 3)
 
 -- 附加武器改造：换弹速度 +10%、开火间隔 -0.01 秒

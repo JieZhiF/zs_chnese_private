@@ -69,7 +69,7 @@ SWEP.ConeMin = 1.5
 
 -- 机瞄时视角偏移位置与角度
 SWEP.IronSightsPos = Vector(-5.95, 3, 2.75)
-SWEP.IronSightsAng = Vector(-0.15, -1, 2)
+SWEP.IronSightsAng = Angle(-0.15, -1, 2)
 
 -- 子弹曳光效果类型
 SWEP.TracerName = "AR2Tracer"

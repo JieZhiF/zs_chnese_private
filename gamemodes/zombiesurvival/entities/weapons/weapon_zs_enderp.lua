@@ -84,7 +84,7 @@ SWEP.HUD3DAng = Angle(175, 0, -15)
 SWEP.HUD3DScale = 0.015
 -- 机瞄（开镜）时的位置偏移与角度
 SWEP.IronSightsPos 			= Vector(-6.2, -8.78, 0.65)
-SWEP.IronSightsAng 			= Vector(0, 0, 0)
+SWEP.IronSightsAng 			= Angle(0, 0, 0)
 -- 武器等级（Tier 1）
 SWEP.Tier = 1
 -- 最大/最小准星扩散（移动中/静止时）

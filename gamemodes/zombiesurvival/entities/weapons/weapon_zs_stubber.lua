@@ -121,9 +121,9 @@ sound.Add( {
 	sound = "weapons/galil/galil-1.wav"
 } )
 SWEP.IronSightsPos = Vector(-7.1831, -10.834, 2.747)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 SWEP.IronSightsPos_Scope = Vector(-6.7045, -11.237, 2.799)
-SWEP.IronSightsAng_Scope = Vector(0, 0, 0)
+SWEP.IronSightsAng_Scope = Angle(0, 0, 0)
 
 SWEP.Primary.SilencedSound = Sound("Weapon_SV308.Sosali") 
 SWEP.ReloadSound = Sound("Weapon_Scout.ClipOut")
@@ -145,7 +145,7 @@ SWEP.ConeMax = 3.75
 SWEP.ConeMin = 0
 
 SWEP.IronSightsPos = Vector(5.015, -8, 2.52)
-SWEP.IronSightsAng = Vector(0, 0, 0)
+SWEP.IronSightsAng = Angle(0, 0, 0)
 
 SWEP.WalkSpeed = SPEED_SLOW
 
