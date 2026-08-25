@@ -336,6 +336,7 @@ SWEP.RunSightsAng = Angle(31.179, 1.087, -13.81)
 ]]
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-7.63, -2, 1.495),
 	Ang = Angle( 0, -1.5, -1.23),
 }

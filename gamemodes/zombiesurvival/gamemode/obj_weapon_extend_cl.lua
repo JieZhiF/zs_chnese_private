@@ -268,27 +268,18 @@ function meta:DrawRegularScope()
 		surface.DrawRect(0, 0, scrw, extra)
 		surface.DrawRect(0, scrh - extra, scrw, extra)
 	end
-	-- 配置十字准星参数
-	local scope_size = 1                     -- 瞄准镜尺寸，1 表示占满屏幕高度
-	local scope_radius = (scrh * scope_size) / 2
-	local crosshair_color = Color(0, 0, 0, 220) -- 十字准星颜色（半透明黑色）
-	local line_thickness = 3                     -- 线条粗细
-	local gap_size = 6                           -- 中心间隙大小
-	local x, y = scrw / 2, scrh / 2              -- 屏幕中心
+	-- [CSS 式十字] 贯穿整屏的细黑十字，无中心间隙（CS:S AWP 镜风格）：
+	-- 纯黑不透明、极细线宽（随分辨率轻度缩放且保持奇数像素保证中心锐利），
+	-- 横竖两线直接贯穿到屏幕边缘——超出圆面的部分与黑边融为一体
+	local x, y = scrw / 2, scrh / 2
+	local line_thickness = math.max(1, math.floor(scrh / 1080))
+	if line_thickness % 2 == 0 then line_thickness = line_thickness + 1 end
 
-	-- 绘制十字准星（四条线，中心有间隙）
-	surface.SetDrawColor(crosshair_color)
-	local gap = gap_size / 2
-	local thickness_half = line_thickness / 2
-
-	-- 上方竖线
-	surface.DrawRect(x - thickness_half, y - scope_radius, line_thickness, scope_radius - gap)
-	-- 下方竖线
-	surface.DrawRect(x - thickness_half, y + gap, line_thickness, scope_radius - gap)
-	-- 左侧横线
-	surface.DrawRect(x - scope_radius, y - thickness_half, scope_radius - gap, line_thickness)
-	-- 右侧横线
-	surface.DrawRect(x + gap, y - thickness_half, scope_radius - gap, line_thickness)
+	surface.SetDrawColor(0, 0, 0, 255)
+	-- 横线：全宽贯穿
+	surface.DrawRect(0, y - line_thickness / 2, scrw, line_thickness)
+	-- 竖线：全高贯穿
+	surface.DrawRect(x - line_thickness / 2, 0, line_thickness, scrh)
 end
 
 -- ============================================================

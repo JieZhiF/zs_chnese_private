@@ -135,6 +135,7 @@ SWEP.ReloadSpeed = 0.85
 SWEP.SniperRifle = true
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-7.364, -9.007, 1.419),
 	Ang = Angle(0, 0, 0),
 }
@@ -179,6 +180,7 @@ end
 -- 武器只需声明配置：PIP 画中画 + 3D 镜片（scope_screen 元素开镜时贴 RT 画面）
 SWEP.SniperRifle = true
 SWEP.Scoped = true
+SWEP.IronsightsMultiplier = 0.25 --经典模式（zs_pipscope=0）完全瞄准的主视角倍率（原版数值）
 SWEP.PIPScope = true
 -- Unity Quad 方案：VElements 里的 pip_lens 面片开镜时显示 RT 放大画面（draw_func 基座自动注入）
 SWEP.ScopeLensElement = "pip_lens"
@@ -186,5 +188,4 @@ SWEP.ScopeMagnification = 4 -- 默认 4×（室内可用）；开镜后滚轮可
 
 if CLIENT then
 	-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
-	SWEP.IronsightsMultiplier = 0.25
 end

@@ -18,7 +18,6 @@ SWEP.ShowViewModel = true
 SWEP.ShowWorldModel = true
 -- 狙击枪标记：启用机瞄
 SWEP.SniperRifle = true
-SWEP.IronsightsMultiplier = 0.25
 -- HUD 3D 预览的骨骼/位置/角度/缩放
 SWEP.HUD3DBone = "v_weapon.scout_Parent"
 SWEP.HUD3DPos = Vector(-1.25, -2.75, -6)
@@ -27,6 +26,7 @@ SWEP.HUD3DScale = 0.017
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(5.015, -8, 2.52),
 	Ang = Angle(0, 0, 0),
 }
@@ -74,6 +74,7 @@ SWEP.WElements = {
 -- ==== 瞄准镜配置（重构：IsScoped/藏枪模/遮罩已收敛进基座 sh_scope.lua） ====
 -- 治疗步枪保留经典瞄准镜观感：不启用 PIP，遮罩走基座的未来风回退
 SWEP.Scoped = true
+SWEP.IronsightsMultiplier = 0.25 --经典模式（zs_pipscope=0）完全瞄准的主视角倍率（原版数值）
 SWEP.ScopeLegacyStyle = "futuristic"
 
 -- ==== Draw2DHUD - 绘制 2D HUD（智能锁定目标名） ====

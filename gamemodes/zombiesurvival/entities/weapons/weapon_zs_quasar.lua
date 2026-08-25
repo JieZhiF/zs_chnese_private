@@ -78,6 +78,7 @@ SWEP.ConeMax = 3
 SWEP.ConeMin = 0
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(20,20,-20),
 	Ang = Angle(0, 0, 0),
 }
@@ -154,8 +155,8 @@ SWEP.SniperRifle = true
 -- ==== 瞄准镜配置（重构：基座统一实现） ====
 -- 能量武器保留经典瞄准镜观感：不启用 PIP，遮罩走基座的未来风回退
 SWEP.Scoped = true
+SWEP.IronsightsMultiplier = 0.25 --经典模式（zs_pipscope=0）完全瞄准的主视角倍率（原版数值）
 SWEP.ScopeLegacyStyle = "futuristic"
 
 if CLIENT then
-	SWEP.IronsightsMultiplier = 0.25
 end

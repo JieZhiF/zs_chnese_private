@@ -19,7 +19,7 @@ if CLIENT then
 	SWEP.SlotGroup = WEPSELECT_RIFLE
 	-- 第一人称视角设置
 	SWEP.ViewModelFlip = false
-	SWEP.ViewModelFOV = 60
+	SWEP.ViewModelFOV = 65
 
 	-- 3D HUD 绘制参数（在 AWM 骨上绘制弹药信息）
 	SWEP.HUD3DBone = "v_weapon.awm_parent"
@@ -56,7 +56,7 @@ SWEP.Scoped = true
 SWEP.PIPScope = true
 -- Unity Quad 方案：VElements 里的 pip_lens 面片开镜时显示 RT 放大画面（draw_func 基座自动注入）
 SWEP.ScopeLensElement = "pip_lens"
-SWEP.ScopeMagnification = 2 -- 默认 4×（室内可用）；开镜后滚轮可在 2~8× 间调节
+SWEP.ScopeMagnification = 2 
 SWEP.WorldModel = "models/weapons/w_snip_awp.mdl"
 -- 使用 C 模型手部
 SWEP.UseHands = true
@@ -82,13 +82,15 @@ SWEP.Primary.Gesture = ACT_HL2MP_GESTURE_RANGE_ATTACK_CROSSBOW
 SWEP.ReloadGesture = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN
 
 -- 准星扩散：最大扩散较大，最小扩散为0（开镜时完全精准）
-SWEP.ConeMax = 5.75
+SWEP.ConeMax = 2
 SWEP.ConeMin = 0
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
 	Pos = Vector(-7.435, -8.89, 2.326),
 	Ang = Angle(0, 0, 0),
+	Magnification = 1.15,	
+	ViemModelFOV = 60,
 }
 
 -- 持有时的移动速度（较慢）
@@ -97,7 +99,7 @@ SWEP.WalkSpeed = SPEED_SLOWER
 SWEP.SniperRifle = true
 -- 武器等级
 SWEP.Tier = 3
-
+SWEP.AimDownSightsTime = 0.47
 -- 弹道曳光弹类型（大型狙击曳光）
 SWEP.TracerName = "tracer_sniper_big"
 

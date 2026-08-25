@@ -17,7 +17,6 @@ SWEP.VMPos = Vector(0, 0, 0)
 SWEP.VMAng = Angle(0, 0, 0)
 SWEP.ViewModelFOV = 60 --第一人称镜头的大小
 SWEP.ViewModelFlip = true
--- [旧版引擎摇摆已移除] BobScale/SwayScale 不再使用，摆动统一由 cl_sway.lua（ARC9 系统）接管
 
 -- SCK 元素容器
 SWEP.VElements = {}
@@ -72,7 +71,7 @@ SWEP.HUD3DPos = Vector(0, 0, 0)
 SWEP.CooldownExtraSize = 1 --冷却环大小
 ---------------- [后坐力系统] ----------------
 SWEP.Recoil_Enabled = false -- 设为 true 来为武器启用此系统（不启用则镜头/枪模弹簧层全部无效）
-SWEP.Recoil = 0 -- [旧系统遗留] 当前无任何消费者，仅为兼容保留
+--SWEP.Recoil = 0 -- [旧系统遗留] 当前无任何消费者，仅为兼容保留
 SWEP.RecoilUp = 0.4 -- 基础垂直后坐力（度，经 cl_recoil_handler 注入真实视角）
 SWEP.RecoilSide = 0.2 -- 基础水平后坐力（度）
 SWEP.RecoilRandomUp = 0.2 -- 垂直后坐力随机附加范围（度）
@@ -82,7 +81,7 @@ SWEP.RecoilAutoControlTime = 0.08 -- 停火后多久重置连发计数（恢复�
 SWEP.RecoilAutoControl_DontTryToReturnBack = false -- true=禁用手动压枪抵扣与自动回正（永久踢枪风格）
 SWEP.RecoilResetTime = 0.12 -- 停火后多久开始冷却热度（RecoilAmount 渐进衰减的启动延迟）
 SWEP.RecoilDissipationRate = 1 -- 热度冷却速率（停火后每秒按此倍率衰减 RecoilAmount，越大回落越快）
-SWEP.RecoilRecoveryPercentage = 0.6 -- [旧系统遗留] 当前无任何消费者，仅为兼容保留
+--SWEP.RecoilRecoveryPercentage = 0.6 -- [旧系统遗留] 当前无任何消费者，仅为兼容保留
 
 -- 后坐力曲线系统（渐进式递增）
 SWEP.RecoilFirstShotMult = 1.0 -- 首发后坐力倍率（第一发通常较大）
@@ -125,9 +124,12 @@ SWEP.AimDownSightsTime = 0.25 --完成一次开镜/收镜的平滑过渡秒数�
 SWEP.IronSightsPos = Vector(0, 0, 0)
 SWEP.IronSightsAng = Angle(0, 0, 0)
 SWEP.IronSpeed = 8
-SWEP.IronsightsMultiplier = 0.6 --开镜的 FOV 缩放倍数（<1=视野放大）。仅作用于 FOV；
-                               --灵敏度由基座 AdjustMouseSensitivity 按此值推导，勿直接当灵敏度参数用
-SWEP.Breathmult = 1.3 -- 呼吸强度系数
+-- [ARC9 形式默认 · 主视角放大率] 除法语义：FOV ÷ Magnification（polyarms 全系 1.05~1.15）。
+-- 1.15 ≈ 全开镜主视角仅收窄 13%；深倍率由 PIP 镜内画面承担，不再用深 FOV 缩放伪装狙击镜。
+-- 平铺字段与 IronSights.Magnification 表键等价（表优先）；旧字段 IronsightsMultiplier
+-- 仅作未迁移武器的回退，新配置一律不要再写它（灵敏度由基座按本值自动推导）
+SWEP.ADSMagnification = 1.15
+SWEP.Breathmult = 1 -- 呼吸强度系数
 
 -- 视模型摇摆/步摆（ARC9 移植，实现在 cl_sway.lua；详细说明见该文件头）
 SWEP.MouseSway = true -- 鼠标摇摆总开关：视角转动时枪身惯性滞后

@@ -87,6 +87,7 @@ SWEP.ReloadSpeed = 1.05
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-5.95, 0, 2.5),
 	Ang = Angle(0, 0, 0),
 }

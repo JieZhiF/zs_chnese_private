@@ -197,11 +197,11 @@ end
 
 -- ==== 瞄准镜配置（重构：IsScoped/藏枪模/遮罩已收敛进基座 sh_scope.lua） ====
 SWEP.Scoped = true
+SWEP.IronsightsMultiplier = 0.25 --经典模式（zs_pipscope=0）完全瞄准的主视角倍率（原版数值）
 SWEP.PIPScope = true
 SWEP.ScopeMagnification = 4
 
 if CLIENT then
-	SWEP.IronsightsMultiplier = 0.25
 end
 
 -- 标记为近战可用武器（支持枪托打击）

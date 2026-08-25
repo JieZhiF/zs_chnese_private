@@ -70,6 +70,7 @@ SWEP.Tier = 2
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-5, 1, 3),
 	Ang = Angle(0, 0, 0),
 }
@@ -219,7 +220,7 @@ local branch = GAMEMODE:AddNewRemantleBranch(SWEP, 2, ""..translate.Get("weapon_
 		wept.HUD3DPos = Vector(-0.2, -4, 8.6)
 		wept.HUD3DAng = BaseClass.HUD3DAng
 		wept.SniperRifle = true
-		wept.IronsightsMultiplier = 0.25
+		wept.IronsightsMultiplier = 0.25 --经典模式（zs_pipscope=0）完全瞄准的主视角倍率（原版数值）
 
 		-- ==== 瞄准镜配置（重构：基座统一实现） ====
 		-- glass 元素开镜时贴渲染纹理（3D 镜片），收镜自动还原

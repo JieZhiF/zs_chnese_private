@@ -57,6 +57,7 @@ SWEP.UseHands = true
 SWEP.ViewModelBoneMods = {}
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(0, 0, 0),
 	Ang = Angle(0, 0, 0),
 }

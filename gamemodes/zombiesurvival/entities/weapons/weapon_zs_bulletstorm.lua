@@ -85,6 +85,7 @@ SWEP.MaxStock = 3
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-2, 6, 3),
 	Ang = Angle(0, 2, 0),
 }

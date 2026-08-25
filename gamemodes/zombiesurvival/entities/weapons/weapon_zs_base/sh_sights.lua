@@ -9,9 +9,10 @@ function SWEP:IsToggleADS()
 end
 
 --[[ 平滑过渡说明：
-	GetIronsightDelta（CLIENT）采用持续逼近式进度：从当前值向目标滑动，
-	中途反打收/开镜时从当前位置继续，不产生跳变。
-	self.fIronTime 仅保留给狙击系武器的 IsScoped() 做完全瞄准时序判断。 ]]
+	过渡进度由 Think 每帧确定性推进（UpdateIronsightDelta，ARC9 ThinkSights 同构），
+	GetIronsightDelta 为纯读取——全部消费方（主视角 FOV/枪模/PIP 镜片/灵敏度）
+	同帧读到同一份进度；中途反打收/开镜从当前位置继续，不产生跳变。
+	self.fIronTime 仅作为服务端回退时序保留（IsScoped 的非客户端分支）。 ]]
 
 function SWEP:SecondaryAttack()
 	-- 切换模式下由 Think 的按键沿检测接管，这里直接让行避免双重翻转
@@ -68,18 +69,35 @@ function SWEP:GetWalkSpeed()
 end
 
 if CLIENT then
-	-- [过渡进度] 持续逼近式 0~1：按真实耗时推进，与调用频率无关；单次上限 0.1 秒防卡顿瞬移
-	function SWEP:GetIronsightDelta()
-		if GAMEMODE.NoIronsights then return 0 end
+	-- [过渡进度推进 · ARC9 ThinkSights 同构] 按真实耗时向目标滑动（单次上限 0.1 秒
+	-- 防卡顿瞬移），到位后清时间戳零开销待命。可从两个入口调用：
+	--   1) Think 每帧确定性驱动（sh_think）
+	--   2) GetIronsightDelta 的惰性兜底（覆写 Think 未调基类的武器，如 sawedoff）
+	-- 两入口共享同一时间戳：同帧多次调用时时间片自动均分，总速率恒为真实耗时
+	function SWEP:UpdateIronsightDelta()
+		if GAMEMODE.NoIronsights then return end
+
+		local target = self:GetIronsights() and 1 or 0
+		local cur = self.m_nIronDelta or 0
+		if cur == target then
+			self.m_fIronLastSysT = nil
+			return
+		end
 
 		local st = SysTime()
 		local dt = math.min(st - (self.m_fIronLastSysT or st), 0.1)
 		self.m_fIronLastSysT = st
 
-		local target = self:GetIronsights() and 1 or 0
-		self.m_nIronDelta = math.Approach(self.m_nIronDelta or 0, target, dt / (self.AimDownSightsTime or 0.25))
+		self.m_nIronDelta = math.Approach(cur, target, dt / math.max(self.AimDownSightsTime or 0.25, 0.01))
+	end
 
-		return self.m_nIronDelta
+	-- [过渡进度读取] 纯语义出口；内部先做惰性兜底推进，保证任何武器都可依赖
+	function SWEP:GetIronsightDelta()
+		if GAMEMODE.NoIronsights then return 0 end
+
+		if self.UpdateIronsightDelta then self:UpdateIronsightDelta() end
+
+		return self.m_nIronDelta or 0
 	end
 
 	local OverrideIronSights = {}
@@ -106,7 +124,12 @@ if CLIENT then
 		end
 	end
 
-	--[FOV 缩放 · ARC9 GetSmoothedFOVMag 移植] 双轴缓动混合 + 指数逼近
+	--[FOV 缩放目标 · ARC9 配置形式] 优先级：
+	--  1) IronSights.Magnification（武器完整 ARC9 表）
+	--  2) ADSMagnification 平铺字段（基座默认 1.15，除法语义 FOV÷mag，×0.95 与 ARC9 同因子）
+	--  3) 经典狙回退（zs_pipscope=0）：IronsightsMultiplier（原版数值 0.25）优先，
+	--     未声明时按 ScopeMagnification 推导——经典模式表现与原版 ZS 完全一致
+	--  4) 旧字段兜底（未迁移第三方配置）
 	--[框架陷阱修复] 旧版以 self.IsScoped（方法存在性）判断狙击武器，基座统一提供
 	--IsScoped 后该判断对所有武器恒真，改用显式标志位 self.Scoped（见 sh_scope.lua）
 	--[PIP 全程一致] 目标倍率必须整段过渡不变：UsesPIPScope 与进度无关，
@@ -114,17 +137,22 @@ if CLIENT then
 	local function GetAimFOVTarget(self)
 		if self.Scoped and not GAMEMODE.DisableScopes then
 			if self.UsesPIPScope and self:UsesPIPScope() then
-				-- PIP：放大交给镜内画面，主视角全程只做轻微变焦保持周边视野
-				return self.PIPMainFOVMult or 0.75
+				-- PIP：放大交给镜内画面，主视角只做极轻微变焦（ARC9 RT 镜同款浅变焦）
+				return self.PIPMainFOVMult or 0.88
 			end
-			return self.IronsightsMultiplier or 0.25
+
+			-- 经典狙回退（zs_pipscope=0）：优先旧声明（原版数值 0.25），未声明时按
+			-- 光学倍率推导——表现与原版 ZS 完全一致：深 FOV 缩放 + 全屏圆形遮罩
+			local deep = tonumber(self.IronsightsMultiplier)
+				or math.Clamp(1 / math.max(self.ScopeMagnification or 1, 1), 0.1, 0.6)
+			local zoom_scoped = GAMEMODE.IronsightZoomScale or 1
+			return 1 - (1 - deep) * zoom_scoped
 		end
 
 		local zoom = GAMEMODE.IronsightZoomScale or 1
 
-		-- [ARC9 倍率语义] Magnification：FOV ÷ 倍率（×0.95 与 ARC9 cl_camera 同因子）；
-		-- 同样受全局缩放阻尼约束
-		local magnification = istable(self.IronSights) and tonumber(self.IronSights.Magnification)
+		local magnification = (istable(self.IronSights) and tonumber(self.IronSights.Magnification))
+			or tonumber(self.ADSMagnification)
 		if magnification and magnification > 0 then
 			return 1 - (1 - math.Clamp(1 / (magnification * 0.95), 0.05, 1)) * zoom
 		end
@@ -134,9 +162,8 @@ if CLIENT then
 
 	function SWEP:GetSmoothedFOVMult()
 		local delta = self:GetIronsightDelta()
-		if delta <= 0 then return 1 end
 
-		-- [三重缓动链] OutQuart → InOutQuad 推进开镜前段；InCirc 独立轴控制后段收尾
+		-- [双轴缓动 · ARC9 同式] OutQuart→InOutQuad 主轴推进；InCirc 副轴只管逼近节奏
 		local d1 = math.ease.InOutQuad(math.ease.OutQuart(delta))
 		local d2 = math.ease.InCirc(delta)
 
@@ -148,13 +175,27 @@ if CLIENT then
 		end
 
 		-- 双轴混合（ARC9: Lerp(d1, 1, Lerp(d2, target2, target))；ZS 无双段变倍，两轴同目标）
-		local mag = Lerp(d1, 1, Lerp(d2, target, target))
+		local mag = Lerp(d1, 1, target)
 
-		-- [指数逼近] 目标突变（滚轮变焦/换弹起止）时按差值比例追赶，深倍率追得更快
+		-- [变速指数逼近 · ARC9 手感核心] 步长 ∝ 剩余差值 × 分段速度：
+		-- 开镜中速度系数从 1 随 InCirc 缓升到 10（深倍率中途 50）——给前载缓动加
+		-- "慢起步"低通滤波，滤掉突兀的第一段缩放，形成软起手→中段加速→缓收尾的 S 曲线；
+		-- 收镜中/后 10→25 加速收敛，尾巴利落。
+		-- [无早退] 全程无条件执行：差值随 mag→1 自然归零，杜绝旧版 delta 归零瞬间
+		-- 直接 return 1 造成的收镜末端硬跳变（pop）
 		local cur = self.m_fSmoothedFOVMult or 1
-		local speed = (target < 0.5 and d2 < 1) and 50 or 10
-		cur = math.Approach(cur, mag, RealFrameTime() * math.abs(cur - mag) * speed)
-		self.m_fSmoothedFOVMult = cur
+		local speed
+		if self:GetIronsights() then
+			speed = Lerp(d2, 1, (target < 0.5 and d2 < 1) and 50 or 10)
+		else
+			speed = Lerp(delta, 25, 10)
+		end
+
+		local diff = math.abs(cur - mag)
+		if diff > 0.0001 then
+			cur = math.Approach(cur, mag, RealFrameTime() * diff * speed)
+			self.m_fSmoothedFOVMult = cur
+		end
 
 		return cur
 	end
@@ -178,7 +219,7 @@ if CLIENT then
 
 		local mag
 		if self.Scoped and self.UsesPIPScope and self:UsesPIPScope() then
-			local mainzoom = 1 / math.max(self.PIPMainFOVMult or 0.75, 0.01)
+			local mainzoom = 1 / math.max(self.PIPMainFOVMult or 0.88, 0.01)
 			local optical = self.GetEffectiveScopeMagnification and self:GetEffectiveScopeMagnification() or self.ScopeMagnification or 4
 			mag = mainzoom * optical
 		else

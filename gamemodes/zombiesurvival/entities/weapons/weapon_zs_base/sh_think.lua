@@ -42,6 +42,10 @@ function SWEP:Think()
 
 	if CLIENT then
 		self.offset = Lerp(RealFrameTime() * 10, self.offset or 0, 0)
+
+		-- [机瞄过渡进度] 每帧确定性推进一次（ARC9 ThinkSights 同构）：
+		-- 主视角 FOV/枪模/镜片/灵敏度等全部表现层消费同一份进度
+		if self.UpdateIronsightDelta then self:UpdateIronsightDelta() end
 	end
 
 	-- [双轨分离] 后坐力 Think 提升为共享域：热度消散/连射计数/弹道偏移衰减

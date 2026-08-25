@@ -56,6 +56,7 @@ SWEP.HUD3DAng = Angle(175, 0, -15)
 SWEP.HUD3DScale = 0.015
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-6.2, -8.78, 0.65),
 	Ang = Angle(0, 0, 0),
 }

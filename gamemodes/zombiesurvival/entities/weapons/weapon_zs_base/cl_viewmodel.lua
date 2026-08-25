@@ -41,6 +41,70 @@ local function RotateAroundPoint(pos, ang, center, offset, rot)
     mat:Translate(-center)
     return mat:GetTranslation(), mat:GetAngles()
 end
+
+-- ==== [ARC9 移植 · vmposition "funny" 弧线插值] ====
+-- 入瞄路径不是直线匀速：位移三轴各用不同缓动错峰到位，叠加 sin(π·进度)
+-- 中段鼓包沿预设弧线矢量绕行；角度轴有独立滚转弧线。ARC9 开镜"丝滑绕行"
+-- 手感的来源，常数与曲线族逐字对应其 cl_vmposition.lua。
+local ease_local = math.ease
+local math_sin_l = math.sin
+local PI_L = 3.1415926
+
+local FUNNY_VEC_IN = Vector(-1.9, 2, 1.95)   -- 入镜中段弧线终点（t=a² 渐达）
+local FUNNY_VEC_OUT = Vector(1, 1, -0.8)     -- 出镜中段弧线（恒定形状）
+
+local function ArcLerpVector(a, v1, v2, mode)
+	local dx, dy, dz = v2.x - v1.x, v2.y - v1.y, v2.z - v1.z
+
+	local a1, a2, a3, mid, mid2
+	if mode then
+		a1 = ease_local.OutExpo(a)
+		a2 = ease_local.InOutBack(a)
+		a3 = ease_local.OutQuad(a)
+		mid = math_sin_l(PI_L * ease_local.OutSine(a))
+		mid2 = math_sin_l(PI_L * ease_local.OutCubic(a * a))
+	else
+		a1 = ease_local.InQuad(a)
+		a2 = ease_local.InSine(a)
+		a3 = ease_local.InSine(a)
+		mid = math_sin_l(PI_L * ease_local.InOutQuad(a))
+		mid2 = math_sin_l(PI_L * ease_local.InSine(a))
+	end
+
+	local yayx, yayy, yayz
+	if mode then
+		local t = a * a
+		yayx = Lerp(t, FUNNY_VEC_OUT.x, FUNNY_VEC_IN.x)
+		yayy = Lerp(t, FUNNY_VEC_OUT.y, FUNNY_VEC_IN.y)
+		yayz = Lerp(t, FUNNY_VEC_OUT.z, FUNNY_VEC_IN.z)
+	else
+		yayx, yayy, yayz = FUNNY_VEC_OUT.x, FUNNY_VEC_OUT.y, FUNNY_VEC_OUT.z
+	end
+
+	return Vector(
+		v1.x + yayx * mid + a1 * dx,
+		v1.y + yayy * mid + a2 * dy,
+		v1.z + yayz * mid2 + a3 * dz)
+end
+
+-- 入镜弧线角（ARC9 funnyangleIn×0.85）/ 出镜弧线角（funnyangleOut×0.85）
+local ARC_ANG_ENTER_P, ARC_ANG_ENTER_Y, ARC_ANG_ENTER_R = -2.55, -1.7, 6.8
+local ARC_ANG_EXIT_P, ARC_ANG_EXIT_Y, ARC_ANG_EXIT_R = 1.4875, -1.7, -5.95
+
+local function ArcLerpAngle(a, target, mode)
+	local arc
+	if mode then
+		arc = math_sin_l(PI_L * ease_local.OutSine(a))
+	else
+		arc = math_sin_l(PI_L * ease_local.InOutQuad(a))
+	end
+
+	-- 起点恒为 angle_zero：分量即角差（ARC9 AngleDifference(x,0) 同义）
+	return Angle(
+		a * target.p + (mode and ARC_ANG_ENTER_P or ARC_ANG_EXIT_P) * arc,
+		a * target.y + (mode and ARC_ANG_ENTER_Y or ARC_ANG_EXIT_Y) * arc,
+		a * target.r + (mode and ARC_ANG_ENTER_R or ARC_ANG_EXIT_R) * arc)
+end
 function SWEP:ThinkVisualRecoil()
     local ft = RealFrameTime()
     if ft == 0 or ft > 0.1 then return end
@@ -220,33 +284,61 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 	self.CurrentIronPos = self.CurrentIronPos or Vector(0, 0, 0)
 	self.CurrentIronAng = self.CurrentIronAng or Angle(0, 0, 0)
 
-	-- [过渡进度] 进入用 OutBack/InOutSine 混合，退出用 InOutQuad/InQuad 混合
+	-- [过渡进度 · 双轨] ARC9 vmposition 同构：
+	--   sd_raw —— 原始线性进度：位移弧线插值与 sights 姿态参数消费（工厂动画期望线性驱动）
+	--   sd_ease —— 双缓动混合（保留过冲）：开镜 OutBack/InOutSine、收镜 InOutQuad/InQuad，
+	--             角度弧线插值消费；过冲被 ARC9 式弧线吸收，不外泄到 FOV
+	--   eased  —— 钳制版标量：晃动/呼吸/步伐衰减等层消费
 	local delta = self.GetIronsightDelta and self:GetIronsightDelta() or 0
-	local eased = 0
+	local entering = (delta > 0 and self:GetIronsights()) and true or false
+	local sd_raw = delta
+	local sd_ease = 0
 	if delta > 0 then
-		if self:GetIronsights() then
-			eased = Lerp(0.25, math.ease.OutBack(delta), math.ease.InOutSine(delta))
+		if entering then
+			sd_ease = Lerp(0.25, math.ease.OutBack(delta), math.ease.InOutSine(delta))
 		else
-			eased = Lerp(0.7, math.ease.InOutQuad(delta), math.ease.InQuad(delta))
+			sd_ease = Lerp(0.7, math.ease.InOutQuad(delta), math.ease.InQuad(delta))
 		end
 	end
-	eased = math.Clamp(eased, 0, 1)
+	local eased = math.Clamp(sd_ease, 0, 1)
 
-	-- [开镜视模型 FOV · 平滑过渡] IronSights.ViewModelFOV 声明时生效：按开镜
-	-- 缓动进度在武器基础 FOV 与声明目标间插值，写回引擎原生每帧读取的
-	-- SWEP.ViewModelFOV（自绘投影管线已移除，动态写回是该字段唯一可行接法）。
-	-- 基础值只缓存一次，防止把上帧插值结果当基准造成逐帧漂移；
-	-- 未声明该字段的武器完全不受影响
+	-- [开镜视模型 FOV · ARC9 GetViewModelFOV 移植] IronSights.ViewModelFOV 声明时生效，
+	-- 写回引擎原生每帧读取的 SWEP.ViewModelFOV（自绘投影管线已移除，动态写回是该
+	-- 字段唯一可行接法）。与 ARC9 一致的三层结构：
+	--   1) 专用指数逼近状态 m_nSmoothVMFOV（步长 max(diff/ADS时长, diff, 1)*ft*2）：
+	--      大差距快追、小差距缓收，不再借用姿势层带 OutBack 过冲的 eased
+	--      （旧版过冲会泄漏进 FOV，表现为开镜瞬间冲过头再弹回）；
+	--   2) 独立缓动轴：开镜 Lerp(0.21, OutBack, InOutSine) / 收镜 Lerp(0.65, InOutSine, InOutBack)，
+	--      与 ARC9 逐字对应，微过冲只落在 FOV 自身弹性里；
+	--   3) 基础值只缓存一次，防止把上帧插值结果当基准造成逐帧漂移。
+	-- 未声明 ViewModelFOV 字段的武器完全不受影响
 	local iron_fov = istable(self.IronSights) and tonumber(self.IronSights.ViewModelFOV) or nil
 	if iron_fov and iron_fov > 0 then
 		if not self.m_nBaseVMFOV then
 			self.m_nBaseVMFOV = self.ViewModelFOV or 60
 		end
-		self.ViewModelFOV = Lerp(eased, self.m_nBaseVMFOV, iron_fov)
+
+		local vm_target = iron_fov
+		self.m_nSmoothVMFOV = self.m_nSmoothVMFOV or self.m_nBaseVMFOV
+		local vdiff = math.abs(vm_target - self.m_nSmoothVMFOV)
+		if vdiff > 0 then
+			self.m_nSmoothVMFOV = math.Approach(self.m_nSmoothVMFOV, vm_target,
+				math.max(vdiff / (self.AimDownSightsTime or 0.25), vdiff, 1) * RealFrameTime() * 2)
+		end
+
+		local fdelta = delta
+		if self:GetIronsights() then
+			fdelta = Lerp(0.21, math.ease.OutBack(fdelta), math.ease.InOutSine(fdelta))
+		else
+			fdelta = Lerp(0.65, math.ease.InOutSine(fdelta), math.ease.InOutBack(fdelta))
+		end
+
+		self.ViewModelFOV = Lerp(fdelta, self.m_nBaseVMFOV, self.m_nSmoothVMFOV)
 	elseif self.m_nBaseVMFOV then
 		-- 运行时声明被移除（热重载/调参）时兜底还原基础值
 		self.ViewModelFOV = self.m_nBaseVMFOV
 		self.m_nBaseVMFOV = nil
+		self.m_nSmoothVMFOV = nil
 	end
 
 	local iron_pos, iron_ang = self:GetIronSightOffset()
@@ -271,17 +363,27 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 			end
 		end
 		if self.m_SightsPPIdx and self.m_SightsPPIdx >= 0 then
-			vm:SetPoseParameter(self.m_SightsPPIdx, Lerp(eased, self.m_SightsPPRangeMin or 0, self.m_SightsPPRangeMax or 1))
+			-- [ARC9 同款] 姿态参数吃原始线性进度（ThinkSights SetPoseParameter 同源），
+			-- 缓动/过冲值会让工厂对齐动画在中段 wiggle
+			vm:SetPoseParameter(self.m_SightsPPIdx, Lerp(sd_raw, self.m_SightsPPRangeMin or 0, self.m_SightsPPRangeMax or 1))
 			-- [ARC9 双层制] 不清零偏移：工厂对齐（姿态参数）之上叠加表/旧字段微调
 		end
 	end
 
-	local target_pos = iron_pos * eased
-	local target_ang = iron_ang * eased
+	-- [入瞄姿态 · ARC9 "funny" 弧线插值 + 零二次滤波]
+	-- 位移按原始进度走三轴异构缓动弧线，角度按缓动进度叠加滚转中段弧线；
+	-- ARC9 直接应用确定性目标值。旧版在此之上还叠 RealFrameTime 指数追赶
+	-- （IronSpeed）：帧率相关、恒定引入 ~0.1s 滞后层，枪模永远晚于 FOV 到位
+	-- （观感发肉）——已移除。零偏移武器回退纯 eased 缩放保持旧行为
+	if iron_pos:LengthSqr() > 0 or AngLen(iron_ang) > 0.0001 then
+		self.CurrentIronPos = ArcLerpVector(sd_raw, vector_origin, iron_pos, entering)
+		self.CurrentIronAng = ArcLerpAngle(sd_ease, iron_ang, entering)
+	else
+		self.CurrentIronPos = iron_pos * eased
+		self.CurrentIronAng = iron_ang * eased
+	end
 
-	local ft = RealFrameTime()
-	self.CurrentIronPos = LerpVector(ft * (self.IronSpeed or 10), self.CurrentIronPos, target_pos)
-	self.CurrentIronAng = LerpAngle(ft * (self.IronSpeed or 10), self.CurrentIronAng, target_ang)
+	local ft = RealFrameTime() -- 帧步进供后续幽灵探身层使用
 
     -- 3. 动态晃动 (Sway & Bob)
     -- [ARC9 移植·DarsuBob] 六轴步行循环（跳跃惯性/横移倾斜/下蹲节奏），唯一摆动来源：

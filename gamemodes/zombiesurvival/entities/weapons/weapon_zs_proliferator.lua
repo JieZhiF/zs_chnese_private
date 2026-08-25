@@ -95,6 +95,7 @@ SWEP.FireAnimSpeed = 1.7
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(-7, 15, 0),
 	Ang = Angle(3, -3, -10),
 }

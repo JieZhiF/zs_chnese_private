@@ -170,8 +170,10 @@ RegisterClientConVar("zs_disablescopes", "0", "DisableScopes", "禁用武器瞄�
 -- 一键解锁功能开关
 RegisterClientConVar("zs_one_click_unlock", "1", "OneClickUnlock", "一键解锁功能开关", "bool")
 
--- 机械瞄准（Ironsight）时的缩放比例（0~1）
-RegisterClientConVar("zs_ironsightzoom", 1, "IronsightZoomScale", "机械瞄准缩放比例（0~1）", "float", function(v) return math.Clamp(tonumber(v) or 1, 0, 1) end)
+-- 机械瞄准（Ironsight）主视角缩放的实时微调旋钮（0~1，乘在各武器声明的深度上）
+-- [默认 1] 各武器已按 ARC9 形式声明 Magnification（基座默认 1.15），本旋钮仅作
+-- 全局微调/兼容用途：0.5=全体深度减半，0=纯枪模无 FOV 变化，1=按声明值
+RegisterClientConVar("zs_ironsightzoom", 1, "IronsightZoomScale", "机械瞄准缩放微调（0~1，1=按武器声明值）", "float", function(v) return math.Clamp(tonumber(v) or 1, 0, 1) end)
 
 -- 被击倒时是否切换到第三人称视角
 RegisterClientConVar("zs_thirdpersonknockdown", "1", "ThirdPersonKnockdown", "被击倒时切换到第三人称视角", "bool")

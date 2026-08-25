@@ -18,6 +18,7 @@ if CLIENT then -- 客户端专属设置
 
 	-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 	SWEP.IronSights = {
+	Magnification = 1.15,
 		Pos = Vector(-8.8, 10, 4.32),
 		Ang = Angle(1.4, 0.1, 5),
 	}

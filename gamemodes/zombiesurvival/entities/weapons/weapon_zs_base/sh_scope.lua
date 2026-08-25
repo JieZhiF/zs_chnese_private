@@ -22,7 +22,9 @@ SWEP.ScopeLensElement = nil     -- [3D 镜片] VElements 里作为镜片的元�
 SWEP.ScopeMagnification = 4     -- PIP 光学倍率（镜内画面相对主视角的放大倍数），鼠标灵敏度按此匹配
 SWEP.ScopeMagMin = 2            -- 滚轮变焦下限（倍率）
 SWEP.ScopeMagMax = 8            -- 滚轮变焦上限（倍率），nil 时默认 max(基准×2, 8)
-SWEP.PIPMainFOVMult = 0.75      -- PIP 完全瞄准时主视角保留的 FOV 倍率（轻微变焦，保持周边视野感知）
+SWEP.PIPMainFOVMult = 0.88      -- PIP 完全瞄准时主视角保留的 FOV 倍率（极轻微变焦）。
+                                -- [0.88 · ARC9 对齐] ARC9 RT 镜主视角仅 ÷1.15（~13% 变化），
+                                -- 深倍率全部由镜内画面承担；快速点按右键主视角几乎无感
 SWEP.ScopeReticle = "mil-dot"   -- 分划板样式："mil-dot" | "cross" | "dot" | "chevron" | "german" |
                                 -- "tdot" | "acog" | 材质路径 | 自绘函数 function(wep, cx, cy, dia, alpha)
 SWEP.ScopeReticleColor = nil    -- 分划板颜色，nil 时使用默认暗红
@@ -32,11 +34,21 @@ SWEP.ScopeLegacyStyle = nil     -- 经典回退遮罩（zs_pipscope=0 或非 PIP
 -- 再声明 ScopeLensElement 指向它；未配置时基座按 ViewModel 匹配内置预设自动合成
 -- （c_snip_awp 为 hunter 实测值，g3sg1/sg550/crossbow 为种子值），见 cl_scope.lua。
 
--- ==== IsScoped - 是否已完全开镜（基座统一实现：机瞄开启且稳定计时结束） ====
--- 语义与旧版各武器副本完全一致：GetIronsights() 且 fIronTime + 0.25 <= CurTime()
+-- ==== IsScoped - 是否已完全开镜（基座统一实现） ====
+-- [跟随式] 客户端以平滑过渡进度走满（GetIronsightDelta >= 1）为准：
+-- 镜面遮罩/PIP 合成/藏枪等切换时机自动对齐各武器的 AimDownSightsTime，
+-- 不再绑定固定秒数（旧版各武器副本硬编码 fIronTime + 0.25）。
+-- 进度尚未推进的首帧或服务端调用时，回退旧版固定秒数语义
+-- （GetIronsights() 且 fIronTime + ScopeStableTime <= CurTime()）
 function SWEP:IsScoped()
 	if GAMEMODE and GAMEMODE.NoIronsights then return false end
 	if GAMEMODE and GAMEMODE.DisableScopes then return false end
+
+	if CLIENT and self.GetIronsightDelta then
+		-- 带 GetIronsights() 前置：松开右键瞬间立即失效（旧版同款），
+		-- 不等已走满的进度衰减下来
+		return self:GetIronsights() and self:GetIronsightDelta() >= 1
+	end
 
 	local irontime = self.fIronTime
 	return self:GetIronsights() and irontime and irontime + (self.ScopeStableTime or 0.25) <= CurTime()

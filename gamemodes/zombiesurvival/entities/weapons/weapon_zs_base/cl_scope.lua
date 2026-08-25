@@ -322,16 +322,20 @@ function SWEP:UsesPIPScope()
 end
 
 -- ==== IsPIPActive - 当前是否处于 PIP 画面生效阶段（合成/镜片切换时机） ====
+-- [过渡窗口 · 0.5 起步] 旧版 0.75 起步意味着画面只在开进最后 25% 突入：
+-- AimDownSightsTime 拉长后（如 hunter=1s）表现为"接近完全开镜才突然有画面"。
+-- 现提前到进度过半即开始渲染并淡入，与 ARC9"sightamount 一旦可见就持续呈现"
+-- 的观感对齐；完全显示仍锁定 delta=1（与 IsScoped 完全瞄准时刻重合）
 function SWEP:IsPIPActive()
-	return self:UsesPIPScope() and (self.GetIronsightDelta and self:GetIronsightDelta() or 0) > 0.75
+	return self:UsesPIPScope() and (self.GetIronsightDelta and self:GetIronsightDelta() or 0) >= 0.5
 end
 
--- [合成透明度] 开镜进度 0.75~1 区间平滑淡入分划板，避免画面突跳
+-- [合成透明度] 开镜进度 0.5~1 区间平滑淡入分划板与镜内画面，避免画面突跳
 local function GetCompositeAlpha(wep)
 	local delta = wep.GetIronsightDelta and wep:GetIronsightDelta() or 0
-	if delta <= 0.75 then return 0 end
+	if delta <= 0.5 then return 0 end
 
-	return math.ease.OutQuad(math_Clamp((delta - 0.75) / 0.25, 0, 1))
+	return math.ease.OutQuad(math_Clamp((delta - 0.5) / 0.5, 0, 1))
 end
 
 ---------------- [滚轮动态倍率（参考 Unity 瞄具教程第三种方式的脚本控制步骤）] ----------------
@@ -1046,8 +1050,12 @@ function SWEP:DrawPIPLensContent(alpha, hw, hh, uc, vc, spanU, spanV)
 		-- [镜内亮度] zs_scope_brightness 倍率（pic.vmt 带 $vertexcolor，SetDrawColor 生效）
 		local bright = GetScopeBrightness()
 
+		-- [RGB 亮度淡入] 用 $vertexcolor 调制亮度而非依赖 alpha 混合：
+		-- pic.vmt 未开 $translucent，SetDrawColor 的 alpha 通道在部分 DX 层会被
+		-- 忽略（画面瞬间全亮再靠玻璃盖压暗，两层硬切换在慢速开镜下呈黑块闪烁）。
+		-- 亮度随 alpha 从黑连续升到全亮 + 玻璃底同步淡出，双重平滑无跳变帧
 		surface_SetMaterial(mat_pic)
-		surface_SetDrawColor(255 * bright, 255 * bright, 255 * bright, 255)
+		surface_SetDrawColor(255 * bright * alpha, 255 * bright * alpha, 255 * bright * alpha, 255)
 		surface_DrawTexturedRectUV(-hw, -hh, hw * 2, hh * 2,
 			uc - spanU * 0.5, vc - spanV * 0.5, uc + spanU * 0.5, vc + spanV * 0.5)
 
@@ -1219,10 +1227,15 @@ function SWEP:UpdatePIPLensMaterial()
 		end
 
 		if want_on then
+			if not self.m_bPIPLensOn then
+				-- [点亮即刷新] 翻开瞬间强制渲染一帧 RT：防止 fpslock 节流/首帧
+				-- 拿到陈旧或空白 RT 造成"亮镜瞬间闪黑"
+				self.m_bPIPForceRender = true
+			end
 			self.m_bPIPLensOn = true
 		elseif self.m_bPIPLensOn then
 			local delta = self.GetIronsightDelta and self:GetIronsightDelta() or 0
-			if delta < 0.55 or not self:GetIronsights() then
+			if delta < 0.42 or not self:GetIronsights() then
 				self.m_bPIPLensOn = false
 			end
 		end
@@ -1240,12 +1253,13 @@ function SWEP:UpdatePIPLensMaterial()
 	local on = self.m_bPIPLensOn
 
 	if not on and want_on then
+		self.m_bPIPForceRender = true
 		self.m_bPIPLensOn = true
 		elem.material = "zombiesurvival/pip/pic"
 		elem.color = color_white
 	elseif on and not want_on then
 		local delta = self.GetIronsightDelta and self:GetIronsightDelta() or 0
-		if delta < 0.55 or not self:GetIronsights() then
+		if delta < 0.42 or not self:GetIronsights() then
 			self.m_bPIPLensOn = false
 			elem.material = self.m_sPIPLensOrigMat
 			elem.color = self.m_cPIPLensOrigColor
@@ -1341,7 +1355,7 @@ function SWEP:DrawPIPComposite(mode, alpha)
 	end
 end
 
--- 经典回退：旧式遮罩（保持迁移前观感），经典模式下由基座调用
+-- 经典回退：旧式遮罩（原版 ZS 观感），经典模式下由基座调用
 function SWEP:DrawScopeClassicFallback()
 	local style = self.ScopeLegacyStyle
 
@@ -1349,8 +1363,14 @@ function SWEP:DrawScopeClassicFallback()
 		style(self)
 	elseif style == "futuristic" and self.DrawFuturisticScope then
 		self:DrawFuturisticScope()
+	elseif self.DrawRegularScope then
+		-- [原版全屏遮罩] 传统圆形瞄准镜（obj_weapon_extend_cl.lua 的 DrawRegularScope）：
+		-- zombiesurvival/scope 圆形镜面铺满屏幕短边 + 长边方向四向黑边 +
+		-- 中心留隙的黑色细十字——与原版完全一致。
+		-- PIP 重构期间曾被简化为"侧黑边 + 全屏红色细十字"，现恢复原样
+		self:DrawRegularScope()
 	else
-		-- 无自定义遮罩：默认黑边 + 细十字（接近旧版通用观感）
+		-- 元表扩展缺失时的极简兜底（不应触达）
 		local w, h = ScrW(), ScrH()
 		local size = math_min(w, h)
 		local cx, cy = w * 0.5, h * 0.5
@@ -1516,7 +1536,10 @@ hook.Add("PreRender", "ZSPipeline.PIPLensState", function()
 	-- 镜片开启态（含迟滞区间）持续渲染，避免收镜过程画面冻结
 	if not wep:IsPIPActive() and not wep.m_bPIPLensOn then return end
 
-	if ShouldRenderNow() then
+	-- [强制刷新] 镜片翻开瞬间绕过 fpslock 节流渲染一次，保证显示的 RT 必然是本帧新画面
+	local force = wep.m_bPIPForceRender == true
+	if ShouldRenderNow() or force then
+		wep.m_bPIPForceRender = nil
 		wep:RenderPIPPicture(GetCompositeAlpha(wep))
 	end
 end)

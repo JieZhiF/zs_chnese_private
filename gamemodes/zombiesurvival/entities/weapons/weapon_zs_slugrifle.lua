@@ -96,6 +96,7 @@ SWEP.MaxStock = 3 -- 商店最大库存量
 
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
+	Magnification = 1.15,
 	Pos = Vector(0, 0, 0),
 	Ang = Angle(0, -1, 0),
 }
@@ -126,10 +127,10 @@ end
 -- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
 SWEP.SniperRifle = true -- 标记为狙击步枪（启用狙击相关机制）
 SWEP.Scoped = true
+SWEP.IronsightsMultiplier = 0.25 --经典模式（zs_pipscope=0）完全瞄准的主视角倍率（原版数值）
 SWEP.PIPScope = true
 SWEP.ScopeMagnification = 4
 if CLIENT then -- 客户端专属设置
-	SWEP.IronsightsMultiplier = 0.25 -- 经典模式 FOV 缩放倍率（<1=放大；灵敏度由基座按此推导，勿直接当灵敏度参数）
 end
 
 -- ==== BulletCallback - 子弹命中回调：爆头额外伤害 ====

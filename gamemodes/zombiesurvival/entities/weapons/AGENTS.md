@@ -46,3 +46,4 @@ All SWEP code: human guns/melee/deployables, zombie attack weapons, and the base
 
 - `swep_construction_kit/` and `weapon_zs_basemelee/animations.lua` are the concentration zones for the project's forbidden style (`!`, `!=`, `&&`, `||`, `//` comments, `continue`). Legacy; don't propagate into new code.
 - `weapon_zs_base/cl_model.lua` and `weapon_zs_basemelee/animations.lua` carry in-file warnings about self-referencing tables vs the custom `table.Copy`; read those headers before editing.
+- **把开镜 FOV 配置当灵敏度参数，或在普通枪上使用旧字段 `SWEP.IronsightsMultiplier`**：主视角开镜缩放已迁移为 ARC9 形式——除法语义 `FOV ÷ Magnification`，声明位置为 `SWEP.IronSights.Magnification`（完整表）或平铺 `SWEP.ADSMagnification`（基座默认 1.15 ≈ 全开镜主视角仅收窄 13%），取值域 1.05~1.15；深倍率由 PIP 镜内画面承担。唯一例外：Scoped 狙击武器上的 `IronsightsMultiplier = 0.25` 是**经典模式（zs_pipscope=0）的深度声明**，配合全屏圆形遮罩复刻原版 ZS 观感（原版数值），合法且必须保留。鼠标灵敏度一律由基座 `AdjustMouseSensitivity` 按最终 FOV 目标自动推导，武器文件不需要任何灵敏度字段。
