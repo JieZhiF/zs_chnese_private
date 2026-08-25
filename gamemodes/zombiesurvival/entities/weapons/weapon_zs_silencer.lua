@@ -65,7 +65,11 @@ SWEP.WalkSpeed = SPEED_NORMAL -- 手持时正常移动速度
 
 SWEP.Tier = 3 -- 武器等级（3 级武器）
 
-SWEP.IronSightsPos = Vector(-7, 3, 2.5) -- 机瞄时视角位置
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7, 3, 2.5),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 附加武器修正：降低最大/最小扩散（比白板更精准）
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_MAX_SPREAD, -0.8125)

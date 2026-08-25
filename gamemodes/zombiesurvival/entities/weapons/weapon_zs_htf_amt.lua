@@ -207,8 +207,11 @@ sound.Add( {
 	pitch = 150,--{80,85},
 	sound = "weapons/aug/aug-1.wav"
 } )
-SWEP.IronSightsPos = Vector(-6.05, -6.532, 2.2)
-SWEP.IronSightsAng = Angle(0,0,0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-6.05, -6.532, 2.2),
+	Ang = Angle(0,0,0),
+}
 --[[
 SWEP.IronSightsPos_Rumor = Vector(-6.05, -6.532, 2.2)
 SWEP.IronSightsAng_Rumor = Angle(0, 0, 0)

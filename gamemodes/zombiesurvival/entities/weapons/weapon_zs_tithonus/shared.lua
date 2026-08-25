@@ -33,8 +33,11 @@ SWEP.ConeMin = 4.25
 
 SWEP.WalkSpeed = SPEED_SLOW
 
-SWEP.IronSightsPos = Vector(-4.65, 4, 0.25)
-SWEP.IronSightsAng = Angle(0, 0, 1)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-4.65, 4, 0.25),
+	Ang = Angle(0, 0, 1),
+}
 
 SWEP.Tier = 4
 

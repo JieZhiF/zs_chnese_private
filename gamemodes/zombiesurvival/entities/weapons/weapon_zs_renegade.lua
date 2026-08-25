@@ -92,8 +92,11 @@ SWEP.ConeMax = 6
 SWEP.ConeMin = 0
 SWEP.HeadshotMulti = 1.85
 SWEP.ReloadSpeed = 1.2
-SWEP.IronSightsPos = Vector(11, -9, -2.2)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(11, -9, -2.2),
+	Ang = Angle(0, 0, 0),
+}
 
 SWEP.WalkSpeed = SPEED_SLOWEST
 

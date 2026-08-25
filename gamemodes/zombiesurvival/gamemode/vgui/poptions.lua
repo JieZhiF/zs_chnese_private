@@ -143,6 +143,7 @@ function PANEL:PopulateOptionsData()
         }},
         { name = "Weapon", text = "武器设置", subCategories = {
             {name = "WeaponSlot", text = translate.Get("Category_WeaponSlot")},
+            {name = "ScopeDisplay", text = "瞄准镜显示"},
         }},
     }
 
@@ -294,8 +295,7 @@ function PANEL:PopulateOptionsData()
             -- 画中画（PIP）瞄准镜：质量模式与锁帧
             { type = "combobox", label = "Option_PIPScopeMode", choices = {
                 { text = translate.Get("Option_PIPClassic"), value = 0 },
-                { text = translate.Get("Option_PIPCheap"), value = 1 },
-                { text = translate.Get("Option_PIPExpensive"), value = 2 }
+                { text = translate.Get("Option_PIPExpensive"), value = 1 }
             }, onselect = function(index, value) RunConsoleCommand("zs_pipscope", value) end, getdefault = function() return GetConVarNumber("zs_pipscope") end },
             { type = "slider", label = "Option_PIPFPSLock", convar = "zs_pip_fpslock", min = 0, max = 120, decimals = 0 },
             { type = "checkbox", label = "Option_PreventBossPick", convar = "zs_nobosspick" },
@@ -352,6 +352,37 @@ function PANEL:PopulateOptionsData()
             { type = "slider", label = "Option_wepslot_misctools", convar = "zs_wepslot_misctools", min = 0, max = 6, decimals = 0 },
             { type = "slider", label = "Option_wepslot_explosives", convar = "zs_wepslot_explosives", min = 0, max = 6, decimals = 0 },
             { type = "slider", label = "Option_wepslot_food", convar = "zs_wepslot_food", min = 0, max = 6, decimals = 0 },
+        },
+        -- 瞄准镜显示：3D 镜内画面的分划板/颜色/亮度等（ConVar 定义在 weapon_zs_base/cl_scope.lua）
+        ScopeDisplay = {
+            { type = "combobox", label = "Option_ScopeReticle", choices = (function()
+                -- 程序化样式 + cl_scope.lua ZS_SCOPE_RETICLE_IMAGES 图片分划库合并
+                local t = {
+                    { text = "自动（跟随武器）", value = "auto" },
+                    { text = "Mil-Dot 密位点", value = "mil-dot" },
+                    { text = "细十字", value = "cross" },
+                    { text = "红点 + 外环", value = "dot" },
+                    { text = "雪佛兰箭头", value = "chevron" },
+                    { text = "德式三柱", value = "german" },
+                    { text = "T 字分划", value = "tdot" },
+                    { text = "ACOG 环形箭头", value = "acog" }
+                }
+                if istable(ZS_SCOPE_RETICLE_IMAGES) then
+                    for _, img in ipairs(ZS_SCOPE_RETICLE_IMAGES) do
+                        t[#t + 1] = { text = img.name, value = img.path }
+                    end
+                end
+                return t
+            end)(),
+            onselect = function(index, value) RunConsoleCommand("zs_scope_reticle", value) end,
+            getdefault = function() local c = GetConVar("zs_scope_reticle") return c and c:GetString() or "auto" end },
+            { type = "checkbox", label = "Option_ScopeRetCustom", convar = "zs_scope_retcustom" },
+            { type = "color", label = "Option_ScopeReticleColor", r = "zs_scope_retr", g = "zs_scope_retg", b = "zs_scope_retb", a = "zs_scope_reta" },
+            { type = "slider", label = "Option_ScopeBrightness", convar = "zs_scope_brightness", min = 0.2, max = 2, decimals = 2 },
+            { type = "checkbox", label = "Option_ScopeEyeCheck", convar = "zs_scope_eyecheck" },
+            { type = "checkbox", label = "Option_ScopeInfo", convar = "zs_scope_info" },
+            { type = "slider", label = "Option_ScopeParallax", convar = "zs_pip_parallax", min = 0, max = 2, decimals = 2 },
+            { type = "slider", label = "Option_ScopeShadow", convar = "zs_pip_shadow", min = 0, max = 2, decimals = 1 },
         },
         Fonts = fontOptions,
     }

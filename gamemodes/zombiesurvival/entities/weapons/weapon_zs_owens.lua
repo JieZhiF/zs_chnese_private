@@ -62,11 +62,11 @@ SWEP.ConeMin = 2.5
 -- 换弹速度倍率
 SWEP.ReloadSpeed = 1
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-5.401, 0, 2.4)
-
--- 机瞄角度
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5.401, 0, 2.4),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 强化：最大/最小扩散降低 + 射速提升
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_MAX_SPREAD, -0.46, 1)

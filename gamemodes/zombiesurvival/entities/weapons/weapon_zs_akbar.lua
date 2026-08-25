@@ -47,14 +47,10 @@ SWEP.WalkSpeed = SPEED_SLOW
 -- ViewModelFOV=开镜时视模型 FOV 平滑过渡目标
 
 SWEP.IronSights = {
-    --[[
 	Pos = Vector(-6.6, -12.57, 2.864),
     Ang = Angle(1.689, 0, 0	),
-	]]
-	Pos = Vector(0,0,0),
-	Ang = Angle(1.689, 0, 0),
     Magnification = 1.15,
-    --ViewModelFOV = 55,
+    ViewModelFOV = 55,
 }
 SWEP.Tier = 3
 

@@ -390,14 +390,13 @@ function SWEP:SpawnMuzzleFX()
 		return
 	end
 
-	-- [客户端] 第三人称视角下视模型已隐藏，交由上面的服务器广播负责
+	-- [客户端·第一人称] 对齐 ARC9 原版（arc9_muzzleeffect）：本视角一律把 PCF
+	-- 挂接到视模型枪口附件（PATTACH_POINT_FOLLOW 跟随枪口），腰射/开镜全程同源。
+	-- 曾按开镜进度 >0.5 改走服务器广播的世界坐标兜底，但世界模型锚点与第一人称
+	-- 视模型枪口天然偏离（开镜 FOV 缩放下更明显），正是"开镜开枪火焰错位"的
+	-- 根源——ARC9 原版并无该分支。第三人称视角下视模型已隐藏，仍交由上面的
+	-- 服务器广播负责
 	if owner:ShouldDrawLocalPlayer() then return end
-
-	-- [近平面规避] 开镜过程中枪身向眼位收拢，视模型枪口点越过主视角
-	-- 近裁剪面后 PCF 粒子整体不可见——此时同样交由服务器广播的世界模型
-	-- 特效呈现（其锚点恒在相机外部），避免"开镜开火无特效"
-	local delta = self.GetIronsightDelta and (self:GetIronsightDelta() or 0) or 0
-	if delta > 0.5 then return end
 
 	local vm = owner:GetViewModel()
 	if not IsValid(vm) then return end
@@ -408,12 +407,19 @@ function SWEP:SpawnMuzzleFX()
 	ed:SetEntity(vm)
 	ed:SetScale(1)
 
-	-- 模型连一个附件都没有的极端情况：退化为位置直传（曳光锚点同源）
+	-- 模型连一个附件都没有的极端情况：退化为位置直传（曳光锚点同源；
+	-- 兜底点贴近眼位时沿视线前推——与服务器广播分支的相机规避同款，
+	-- 防止特效落进主视角近裁剪面整体不可见）
 	if not self.m_fxMuzzleAtt or self.m_fxMuzzleAtt <= 0
 		or not vm:GetAttachment(self.m_fxMuzzleAtt) then
 		local pos, ang = self:GetTracerOrigin()
-		ed:SetOrigin(pos or owner:GetShootPos())
-		ed:SetAngles(ang or owner:EyeAngles())
+		pos = pos or owner:GetShootPos()
+		ang = ang or owner:EyeAngles()
+		if pos:DistToSqr(owner:GetShootPos()) < 100 then
+			pos = pos + ang:Forward() * 24
+		end
+		ed:SetOrigin(pos)
+		ed:SetAngles(ang)
 	else
 		ed:SetAttachment(self.m_fxMuzzleAtt)
 	end

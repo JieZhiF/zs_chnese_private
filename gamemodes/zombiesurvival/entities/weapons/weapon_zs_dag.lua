@@ -81,8 +81,11 @@ function SWEP:SendWeaponAnimation()
 end
 
 
-SWEP.IronSightsPos 			= Vector(-0.76, -9.68, 2.4)
-SWEP.IronSightsAng 			= Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-0.76, -9.68, 2.4),
+	Ang = Angle(0, 0, 0),
+}
 
 
 --[[

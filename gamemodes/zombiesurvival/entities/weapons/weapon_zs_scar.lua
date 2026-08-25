@@ -140,8 +140,11 @@ SWEP.MaxStock = 2
 -- 开火动画播放速度
 SWEP.FireAnimSpeed = 0.65
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-7.361, 0, 0.62)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7.361, 0, 0.62),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 武器修饰符：弹匣容量+3
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_CLIP_SIZE, 3)

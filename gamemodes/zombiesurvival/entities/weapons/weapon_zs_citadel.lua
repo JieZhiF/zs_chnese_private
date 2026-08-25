@@ -61,6 +61,9 @@ SWEP.HUD3DPos = Vector(1.4, -1.3, 5)
 SWEP.HUD3DAng = Angle(180, 0, -15)
 SWEP.HUD3DScale = 0.015
 SWEP.TracerName = "AR2Tracer"
-SWEP.IronSightsPos = Vector(-5.88, -13.76, 1.8)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5.88, -13.76, 1.8),
+	Ang = Angle(0, 0, 0),
+}
 

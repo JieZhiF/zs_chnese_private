@@ -15,7 +15,8 @@ if CLIENT then
 	-- 武器栏位（步枪栏）
 	SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotRifles")
 	-- 武器类型与栏位分组（步枪）
-SWEP.WeaponType = "rifle"	SWEP.SlotGroup = WEPSELECT_RIFLE
+	SWEP.WeaponType = "rifle"	
+	SWEP.SlotGroup = WEPSELECT_RIFLE
 	-- 第一人称视角设置
 	SWEP.ViewModelFlip = false
 	SWEP.ViewModelFOV = 60
@@ -48,8 +49,9 @@ SWEP.HoldType = "ar2"
 -- 第一人称/世界模型（AWP 狙击枪）
 SWEP.ViewModel = "models/weapons/cstrike/c_snip_awp.mdl"
 SWEP.VElements = {
-	["pip_lens"] = { type = "Quad", bone = "v_weapon.awm_parent", rel = "", pos = Vector(0, -6.545, 1.723), angle = Angle(0, 0, 0), size = 0.05}
+	["pip_lens"] = { type = "Quad", bone = "v_weapon.awm_parent", rel = "", pos = Vector(0.0285, -6.51, 1.72), angle = Angle(0, 0, 0), size = 0.05, pip_aspect = 1.1,pip_chamfer = { tl = 0.000, tr = 0.000, br = 0.000, bl = 0.000 }, draw_func = nil}
 }
+
 SWEP.Scoped = true
 SWEP.PIPScope = true
 -- Unity Quad 方案：VElements 里的 pip_lens 面片开镜时显示 RT 放大画面（draw_func 基座自动注入）
@@ -83,9 +85,11 @@ SWEP.ReloadGesture = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN
 SWEP.ConeMax = 5.75
 SWEP.ConeMin = 0
 
--- 机瞄位置与角度
-SWEP.IronSightsPos = Vector(-7.435, -9, 2.326)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7.435, -8.89, 2.326),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 持有时的移动速度（较慢）
 SWEP.WalkSpeed = SPEED_SLOWER
@@ -213,8 +217,3 @@ end
 SWEP.Scoped = true
 SWEP.PIPScope = true
 SWEP.ScopeMagnification = 4
-
-if CLIENT then
-	-- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
-	SWEP.IronsightsMultiplier = 0.25
-end

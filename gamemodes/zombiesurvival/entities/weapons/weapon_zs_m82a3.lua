@@ -133,9 +133,11 @@ SWEP.ReloadSpeed = 0.85
 
 -- 标记为狙击步枪
 SWEP.SniperRifle = true
--- 机瞄（开镜）时的位置偏移与角度
-SWEP.IronSightsPos = Vector(-7.364, -9.007, 1.419)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7.364, -9.007, 1.419),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 移动速度：最缓慢（重型狙击枪）
 SWEP.WalkSpeed = SPEED_SLOWEST

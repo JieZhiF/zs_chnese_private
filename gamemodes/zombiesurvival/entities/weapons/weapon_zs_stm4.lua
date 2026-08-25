@@ -41,7 +41,6 @@ function SWEP:FinishReload()
 end
 SWEP.Primary.Automatic = true
 
-SWEP.IronSightsPos = Vector(-3, 0, 2)
 SWEP.Primary.Sound = Sound("weapons/m4a1/m4a1-1.wav")  -- CSS消音M4开火音效
 SWEP.Primary.DefaultClip = 240
 
@@ -56,8 +55,11 @@ SWEP.ShowViewModel = true
 SWEP.ShowWorldModel = true
 SWEP.UseHands = true
 SWEP.ViewModelBoneMods = {}
-SWEP.IronSightsPos = Vector(0, 0, 0)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(0, 0, 0),
+	Ang = Angle(0, 0, 0),
+}
 SWEP.VElements = {
 }
  

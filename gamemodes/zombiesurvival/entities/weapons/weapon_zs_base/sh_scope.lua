@@ -17,15 +17,20 @@ local CurTime = CurTime
 SWEP.Scoped = false             -- 狙击镜武器总开关：true 走完整开镜流程（深 FOV 缩放/经典遮罩回退/PIP 资格）
 SWEP.ScopeStableTime = 0.25     -- 开镜后到达"完全瞄准"的稳定秒数（旧版各武器硬编码 0.25）
 SWEP.PIPScope = false           -- 允许画中画渲染：真实放大画面取代糊脸 FOV 深缩放（客户端 zs_pipscope 可调）
-SWEP.ScopeLensElement = nil     -- [3D 镜片] VElements 里作为镜片的元素名（Model 类型）；
-                                -- 开镜时该元素材质自动切换为 RT 画面，收镜还原（cl_scope 状态机）
+SWEP.ScopeLensElement = nil     -- [3D 镜片] VElements 里作为镜片的元素名（推荐 SCK 手摆的 Quad 面片，
+                                -- 兼容 Model 玻璃网格的材质交换路径）；开镜显示 RT 放大画面（cl_scope 状态机）
 SWEP.ScopeMagnification = 4     -- PIP 光学倍率（镜内画面相对主视角的放大倍数），鼠标灵敏度按此匹配
 SWEP.ScopeMagMin = 2            -- 滚轮变焦下限（倍率）
 SWEP.ScopeMagMax = 8            -- 滚轮变焦上限（倍率），nil 时默认 max(基准×2, 8)
 SWEP.PIPMainFOVMult = 0.75      -- PIP 完全瞄准时主视角保留的 FOV 倍率（轻微变焦，保持周边视野感知）
-SWEP.ScopeReticle = "mil-dot"   -- 分划板样式："mil-dot" | "cross" | 材质路径 | 自绘函数 function(wep, cx, cy, dia, alpha)
+SWEP.ScopeReticle = "mil-dot"   -- 分划板样式："mil-dot" | "cross" | "dot" | "chevron" | "german" |
+                                -- "tdot" | "acog" | 材质路径 | 自绘函数 function(wep, cx, cy, dia, alpha)
 SWEP.ScopeReticleColor = nil    -- 分划板颜色，nil 时使用默认暗红
 SWEP.ScopeLegacyStyle = nil     -- 经典回退遮罩（zs_pipscope=0 或非 PIP 武器）："futuristic" | function(wep) | nil
+
+-- [3D 镜片接入] 推荐用 SCK 在 VElements 里手摆 Quad 镜片面片（hunter/m82a3 方案），
+-- 再声明 ScopeLensElement 指向它；未配置时基座按 ViewModel 匹配内置预设自动合成
+-- （c_snip_awp 为 hunter 实测值，g3sg1/sg550/crossbow 为种子值），见 cl_scope.lua。
 
 -- ==== IsScoped - 是否已完全开镜（基座统一实现：机瞄开启且稳定计时结束） ====
 -- 语义与旧版各武器副本完全一致：GetIronsights() 且 fIronTime + 0.25 <= CurTime()

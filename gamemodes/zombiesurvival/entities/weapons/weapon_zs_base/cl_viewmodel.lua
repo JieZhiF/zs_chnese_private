@@ -232,6 +232,23 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
 	end
 	eased = math.Clamp(eased, 0, 1)
 
+	-- [开镜视模型 FOV · 平滑过渡] IronSights.ViewModelFOV 声明时生效：按开镜
+	-- 缓动进度在武器基础 FOV 与声明目标间插值，写回引擎原生每帧读取的
+	-- SWEP.ViewModelFOV（自绘投影管线已移除，动态写回是该字段唯一可行接法）。
+	-- 基础值只缓存一次，防止把上帧插值结果当基准造成逐帧漂移；
+	-- 未声明该字段的武器完全不受影响
+	local iron_fov = istable(self.IronSights) and tonumber(self.IronSights.ViewModelFOV) or nil
+	if iron_fov and iron_fov > 0 then
+		if not self.m_nBaseVMFOV then
+			self.m_nBaseVMFOV = self.ViewModelFOV or 60
+		end
+		self.ViewModelFOV = Lerp(eased, self.m_nBaseVMFOV, iron_fov)
+	elseif self.m_nBaseVMFOV then
+		-- 运行时声明被移除（热重载/调参）时兜底还原基础值
+		self.ViewModelFOV = self.m_nBaseVMFOV
+		self.m_nBaseVMFOV = nil
+	end
+
 	local iron_pos, iron_ang = self:GetIronSightOffset()
 	if not isvector(iron_pos) then iron_pos = vector_origin end
 	if not (isvector(iron_ang) or isangle(iron_ang)) then iron_ang = angle_zero end
@@ -331,7 +348,7 @@ function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
     end
 
     -- [视模型渲染] 引擎原生路径（自定义投影管线已按需求移除；
-    -- IronSights.ViewModelFOV 字段保留接受但暂无消费者）
+    -- 开镜视模型 FOV 走 SWEP.ViewModelFOV 动态写回，见上方第 2 步）
 
     -- 9. [开镜枪模处理] 经典模式复刻旧版"完全开镜隐藏枪模"行为（远移出视野）；
     --    PIP 生效时保持 ARC9 式贴瞄姿态，镜内画面走镜片子材质，无需藏枪

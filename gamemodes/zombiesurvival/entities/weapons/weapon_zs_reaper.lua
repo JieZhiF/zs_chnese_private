@@ -183,10 +183,11 @@ sound.Add( {
 	sound = "weapons/357_fire2.wav"
 } )
 
---SWEP.IronSightsPos = Vector(-8.671, -13.983, 2.88)
---SWEP.IronSightsAng = Angle(1.399, -0.101, -1.333)
-SWEP.IronSightsPos = Vector(-8.641, -14, 2.4)
-SWEP.IronSightsAng = Angle(0, 0, -2.429)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-8.641, -14, 2.4),
+	Ang = Angle(0, 0, -2.429),
+}
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_CLIP_SIZE, 2)
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_FIRE_DELAY, -0.004)
 function SWEP:OnZombieKilled()

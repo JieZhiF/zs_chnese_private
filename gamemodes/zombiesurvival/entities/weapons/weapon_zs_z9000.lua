@@ -67,9 +67,11 @@ SWEP.Primary.DefaultClip = 50
 SWEP.ConeMax = 2
 SWEP.ConeMin = 1.5
 
--- 机瞄时视角偏移位置与角度
-SWEP.IronSightsPos = Vector(-5.95, 3, 2.75)
-SWEP.IronSightsAng = Angle(-0.15, -1, 2)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5.95, 3, 2.75),
+	Ang = Angle(-0.15, -1, 2),
+}
 
 -- 子弹曳光效果类型
 SWEP.TracerName = "AR2Tracer"

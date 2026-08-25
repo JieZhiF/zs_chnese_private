@@ -118,8 +118,11 @@ SWEP.Tier = 2
 -- 得分倍率（脉冲武器加成）
 SWEP.PointsMultiplier = GAMEMODE.PulsePointsMultiplier
 
--- 机瞄时的准星偏移
-SWEP.IronSightsPos = Vector(-6.425, 5, 1.02)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-6.425, 5, 1.02),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 附加改装：最大/最小扩散降低、弹匣容量 +1
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_MAX_SPREAD, -0.5375, 1)

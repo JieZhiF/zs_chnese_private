@@ -390,7 +390,19 @@ local function GetVModelsText()
 			str = str..", ignorez = "..tostring(v.ignorez).."}"
 		elseif (v.type == "Quad") then
 			str = str.."\t[\""..k.."\"] = { type = \"Quad\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)..", angle = "..PrintAngle( v.angle )
-			str = str..", size = "..v.size..", draw_func = nil}"
+			str = str..", size = "..v.size
+			-- ZS PIP 镜片参数：仅在有值且非默认时输出，保持导出干净
+			if v.pip_shape ~= nil and v.pip_shape ~= "circle" then str = str..", pip_shape = \""..tostring(v.pip_shape).."\"" end
+			if v.pip_radius ~= nil and tonumber(v.pip_radius) ~= 1 then str = str..", pip_radius = "..string.format("%.3f", v.pip_radius) end
+			if v.pip_aspect ~= nil and tonumber(v.pip_aspect) ~= 1 then str = str..", pip_aspect = "..string.format("%.3f", v.pip_aspect) end
+			if istable(v.pip_chamfer) then
+				str = str..string.format(", pip_chamfer = { tl = %s, tr = %s, br = %s, bl = %s }",
+					string.format("%.3f", tonumber(v.pip_chamfer.tl) or 0),
+					string.format("%.3f", tonumber(v.pip_chamfer.tr) or 0),
+					string.format("%.3f", tonumber(v.pip_chamfer.br) or 0),
+					string.format("%.3f", tonumber(v.pip_chamfer.bl) or 0))
+			end
+			str = str..", draw_func = nil}"
 		elseif (v.type == "ClipPlane") then
 			str = str.."\t[\""..k.."\"] = { type = \"ClipPlane\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)..", angle = "..PrintAngle( v.angle )
 			str = str.."}"
@@ -437,7 +449,19 @@ local function GetWModelsText()
 			str = str..", ignorez = "..tostring(v.ignorez).."}"
 		elseif (v.type == "Quad") then
 			str = str.."\t[\""..k.."\"] = { type = \"Quad\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)..", angle = "..PrintAngle( v.angle )
-			str = str..", size = "..v.size..", draw_func = nil}"
+			str = str..", size = "..v.size
+			-- ZS PIP 镜片参数：仅在有值且非默认时输出，保持导出干净
+			if v.pip_shape ~= nil and v.pip_shape ~= "circle" then str = str..", pip_shape = \""..tostring(v.pip_shape).."\"" end
+			if v.pip_radius ~= nil and tonumber(v.pip_radius) ~= 1 then str = str..", pip_radius = "..string.format("%.3f", v.pip_radius) end
+			if v.pip_aspect ~= nil and tonumber(v.pip_aspect) ~= 1 then str = str..", pip_aspect = "..string.format("%.3f", v.pip_aspect) end
+			if istable(v.pip_chamfer) then
+				str = str..string.format(", pip_chamfer = { tl = %s, tr = %s, br = %s, bl = %s }",
+					string.format("%.3f", tonumber(v.pip_chamfer.tl) or 0),
+					string.format("%.3f", tonumber(v.pip_chamfer.tr) or 0),
+					string.format("%.3f", tonumber(v.pip_chamfer.br) or 0),
+					string.format("%.3f", tonumber(v.pip_chamfer.bl) or 0))
+			end
+			str = str..", draw_func = nil}"
 		elseif (v.type == "ClipPlane") then
 			str = str.."\t[\""..k.."\"] = { type = \"ClipPlane\", bone = \""..v.bone.."\", rel = \""..v.rel.."\", pos = "..PrintVec(v.pos)..", angle = "..PrintAngle( v.angle )
 			str = str.."}"

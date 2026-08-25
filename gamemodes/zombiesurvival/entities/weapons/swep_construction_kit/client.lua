@@ -961,6 +961,28 @@ function SWEP:ViewModelDrawn()
 				surface.SetDrawColor( 0, 255, 0, 230 )
 				surface.DrawLine( 0, 0, 0, 8 )
 				surface.DrawLine( 0, 0, 8, 0 )
+
+				-- [ZS PIP 镜片预览] 元素带 pip_* 字段时按真实裁剪形状叠加显示：
+				-- 青色区域 = 开镜后的实际镜内画面范围（含半径/切角/长宽比），
+				-- 与 ZSPIPLensOutline 同源，编辑器所见即游戏内所得
+				if ZSPIPLensOutline and (v.pip_shape or v.pip_radius or v.pip_aspect or v.pip_chamfer or v.pip_poly) then
+					local outline = ZSPIPLensOutline( v )
+					local pts = {}
+					for i = 1, #outline do
+						pts[i] = { x = outline[i].x * 20, y = outline[i].y * 20 }
+					end
+
+					draw.NoTexture()
+					surface.SetDrawColor( 0, 190, 255, 70 )
+					surface.DrawPoly( pts )
+
+					surface.SetDrawColor( 0, 230, 255, 240 )
+					for i = 1, #pts do
+						local a = pts[i]
+						local b = pts[i % #pts + 1]
+						surface.DrawLine( a.x, a.y, b.x, b.y )
+					end
+				end
 			cam.End3D2D()
 		elseif (v.type == "ClipPlane") then
 
@@ -1228,6 +1250,28 @@ function SWEP:DrawWorldModel()
 				surface.SetDrawColor( 0, 255, 0, 230 )
 				surface.DrawLine( 0, 0, 0, 8 )
 				surface.DrawLine( 0, 0, 8, 0 )
+
+				-- [ZS PIP 镜片预览] 元素带 pip_* 字段时按真实裁剪形状叠加显示：
+				-- 青色区域 = 开镜后的实际镜内画面范围（含半径/切角/长宽比），
+				-- 与 ZSPIPLensOutline 同源，编辑器所见即游戏内所得
+				if ZSPIPLensOutline and (v.pip_shape or v.pip_radius or v.pip_aspect or v.pip_chamfer or v.pip_poly) then
+					local outline = ZSPIPLensOutline( v )
+					local pts = {}
+					for i = 1, #outline do
+						pts[i] = { x = outline[i].x * 20, y = outline[i].y * 20 }
+					end
+
+					draw.NoTexture()
+					surface.SetDrawColor( 0, 190, 255, 70 )
+					surface.DrawPoly( pts )
+
+					surface.SetDrawColor( 0, 230, 255, 240 )
+					for i = 1, #pts do
+						local a = pts[i]
+						local b = pts[i % #pts + 1]
+						surface.DrawLine( a.x, a.y, b.x, b.y )
+					end
+				end
 			cam.End3D2D()
 		elseif (v.type == "ClipPlane") then
 

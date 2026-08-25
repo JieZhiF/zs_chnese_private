@@ -17,19 +17,16 @@ function EFFECT:Init(data)
 
 	local att = data:GetAttachment() or 0
 
-	-- [本地第一人称去重 · 开镜感知] 腰射时视模型特效已覆盖（对齐更精准），
-	-- 拦下广播份防双焰；开镜（进度 ≥0.5）时视模型份被近平面裁剪，放行广播份兜底。
-	-- 广播携带实体仅作归属标识，位置走 Origin 坐标（不依赖世界模型骨骼状态）
+	-- [本地第一人称去重] 本视角的视模型特效已由武器端直接挂接（对齐最准，
+	-- 开镜全程不错位），广播份一律拦下防双焰；广播份只服务于远端观察者与
+	-- 本地第三人称视角。广播携带实体仅作归属标识，位置走 Origin 坐标
+	-- （不依赖世界模型骨骼状态）
 	if CLIENT and IsValid(ent) then
 		local owner = ent.GetOwner and ent:GetOwner()
 		if IsValid(owner) and owner == LocalPlayer()
 			and ent ~= owner:GetViewModel()
 			and not owner:ShouldDrawLocalPlayer() then
-			local wep = owner:GetActiveWeapon()
-			local delta = IsValid(wep) and wep.GetIronsightDelta and wep:GetIronsightDelta() or 0
-			if delta < 0.5 then
-				self:Remove() return
-			end
+			self:Remove() return
 		end
 	end
 

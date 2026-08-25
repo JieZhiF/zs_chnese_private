@@ -69,9 +69,11 @@ SWEP.ConeMin = 2
 -- 弹射伤害倍率（弹射弹继承伤害的比例）
 SWEP.BounceMulti = 1.5
 
--- 机瞄时视图模型位置与角度偏移
-SWEP.IronSightsPos = Vector(-4.65, 4, 0.25)
-SWEP.IronSightsAng = Angle(0, 0, 1)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-4.65, 4, 0.25),
+	Ang = Angle(0, 0, 1),
+}
 
 -- 附加武器强化修饰符：减小最大/最小扩散、缩减射速间隔（仅作用于第 1 强化分支）
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_MAX_SPREAD, -0.7, 1)

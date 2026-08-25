@@ -48,8 +48,11 @@ SWEP.ConeMax = 3.75
 SWEP.ConeMin = 2
 SWEP.BounceMulti = 1.5
 
-SWEP.IronSightsPos = Vector(-4.65, 4, 0.25)
-SWEP.IronSightsAng = Angle(0, 0, 1)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-4.65, 4, 0.25),
+	Ang = Angle(0, 0, 1),
+}
 
 SWEP.Knockback = 96
 SWEP.Recoil = 0

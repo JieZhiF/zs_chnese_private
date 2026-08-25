@@ -50,8 +50,11 @@ SWEP.WeaponType = "pistol"
 		["novacolt++++++"] = { type = "Model", model = "models/props_combine/breenlight.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "novacolt", pos = Vector(0, 4.524, 4.07), angle = Angle(113.376, -90, 0), size = Vector(0.451, 0.298, 0.365), color = Color(148, 152, 183, 255), surpresslightning = false, material = "models/props_c17/clockwood01", skin = 0, bodygroup = {} }
 	}
 
-	-- 机瞄时的准星偏移
-	SWEP.IronSightsPos = Vector(-6.321, 0, -0.561)
+	-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+	SWEP.IronSights = {
+		Pos = Vector(-6.321, 0, -0.561),
+		Ang = Angle(0, 0, 0),
+	}
 end
 
 -- 继承武器基础类

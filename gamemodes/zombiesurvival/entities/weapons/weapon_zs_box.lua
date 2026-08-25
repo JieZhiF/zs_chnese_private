@@ -31,7 +31,11 @@ SWEP.Primary.Ammo = "none"
 SWEP.ConeMax = 0
 SWEP.ConeMin = 0
 SWEP.WalkSpeed = SPEED_SLOW
-SWEP.IronSightsPos = Vector(-6.6, 20, 3.1)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-6.6, 20, 3.1),
+	Ang = Angle(0, 0, 0),
+}
 --[[
 normal	  = 普通
 advanced  = 高级

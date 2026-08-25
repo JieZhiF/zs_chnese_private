@@ -49,7 +49,8 @@ end
 --                      Magnification = 1.15, ViewModelFOV = 55 }
 --表优先、旧字段（IronSightsPos/Ang/IronsightsMultiplier）逐项回退：
 --Pos/Ang 经 GetIronSightOffset 统一出口；Magnification 在 GetAimFOVTarget 折算。
---ViewModelFOV 字段接受但暂无消费者（自绘管线已按需求移除，视模型走引擎原生渲染）。
+--ViewModelFOV 由 CalcViewModelView 按开镜进度平滑插值写回 SWEP.ViewModelFOV
+--（引擎原生消费，见 cl_viewmodel 第 2 步）；未声明则视模型 FOV 全程不变。
 
 function SWEP:GetIronSightOffset()
 	local t = self.IronSights

@@ -67,8 +67,11 @@ SWEP.HeadshotMulti = 2
 -- 武器等级（Tier 2）
 SWEP.Tier = 2
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-5.95, 0, 2.5)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5.95, 0, 2.5),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 强化词条：换弹速度 +0.1 / 爆头倍率 +0.07
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_RELOAD_SPEED, 0.1, 1)

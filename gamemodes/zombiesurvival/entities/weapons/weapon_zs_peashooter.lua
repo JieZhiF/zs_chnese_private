@@ -130,8 +130,11 @@ SWEP.IronSightsAng = Angle(0.094, -0.08, -0.737)
 SWEP.IronSightsPos_Rumor = Vector(-6.08, -6.532, 2.2)
 SWEP.IronSightsAng_Rumor = Angle(0, 0, 0)
 ]]
-SWEP.IronSightsPos = Vector(-6.08, -4, 2.2)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-6.08, -4, 2.2),
+	Ang = Angle(0, 0, 0),
+}
 SWEP.ViewModelBoneMods = {
 	["v_weapon.p228_Parent"] = { scale = Vector(0.01, 0.01, 0.01), pos = Vector(0, 0, 0), angle = Angle(0, 0, 0) },
 	["ValveBiped.Bip01_L_Clavicle"] = { scale = Vector(1, 1, 1), pos = Vector(0, 0, 0), angle = Angle(0, 0, 0) }

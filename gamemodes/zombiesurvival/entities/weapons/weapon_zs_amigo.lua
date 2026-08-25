@@ -68,9 +68,11 @@ SWEP.WalkSpeed = SPEED_SLOW
 -- 武器等级
 SWEP.Tier = 2
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-5, 1, 3)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5, 1, 3),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 强化：射速提升 + 爆头倍率提升
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_FIRE_DELAY, -0.01, 1)

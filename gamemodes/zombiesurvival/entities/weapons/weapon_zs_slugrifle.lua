@@ -94,8 +94,11 @@ SWEP.ConeMin = 0.25 -- 最小扩散（开镜后极精准）
 SWEP.Tier = 4 -- 武器等级（4 级武器）
 SWEP.MaxStock = 3 -- 商店最大库存量
 
-SWEP.IronSightsPos = Vector(0, 0, 0) -- 机瞄视角位置
-SWEP.IronSightsAng = Angle(0, -1, 0) -- 机瞄视角角度
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(0, 0, 0),
+	Ang = Angle(0, -1, 0),
+}
 
 SWEP.WalkSpeed = SPEED_SLOWER -- 手持时移动速度（较慢）
 

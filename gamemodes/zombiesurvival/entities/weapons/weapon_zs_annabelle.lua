@@ -16,9 +16,11 @@ SWEP.Description = ""..translate.Get("weapon_zs_annabelle_description")
 if CLIENT then -- 客户端专属设置
 	SWEP.ViewModelFlip = false -- 不翻转第一人称模型
 
-	-- 机瞄视角位置与角度
-	SWEP.IronSightsPos = Vector(-8.8, 10, 4.32)
-	SWEP.IronSightsAng = Angle(1.4, 0.1, 5)
+	-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+	SWEP.IronSights = {
+		Pos = Vector(-8.8, 10, 4.32),
+		Ang = Angle(1.4, 0.1, 5),
+	}
 
 	-- HUD 3D 武器展示图：绑定骨骼与位置/角度/缩放
 	SWEP.HUD3DBone = "ValveBiped.Gun"

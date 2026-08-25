@@ -128,8 +128,11 @@ SWEP.TracerName = "tracer_htfov"
 SWEP.Tier = 4
 SWEP.MaxStock = 3
 SWEP.StandOffset = -1
-SWEP.IronSightsPos = Vector(-7.02, -5, 1.8)
-SWEP.IronSightsAng = Angle(0.35, -3.18, -2.2	)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7.02, -5, 1.8),
+	Ang = Angle(0.35, -3.18, -2.2),
+}
 SWEP.BulletCallback = function(attacker, tr, dmginfo)
 	local ent = tr.Entity
 	if SERVER and ent:IsValidLivingZombie() then

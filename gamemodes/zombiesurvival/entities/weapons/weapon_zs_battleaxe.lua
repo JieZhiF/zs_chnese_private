@@ -50,8 +50,11 @@ SWEP.Primary.Ammo = "pistol"
 -- 按游戏模式规则初始化默认弹匣
 GAMEMODE:SetupDefaultClip(SWEP.Primary)
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-5.9, 12, 2.3)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5.9, 12, 2.3),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 武器扩散（最大/最小）
 SWEP.ConeMax = 2.5

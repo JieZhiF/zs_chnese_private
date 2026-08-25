@@ -32,9 +32,6 @@ SWEP.WeaponType = "pistol"
 	SWEP.HUD3DPos = Vector(-1, 0, 1)
 	SWEP.HUD3DAng = Angle(0, 0, 0)
 	SWEP.HUD3DScale = 0.015
-
-	-- 机瞄（开镜）时的位置偏移
-	SWEP.IronSightsPos = Vector(-6.35, 5, 1.7)
 end
 
 -- 继承的武器基类
@@ -69,9 +66,11 @@ SWEP.Primary.Ammo = "pistol"
 -- 按幸存模式规则计算初始备弹
 GAMEMODE:SetupDefaultClip(SWEP.Primary)
 
--- 机瞄（开镜）时的角度与位置偏移
-SWEP.IronSightsAng = Angle(-1, -1, 0)
-SWEP.IronSightsPos = Vector(-3, 4, 3)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-3, 4, 3),
+	Ang = Angle(-1, -1, 0),
+}
 
 
 -- 最大/最小准星扩散（移动中/静止时）

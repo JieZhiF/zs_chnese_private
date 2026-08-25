@@ -78,8 +78,11 @@ SWEP.ConeMin = 3
 -- 武器等级 2
 SWEP.Tier = 2
 
--- 机瞄位置偏移
-SWEP.IronSightsPos = Vector(-5.75, 10, 2.7)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-5.75, 10, 2.7),
+	Ang = Angle(0, 0, 0),
+}
 -- 第一人称模型骨骼调整表（保持默认姿态）
 SWEP.ViewModelBoneMods={
     ["ValveBiped.Bip01_L_UpperArm"]={scale=Vector(1,1,1),pos=Vector(0,0,0),angle=Angle(0,0,0)},

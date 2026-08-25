@@ -27,8 +27,11 @@ SWEP.WeaponType = "pistol"
 	SWEP.HUD3DAng = Angle(0, 0, 0)
 	SWEP.HUD3DScale = 0.015
 
-	-- 机瞄位置
-	SWEP.IronSightsPos = Vector(-6.36, 5, 1.6)
+	-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+	SWEP.IronSights = {
+		Pos = Vector(-6.36, 5, 1.6),
+		Ang = Angle(0, 0, 0),
+	}
 
 	-- 视图模型拼装件（含激光指示器光点）
 	SWEP.VElements = {

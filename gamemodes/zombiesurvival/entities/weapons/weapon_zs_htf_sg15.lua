@@ -116,8 +116,11 @@ SWEP.WElements = {
 	["stvol++++"] = { type = "Model", model = "models/props_c17/oildrum001.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "stvol", pos = Vector(0, -5.979, 19.54), angle = Angle(0, 0, 108.749), size = Vector(0.063, 0.076, 0.09), color = Color(103, 108, 106, 255), surpresslightning = false, material = "rubber", skin = 0, bodygroup = {} },
 	["stvol+++++++++++"] = { type = "Model", model = "models/props_c17/oildrum001.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "stvol", pos = Vector(0, -2.81, 18.017), angle = Angle(0, 0, 90.734), size = Vector(0.052, 0.116, 0.035), color = Color(111, 113, 111, 255), surpresslightning = false, material = "rubber", skin = 0, bodygroup = {} }
 }
-SWEP.IronSightsPos = Vector(-6.166, -3.32, 1.12)
-SWEP.IronSightsAng = Angle(0.043, -0.04, -0.894)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-6.166, -3.32, 1.12),
+	Ang = Angle(0.043, -0.04, -0.894),
+}
 
 SWEP.Primary.Sound = Sound("Weapon_Shotpupoksaki.SingleHeavy") 
 SWEP.Primary.Damage = 9.5

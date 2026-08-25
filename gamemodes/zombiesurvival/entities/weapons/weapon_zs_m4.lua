@@ -340,8 +340,11 @@ SWEP.InspectAng = Angle(24.42, 37.2, 6.224)
 SWEP.RunSightsPos = Vector(-4.415, -6.211, -6.408)
 SWEP.RunSightsAng = Angle(31.179, 1.087, -13.81)
 ]]
-SWEP.IronSightsPos = Vector(-7.63, -2, 1.5)
-SWEP.IronSightsAng = Angle( 0, -1.5, -1.23)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7.63, -2, 1.5),
+	Ang = Angle( 0, -1.5, -1.23),
+}
 
 sound.Add( {
 	name = "Weapon_Pyatnadtsat.SingleHeavy",

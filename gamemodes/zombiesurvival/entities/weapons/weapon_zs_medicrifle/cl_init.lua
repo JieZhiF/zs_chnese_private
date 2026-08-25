@@ -18,7 +18,6 @@ SWEP.ShowViewModel = true
 SWEP.ShowWorldModel = true
 -- 狙击枪标记：启用机瞄
 SWEP.SniperRifle = true
--- 机瞄时鼠标灵敏度倍率
 SWEP.IronsightsMultiplier = 0.25
 -- HUD 3D 预览的骨骼/位置/角度/缩放
 SWEP.HUD3DBone = "v_weapon.scout_Parent"
@@ -26,9 +25,11 @@ SWEP.HUD3DPos = Vector(-1.25, -2.75, -6)
 SWEP.HUD3DAng = Angle(0, 0, 0)
 SWEP.HUD3DScale = 0.017
 
--- 机瞄时视图模型位置与角度偏移
-SWEP.IronSightsPos = Vector(5.015, -8, 2.52)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(5.015, -8, 2.52),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 第一人称视图模型的 SCK 自定义部件（蓝色科技风格医疗步枪拼装）
 SWEP.VElements = {

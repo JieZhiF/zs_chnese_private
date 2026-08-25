@@ -76,8 +76,11 @@ SWEP.ReloadGesture = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN
 
 SWEP.ConeMax = 3
 SWEP.ConeMin = 0
-SWEP.IronSightsPos          = Vector(20,20,-20)--Vector(-7.32, -8.78, 0.08)
-SWEP.IronSightsAng          = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(20,20,-20),
+	Ang = Angle(0, 0, 0),
+}
 
 SWEP.WalkSpeed = SPEED_SLOW
 SWEP.ViewModelFOV   = 60

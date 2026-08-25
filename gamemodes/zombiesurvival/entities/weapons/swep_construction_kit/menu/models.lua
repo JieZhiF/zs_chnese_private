@@ -1686,6 +1686,94 @@ Translation x / y / z
 Rotation pitch / yaw / role
 Size
 ]]
+-- ==== CreateLensModifiers - ZS PIP 镜片形状参数面板（Quad 专用） ====
+-- 形状 / 可见圆半径 / 长宽比 / 四角切角，实时写入元素表并联动视口内的
+-- 青色镜片预览（client.lua Quad 分支）；导出由 tool.lua GetVModelsText 输出。
+-- 构建顺序与 Position/Angle 面板严格同构：先创建配置全部控件 →
+-- PerformLayout 显式设宽 → 最后统一 Dock(TOP)，避免布局错位
+local function CreateLensModifiers( data, panel )
+
+	if panel._passdata and panel._passdata._name then
+		local data_check = panel._passdata._v and wep.v_models[ panel._passdata._name ] or wep.w_models[ panel._passdata._name ]
+		if data_check ~= data then
+			data = data_check
+		end
+	end
+
+	panel.data = data
+
+	panel:SetTall(32 * 7)
+	PanelApplyBackground(panel)
+
+	local lenslabel = vgui.Create( "DLabel", panel )
+		lenslabel:SetText( "ZS Lens:" )
+		lenslabel:SizeToContents()
+		lenslabel:SetWide(45)
+		lenslabel:SetMouseInputEnabled( true )
+	lenslabel:Dock(LEFT)
+
+	-- 裁剪形状：圆形（默认）/ 方形 / 切角多边形（显式高度，消除默认值歧义）
+	local shapebox = vgui.Create( "DComboBox", panel )
+		shapebox:SetTall( 24 )
+		shapebox:SetText( data.pip_shape == "square" and "方形" or data.pip_shape == "poly" and "切角多边形" or "圆形（默认）" )
+		shapebox:AddChoice( "圆形（默认）", "circle" )
+		shapebox:AddChoice( "方形", "square" )
+		shapebox:AddChoice( "切角多边形", "poly" )
+		shapebox.OnSelect = function( _, _, _, value )
+			data.pip_shape = value
+			if value == "poly" and not istable(data.pip_chamfer) then
+				data.pip_chamfer = { tl = 0.25, tr = 0.25, br = 0, bl = 0 }
+			end
+		end
+	shapebox:DockMargin(10,0,0,0)
+
+	-- 滑条工厂：先创建配置（含初值），收集进表，最后统一 Dock
+	local lenswangs = {}
+	local function NewLensWang( text, minv, maxv, init, onchanged )
+		local wang = vgui.Create( "DNumSlider", panel )
+			wang:SetTall( 32 )
+			wang:SetText( text )
+			wang:SetMinMax( minv, maxv )
+			wang:SetDecimals( 2 )
+			wang.Wang.ConVarChanged = function( p, value ) onchanged( tonumber(value) ) end
+			wang:SetValue( init )
+		wang:DockMargin(10,0,0,0)
+		lenswangs[#lenswangs + 1] = wang
+	end
+
+	-- 可见圆半径比（仅圆形生效；size 放大留定位余量时用它把圆收回筒口）
+	NewLensWang( "半径", 0.05, 1, tonumber(data.pip_radius) or 1, function(v) data.pip_radius = v end)
+
+	-- 长宽比（宽/高；>1 拉宽镜内画面窗口，RT 采样同步保持角密度）
+	NewLensWang( "宽/高", 0.25, 4, tonumber(data.pip_aspect) or 1, function(v) data.pip_aspect = v end)
+
+	-- 四角切角量（仅切角多边形生效）
+	local chamfer_fields = { { "左上切角", "tl" }, { "右上切角", "tr" }, { "右下切角", "br" }, { "左下切角", "bl" } }
+	for _, cf in ipairs( chamfer_fields ) do
+		NewLensWang( cf[1], 0, 0.95, istable(data.pip_chamfer) and tonumber(data.pip_chamfer[cf[2]]) or 0, function(v)
+			data.pip_chamfer = data.pip_chamfer or {}
+			data.pip_chamfer[cf[2]] = v
+		end)
+	end
+
+	-- 宽度自适应：控件占标签列右侧区域（留 60px 标签列 + 边距）
+	panel.PerformLayout = function()
+		local wide = panel:GetWide() - 70
+		shapebox:SetWide( wide )
+		for _, wang in ipairs( lenswangs ) do
+			wang:SetWide( wide )
+		end
+	end
+
+	-- 统一 Dock（顺序即行序：形状 → 半径 → 宽高比 → 四角切角）
+	shapebox:Dock(TOP)
+	for _, wang in ipairs( lenswangs ) do
+		wang:Dock(TOP)
+	end
+
+	return panel
+end
+
 -- ==== CreateQuadPanel - 构建第一人称 Quad 元素编辑面板 ====
 function CreateQuadPanel( name, preset_data )
 	local data = wep.v_models[name]
@@ -1720,6 +1808,7 @@ function CreateQuadPanel( name, preset_data )
 	panellist:AddItem(CreatePositionModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateAngleModifiers( data, SimplePanel(panellist) ))
 	panellist:AddItem(CreateSizeModifiers( data, SimplePanel(panellist), 1 ))
+	panellist:AddItem(CreateLensModifiers( data, SimplePanel(panellist) ))
 
 	panellist:InvalidateLayout( true )
 	panellist:SizeToChildren( false, true )

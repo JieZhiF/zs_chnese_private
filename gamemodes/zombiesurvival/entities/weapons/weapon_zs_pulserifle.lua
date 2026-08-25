@@ -64,8 +64,11 @@ SWEP.ConeMin = 1
 -- 持枪移动速度：慢速
 SWEP.WalkSpeed = SPEED_SLOW
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-3, 1, 1)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-3, 1, 1),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 武器等级与商店最大库存
 SWEP.Tier = 5

@@ -66,8 +66,11 @@ SWEP.FireAnimSpeed = 0.55
 SWEP.ConeMax = 4.5
 SWEP.ConeMin = 2.5
 
--- 机瞄位置
-SWEP.IronSightsPos = Vector(-6.425, 5, 1.02)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-6.425, 5, 1.02),
+	Ang = Angle(0, 0, 0),
+}
 
 -- 附加射击间隔强化模组（每级 -0.015 秒）
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_FIRE_DELAY, -0.015)

@@ -39,8 +39,8 @@ SWEP.PumpActivity = ACT_SHOTGUN_RELOAD_FINISH
 SWEP.ReloadStartActivity = ACT_SHOTGUN_RELOAD_START
 SWEP.ReloadStartGesture = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN
 
--- 霰弹枪默认禁用机瞄（未校准 IronSightsPos，开镜会导致视野缩放与准星错位）
--- 单把霰弹枪如需启用：设 SWEP.IronEnable = true 并校准 SWEP.IronSightsPos / SWEP.IronSightsAng
+-- 霰弹枪默认禁用机瞄（未校准贴瞄偏移，开镜会导致视野缩放与准星错位）
+-- 单把霰弹枪如需启用：设 SWEP.IronEnable = true 并校准 SWEP.IronSights 表（Pos/Ang）
 SWEP.IronEnable = false
 
 function SWEP:Reload()

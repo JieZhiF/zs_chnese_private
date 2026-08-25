@@ -71,9 +71,11 @@ SWEP.WalkSpeed = SPEED_SLOWEST
 SWEP.Tier = 5
 SWEP.MaxStock = 2
 
--- 机瞄时视角偏移位置与角度
-SWEP.IronSightsAng = Angle(-1, -1, 0)
-SWEP.IronSightsPos = Vector(-3, 4, 3)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-3, 4, 3),
+	Ang = Angle(-1, -1, 0),
+}
 
 -- 附加武器改造：换弹速度 +10%、开火间隔 -0.01 秒
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_RELOAD_SPEED, 0.1)

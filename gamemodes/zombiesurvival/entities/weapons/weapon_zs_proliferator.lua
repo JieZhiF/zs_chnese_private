@@ -93,9 +93,11 @@ SWEP.Tier = 3
 -- 射击动画速度倍率
 SWEP.FireAnimSpeed = 1.7
 
--- 机瞄位置与角度
-SWEP.IronSightsPos = Vector(-7, 15, 0)
-SWEP.IronSightsAng = Angle(3, -3, -10)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-7, 15, 0),
+	Ang = Angle(3, -3, -10),
+}
 
 -- 附加强化模组：最大/最小扩散与射击间隔（射击间隔每级 -0.01 秒，上限 1 级）
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_MAX_SPREAD, -0.9)

@@ -71,9 +71,11 @@ SWEP.ViewModelBoneMods = {
 -- 枪管旋转角速度缓存（用于平滑旋转）
 SWEP.LastVel = 0
 
--- 机瞄时的准星偏移与旋转
-SWEP.IronSightsPos = Vector(1.24, 0, 2.359)
-SWEP.IronSightsAng = Angle(0, 0, 0)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(1.24, 0, 2.359),
+	Ang = Angle(0, 0, 0),
+}
 
 -- ==== Think - 客户端每帧逻辑（检查预转状态） ====
 function SWEP:Think()
@@ -122,13 +124,13 @@ end
 local ghostlerp = 0
 -- ==== CalcViewModelView - 计算视角模型位置姿态 ====
 function SWEP:CalcViewModelView(vm, oldpos, oldang, pos, ang)
-	-- 应用机瞄偏移与旋转
-	local Offset = self.IronSightsPos
-	if self.IronSightsAng then
+	-- 应用机瞄偏移与旋转（统一经 GetIronSightOffset：支持 SWEP.IronSights 表与旧字段回退）
+	local Offset, IronAng = self:GetIronSightOffset()
+	if IronAng then
 		ang = Angle(ang.p, ang.y, ang.r)
-		ang:RotateAroundAxis(ang:Right(), self.IronSightsAng.p)
-		ang:RotateAroundAxis(ang:Up(), self.IronSightsAng.y)
-		ang:RotateAroundAxis(ang:Forward(), self.IronSightsAng.r)
+		ang:RotateAroundAxis(ang:Right(), IronAng.p)
+		ang:RotateAroundAxis(ang:Up(), IronAng.y)
+		ang:RotateAroundAxis(ang:Forward(), IronAng.r)
 	end
 
 	pos = pos + Offset.x * ang:Right() + Offset.y * ang:Forward() + Offset.z * ang:Up()

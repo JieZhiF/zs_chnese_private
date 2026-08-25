@@ -77,9 +77,11 @@ SWEP.Tier = 4
 -- 可同时持有的最大库存数量
 SWEP.MaxStock = 3
 
--- 机瞄时的准星偏移
-SWEP.IronSightsAng = Angle(-1, -1, 0)
-SWEP.IronSightsPos = Vector(-3, 4, 3)
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+SWEP.IronSights = {
+	Pos = Vector(-3, 4, 3),
+	Ang = Angle(-1, -1, 0),
+}
 
 -- 附加改装：换弹速度提升 10%
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_RELOAD_SPEED, 0.1)

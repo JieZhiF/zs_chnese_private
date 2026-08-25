@@ -18,8 +18,7 @@ SWEP.Slot = GAMEMODE:GetWeaponSlot("WeaponSelectSlotBolt")
 SWEP.SlotGroup = WEPSELECT_BOLT
 SWEP.SlotPos = 0
 
--- 机瞄灵敏度倍率；经典模式（zs_pipscope=0）下兼作 FOV 缩放倍率
-SWEP.IronsightsMultiplier = 0.25
+
 -- 标记为狙击步枪，启用开镜判定逻辑
 SWEP.SniperRifle = true
 
