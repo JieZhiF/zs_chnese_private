@@ -25,6 +25,7 @@ include("cl_util.lua")  -- 客户端工具函数
 include("cl_global.lua")  -- 武器选择槽位常量 WEPSELECT_*
 include("cl_options.lua")  -- 客户端选项
 include("cl_fontdlc.lua")  -- 字体DLC
+include("cl_namecards.lua")  -- 名片系统（材质缓存/屏蔽开关/下拉数据）
 include("cl_scoreboard.lua")  -- 计分板
 include("cl_targetid.lua")  -- 目标标识
 include("cl_postprocess.lua")  -- 后处理特效

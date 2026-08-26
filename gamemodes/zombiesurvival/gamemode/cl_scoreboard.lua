@@ -5,7 +5,9 @@
 --   2. 玩家信息（头像、名字、分数、延迟、转生等级、僵尸职业图标）
 --   3. 静音/好友功能
 --   4. 鼠标悬停时弹出的玩家详细信息卡片
---   5. 机器人的随机头像分配与缓存
+--   5. 机器人头像分配（按名字末尾拼音码匹配专属头像，未命中则随机分配）
+--   6. 玩家名片横幅（materials/namecards/，F4 设置中可选择/屏蔽，
+--      悬停信息卡顶部同步展示大图；数据来源见 sh_namecards.lua）
 -- ============================================================
 
 -- 计分板主面板的全局引用
@@ -47,14 +49,68 @@ function GM:ScoreboardHide()
 end
 
 -- ============================================================
--- 机器人头像缓存系统
--- 搜索 materials/botavatar/ 下的 .vmt 文件，随机分配头像。
+-- 机器人头像系统（按名字分配）
+-- 约定：机器人名字以拼音码结尾（方便用指令定位），同时按该码分配专属头像。
+-- 例如 "狼少年今天也在說謊LSN" -> materials/botavatar/LSN.vmt（引用同目录的 LSN.vtf）。
+-- 新增一个机器人只需：d3bot 名字表里加上"中文名+拼音码"，再把 同码.vmt/.vtf 放进 botavatar 文件夹。
 -- ============================================================
 local botAvatarList = nil
+-- 头像码 -> 材质路径 的查询缓存；false 表示该码没有任何对应的头像文件
+local botAvatarCache = {}
+-- 兜底头像（文件夹为空时使用）
+local DEFAULT_BOT_AVATAR = "botavatar/odoko"
 
--- 获取一个随机的机器人头像材质路径
--- 返回值：材质路径字符串（如 "botavatar/bot_default"）
-local function GetRandomBotAvatar()
+-- 前置声明（实现在下方）：给没有专属头像的机器人随机分配一张
+local GetRandomBotAvatar
+
+-- 从机器人名字中提取头像码：名字末尾的连续英文字母（即拼音缩写）
+-- 例如 "狼少年今天也在說謊LSN" -> "LSN"；重名后缀 "(2)" 会被先去掉
+local function ExtractBotAvatarCode(nick)
+	if not nick or nick == "" then return nil end
+
+	-- 去掉尾部空白，避免干扰字母提取
+	nick = string.gsub(nick, "%s+$", "")
+
+	-- 去掉重名时自动追加的 "(2)"、"(3)" 等后缀，避免干扰字母提取
+	nick = string.gsub(nick, "%s*%(%d+%)$", "")
+
+	return string.match(nick, "([A-Za-z]+)$")
+end
+
+-- 根据机器人名字获取头像材质路径
+-- 依次尝试 原样拼音码 -> 全大写拼音码 对应的 botavatar/<码>.vmt；都没有则回退为随机头像
+-- 返回值：材质路径字符串（如 "botavatar/LSN"）
+local function GetBotAvatarByNick(nick)
+	local code = ExtractBotAvatarCode(nick)
+
+	if code then
+		local material = botAvatarCache[code]
+		if material == nil then
+			-- 头像文件按惯例用大写拼音码命名，这里两种写法都查一遍并缓存结果
+			local filename = code
+			if not file.Exists("materials/botavatar/" .. filename .. ".vmt", "GAME") then
+				filename = string.upper(code)
+			end
+
+			if file.Exists("materials/botavatar/" .. filename .. ".vmt", "GAME") then
+				material = "botavatar/" .. filename
+			else
+				material = false
+			end
+			botAvatarCache[code] = material
+		end
+
+		if material then
+			return material
+		end
+	end
+
+	return GetRandomBotAvatar()
+end
+
+-- 获取一个随机的机器人头像材质路径（回退方案：给没有专属头像的机器人用）
+-- 返回值：材质路径字符串（如 "botavatar/odoko"）
+GetRandomBotAvatar = function()
     -- 如果缓存列表为空，则搜索文件系统
 	if not botAvatarList then
         -- 搜索 .vmt 材质文件（GMod UI 可识别的格式）
@@ -67,12 +123,12 @@ local function GetRandomBotAvatar()
 			for _, vmtFile in ipairs(files) do
                 -- SetImage 使用相对于 materials 文件夹且不带扩展名的路径
                 -- 例如 materials/botavatar/bot1.vmt -> "botavatar/bot1"
-				table.insert(botAvatarList, "botavatar/" .. string.gsub(vmtFile, ".vmt", ""))
+				table.insert(botAvatarList, "botavatar/" .. string.gsub(vmtFile, "%.vmt$", ""))
 			end
 		else
             -- 未找到文件时打印错误并返回默认头像
 			print("[BotAvatars] Error: No .vmt files found in materials/botavatar/. Using default.")
-			return "botavatar/odoko" -- 默认头像兜底
+			return DEFAULT_BOT_AVATAR -- 默认头像兜底
 		end
 	end
     
@@ -82,7 +138,7 @@ local function GetRandomBotAvatar()
 	end
 
     -- 最终保险：返回默认头像
-	return "botavatar/odoko"
+	return DEFAULT_BOT_AVATAR
 end
 
 -- ============================================================
@@ -460,7 +516,15 @@ function PANEL:Paint()
 	colTemp.g = col.g * mul
 	colTemp.b = col.b * mul
 	draw.RoundedBox(4, 0, 0, self:GetWide(), self:GetTall(), colTemp)
-	
+
+	-- 名片横幅：绘制在队伍底色之上、子控件之下；未佩戴或已屏蔽时为 nil
+	local ncmat = self.m_NameCardMaterial
+	if ncmat then
+		surface.SetDrawColor(255, 255, 255, 180)
+		surface.SetMaterial(ncmat)
+		surface.DrawTexturedRect(0, 0, self:GetWide(), self:GetTall())
+	end
+
 	return true
 end
 
@@ -534,6 +598,9 @@ function PANEL:RefreshPlayer()
 		self:Remove()
 		return
 	end
+
+	-- 缓存名片材质（内部已处理屏蔽他人与未佩戴的情况）
+	self.m_NameCardMaterial = GAMEMODE:GetPlayerNameCardMaterial(pl)
 
 	-- 更新玩家名称（超过23字符则截断）
 	local name = pl:Name()
@@ -626,9 +693,8 @@ function PANEL:SetPlayer(pl)
 		self.m_Avatar:SetVisible(false)
 		self.m_SpecialImage:SetVisible(false)
 
-		-- 调用函数获取随机头像，并将其路径保存在面板变量中
-		local randomAvatarMaterial = GetRandomBotAvatar()
-		self.m_BotAvatarMaterial = randomAvatarMaterial -- 保存材质路径
+		-- 按机器人名字末尾的拼音码查找专属头像（如 ...LSN -> botavatar/LSN），找不到则随机分配
+		self.m_BotAvatarMaterial = GetBotAvatarByNick(pl:Name()) -- 保存材质路径
 		self.m_BotAvatar:SetImage(self.m_BotAvatarMaterial) -- 设置图片
 		self.m_BotAvatar:SetVisible(true)
 	else
@@ -661,12 +727,17 @@ function PANEL:GetBotAvatarMaterial()
     return self.m_BotAvatarMaterial
 end
 
+-- 获取该面板缓存的名片材质路径（供悬停卡片使用，已含屏蔽判断）
+function PANEL:GetPlayerNameCardMaterial()
+    return self.m_NameCardMaterial
+end
+
 -- 注册 ZSPlayerPanel 面板类（继承自 Button）
 vgui.Register("ZSPlayerPanel", PANEL, "Button")
 
 -- ============================================================
 -- ZSPlayerHoverCard - 玩家信息悬停卡片
--- 当鼠标悬停在玩家行上时弹出，显示大头像、名字、SteamID、分数
+-- 当鼠标悬停在玩家行上时弹出，显示名片横幅、大头像、名字、SteamID、分数
 -- ============================================================
 local PlayerHoverCard = nil
 local PANEL = {}
@@ -703,6 +774,16 @@ function PANEL:Init()
     self.ScoreLabel = self:Add("DLabel")
     self.ScoreLabel:SetFont("ZS2DFontHarmonySmall")
     self.ScoreLabel:SetColor(Color(200, 200, 200))
+
+    -- 指令目标提示（仅机器人显示）：名字末尾的拼音码，可直接用于 ULX 等指令定位
+    self.TargetHintLabel = self:Add("DLabel")
+    self.TargetHintLabel:SetFont("ZS2DFontHarmonySmall")
+    self.TargetHintLabel:SetColor(COLOR_LIMEGREEN)
+
+    -- 名片横幅（玩家佩戴名片时显示在卡片顶部）
+    self.NameCardImage = vgui.Create("DImage", self)
+    self.NameCardImage:SetVisible(false)
+    self.NameCardImage:SetMouseInputEnabled(false)
 end
 
 -- 绘制悬停卡片的半透明背景和边框
@@ -713,35 +794,64 @@ function PANEL:Paint(w, h)
 end
 
 -- 排列悬停卡片内部各元素的位置
+-- 佩戴名片时卡片自动加高，顶部显示名片横幅，其余内容整体下移
 function PANEL:PerformLayout()
-    self.PlayerAvatar:SetPos(10, 10)
-    self.BotAvatar:SetPos(10, 10)
+    local showCard = self.NameCardImage:IsVisible()
+    local targetTall = showCard and 140 or 100
+    if self:GetTall() ~= targetTall then
+        self:SetTall(targetTall)
+    end
+
+    local contentTop = 10
+    if showCard then
+        self.NameCardImage:SetPos(10, 10)
+        self.NameCardImage:SetSize(self:GetWide() - 20, 40)
+        contentTop = 58
+    end
+
+    self.PlayerAvatar:SetPos(10, contentTop)
+    self.BotAvatar:SetPos(10, contentTop)
 
     self.NameLabel:SizeToContents()
-    self.NameLabel:SetPos(80, 15)
+    self.NameLabel:SetPos(80, contentTop + 5)
     self.SteamIDLabel:SizeToContents()
-    self.SteamIDLabel:SetPos(80, 35)
+    self.SteamIDLabel:SetPos(80, contentTop + 25)
     self.ScoreLabel:SizeToContents()
-    self.ScoreLabel:SetPos(80, 55)
+    self.ScoreLabel:SetPos(80, contentTop + 45)
+    self.TargetHintLabel:SizeToContents()
+    self.TargetHintLabel:SetPos(80, contentTop + 65)
 end
 
 -- 使用玩家数据更新卡片显示（支持真人玩家和机器人）
-function PANEL:UpdateWithPlayer(ply, botAvatarMaterial)
+function PANEL:UpdateWithPlayer(ply, botAvatarMaterial, nameCardMaterial)
     if not IsValid(ply) then return end
 
     self.NameLabel:SetText(ply:Name())
     self.ScoreLabel:SetText("分数 " .. ply:Frags())
 
+    -- 名片横幅：仅在对方佩戴且未被屏蔽时显示
+    if nameCardMaterial then
+        self.NameCardImage:SetMaterial(nameCardMaterial)
+        self.NameCardImage:SetVisible(true)
+    else
+        self.NameCardImage:SetVisible(false)
+    end
+
     if ply:IsBot() then
         self.PlayerAvatar:SetVisible(false)
         self.BotAvatar:SetVisible(true)
-		-- 使用传递进来的 botAvatarMaterial 参数设置图片
-        self.BotAvatar:SetImage(botAvatarMaterial) 
+        -- 头像已按名字匹配（由玩家行面板传入）
+        self.BotAvatar:SetImage(botAvatarMaterial)
+
+        -- 显示可用于指令定位的拼音码（如 !kick LSN）
+        local avatarCode = ExtractBotAvatarCode(ply:Name())
+        self.TargetHintLabel:SetText(avatarCode and ("指令目标: " .. avatarCode) or "")
         self.SteamIDLabel:SetText("机器人 (Bot)")
     else
         self.PlayerAvatar:SetVisible(true)
         self.BotAvatar:SetVisible(false)
         self.PlayerAvatar:SetPlayer(ply, 64)
+        self.TargetHintLabel:SetText("")
         self.SteamIDLabel:SetText(ply:SteamID())
     end
 
@@ -760,9 +870,10 @@ function PANEL:ShowAndUpdate(sourcePanel)
     -- 从 sourcePanel 获取玩家实体和机器人头像材质
     local player = sourcePanel:GetPlayer()
     local botAvatar = sourcePanel:GetBotAvatarMaterial() -- 调用新增的函数
+    local nameCardMat = sourcePanel:GetPlayerNameCardMaterial() -- 名片材质（可能为 nil）
 
     -- 将两个信息都传递给 UpdateWithPlayer
-    self:UpdateWithPlayer(player, botAvatar)
+    self:UpdateWithPlayer(player, botAvatar, nameCardMat)
     
     local x, y = sourcePanel:LocalToScreen(sourcePanel:GetWide() + 5, 0)
     self:SetPos(x, y)

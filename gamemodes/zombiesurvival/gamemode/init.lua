@@ -162,6 +162,7 @@ AddCSLuaFile("sh_animations.lua")
 AddCSLuaFile("sh_sigils.lua")
 AddCSLuaFile("sh_channel.lua")
 AddCSLuaFile("sh_weaponquality.lua")
+AddCSLuaFile("sh_namecards.lua")  -- 名片系统（共享注册表与接口）
 
 AddCSLuaFile("vault/shared.lua")
 
@@ -171,6 +172,7 @@ AddCSLuaFile("cl_fontdlc.lua")
 AddCSLuaFile("cl_util.lua")
 AddCSLuaFile("cl_global.lua")
 AddCSLuaFile("cl_options.lua")
+AddCSLuaFile("cl_namecards.lua")  -- 名片系统（客户端）
 AddCSLuaFile("cl_scoreboard.lua")
 AddCSLuaFile("cl_targetid.lua")
 AddCSLuaFile("cl_postprocess.lua")
@@ -262,6 +264,7 @@ include("skillweb/sv_skillweb.lua")
 
 include("sv_zombieescape.lua")
 include("sv_zombieshop.lua")--同上
+include("sv_namecards.lua")  -- 名片系统（服务端校验与同步）
 include("sv_tutorial.lua")
 include("sv_nailsave.lua")
 
@@ -443,8 +446,14 @@ function GM:AddResources()
 		resource.AddFile("materials/zombiesurvival/pip/"..filename)
 	end
 	
-	for _, filename in pairs(file.Find("materials/botavatar/*.vmt", "GAME")) do
+	for _, filename in pairs(file.Find("materials/botavatar/*.vmt", "GAME")) do --加载机器人头像
 		resource.AddFile("materials/botavatar/"..filename)
+	end
+	for _, filename in pairs(file.Find("materials/namecards/*.png", "GAME")) do
+		resource.AddFile("materials/namecards/"..filename)
+	end
+	for _, filename in pairs(file.Find("materials/namecards/*.vmt", "GAME")) do -- 加载名片材质
+		resource.AddFile("materials/namecards/"..filename)
 	end
 	resource.AddFile("materials/zombiesurvival/filmgrain/filmgrain.vmt")
 	resource.AddFile("materials/sights/rpgsight.vtf")
@@ -729,6 +738,7 @@ function GM:AddNetworkStrings()
 	util.AddNetworkString("zs_currentround")
 	util.AddNetworkString("zs_zsfriend")
 	util.AddNetworkString("zs_zsfriendadded")
+	util.AddNetworkString("zs_namecard")  -- 名片选择上报
 	util.AddNetworkString("zs_remantleconf")
 	util.AddNetworkString("zs_nestbuilt")
 	util.AddNetworkString("zs_nestspec")

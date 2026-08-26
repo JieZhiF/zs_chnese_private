@@ -24,6 +24,11 @@
 -- [作用] 按数据类型生成复选框/滑块/颜色/下拉/字体设置控件
 -- [常改] 控件样式、数据来源
 --
+-- [区域] 名片设置
+-- [位置] PopulateOptionsData() / OptionsData.NameCard
+-- [作用] 选择自己显示的名片（net 上报服务器鉴权）、屏蔽他人的名片
+-- [常改] 名片列表来源（GAMEMODE:GetNameCardChoices）、屏蔽开关 convar
+--
 -- [区域] 字体编辑器
 -- [位置] OpenRealtimeFontEditor()
 -- [作用] 实时预览并保存 ZSFontDLC 字体配置
@@ -132,6 +137,7 @@ function PANEL:PopulateOptionsData()
             {name = "HUD", text = translate.Get("Category_HUD")},
             {name = "Crosshair", text = translate.Get("Category_Crosshair")},
             {name = "Color", text = translate.Get("Category_Color")},
+            {name = "NameCard", text = translate.Get("Category_NameCard")},
             {name = "Fonts", text = "字体设置"},
         }},
         { name = "Gameplay", text = "游戏性", subCategories = {
@@ -383,6 +389,21 @@ function PANEL:PopulateOptionsData()
             { type = "checkbox", label = "Option_ScopeInfo", convar = "zs_scope_info" },
             { type = "slider", label = "Option_ScopeParallax", convar = "zs_pip_parallax", min = 0, max = 2, decimals = 2 },
             { type = "slider", label = "Option_ScopeShadow", convar = "zs_pip_shadow", min = 0, max = 2, decimals = 1 },
+        },
+        -- 名片：TAB 计分板横幅的选择与屏蔽（注册表见 sh_namecards.lua）
+        NameCard = {
+            { type = "combobox", label = "Option_NameCardSelect", choices = (function()
+                if GAMEMODE and GAMEMODE.GetNameCardChoices then
+                    return GAMEMODE:GetNameCardChoices()
+                end
+                return {}
+            end)(),
+            onselect = function(index, value) RunConsoleCommand("zs_namecard", value) end,
+            getdefault = function()
+                local cvar = GetConVar("zs_namecard")
+                return cvar and cvar:GetString() or NAMECARD_NONE
+            end },
+            { type = "checkbox", label = "Option_NameCardHideOthers", convar = "zs_hide_namecards" },
         },
         Fonts = fontOptions,
     }

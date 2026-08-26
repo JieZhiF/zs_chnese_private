@@ -218,6 +218,7 @@ include("skillweb/sh_skillweb.lua")
 -- 这些文件定义了游戏的核心配置和机制。
 -- ============================================================================
 include("sh_options.lua")
+include("sh_namecards.lua")  -- 名片系统（共享注册表与接口）
 include("sh_zombieshop.lua")
 include("sh_zombieclasses.lua")
 include("sh_animations.lua")

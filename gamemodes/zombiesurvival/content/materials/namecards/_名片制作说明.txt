@@ -1,0 +1,38 @@
+ZS 名片材质文件夹
+==================
+
+这里存放 TAB 计分板名片横幅使用的材质，文件名必须与名片 ID 一致：
+
+    default.png / crimson.png / ... / commander.png
+
+支持两种格式（二选一）：
+  1. .png —— 推荐，直接放入即可（客户端 Material 会自动加载）。
+  2. .vmt + .vtf —— 参考 botavatar 文件夹的写法。
+
+建议尺寸 512x128（会拉伸铺满整个玩家行，深色系更易读）。
+
+如何新增名片
+------------
+1. 把材质放进本文件夹，例如 mycard.png。
+2. 打开 gamemode/sh_namecards.lua，在默认名片注册区添加：
+
+       GAMEMODE:AddNameCard{ ID = "mycard", Name = "我的名片", Desc = "描述文字" }
+
+如何推出专属名片（预留接口）
+----------------------------
+注册时设置 Exclusive = true，并用 CanUse 回调做持有校验（服务端鉴权 + 客户端预览共用）：
+
+    GAMEMODE:AddNameCard{
+        ID = "vip_gold",
+        Name = "尊享金卡",
+        SortOrder = 100,
+        Exclusive = true,
+        CanUse = function(pl)
+            -- 示例：管理员可用；可替换为 SteamID 白名单、成就、充值系统等
+            return IsValid(pl) and pl:IsAdmin()
+        end
+    }
+
+未通过校验的玩家选择专属名片时，服务端会拒绝并通过屏幕提示告知。
+名片变更成功后服务端会触发 gamemode.Call("PlayerNameCardChanged", pl, newCard, oldCard)，
+可用于未来的发放/回收联动。

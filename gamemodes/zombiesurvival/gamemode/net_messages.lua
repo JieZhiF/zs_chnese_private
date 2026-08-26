@@ -72,6 +72,7 @@ NET_MSG = {
 	CURRENTROUND = "zs_currentround",
 	ZSFRIEND = "zs_zsfriend",
 	ZSFRIENDADDED = "zs_zsfriendadded",
+	NAMECARD = "zs_namecard", -- 名片选择上报（客户端 → 服务端鉴权后 NWString 广播）
 	-- 巢穴建造与观察类消息
 	REMANTLECONF = "zs_remantleconf",
 	NESTBUILT = "zs_nestbuilt",
