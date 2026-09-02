@@ -26,7 +26,7 @@ CLASS.Hidden = true
 CLASS.KnockbackScale = 0
 
 -- 生命值
-CLASS.Health = 2500
+CLASS.Health = 5000
 -- 移动速度
 CLASS.Speed = 230
 

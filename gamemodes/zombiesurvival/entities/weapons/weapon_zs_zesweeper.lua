@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_sweepershotgun"
 
-SWEP.Primary.Damage = 135
+SWEP.Primary.Damage = 270
 
 SWEP.Primary.DefaultClip = 9999
 SWEP.Primary.KnockbackScale = ZE_KNOCKBACKSCALE

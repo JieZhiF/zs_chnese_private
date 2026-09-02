@@ -19,7 +19,7 @@ CLASS.Help = "controls_poison_zombie"
 CLASS.Wave = 5 / 6
 
 -- 生命值
-CLASS.Health = 460
+CLASS.Health = 920
 -- 绑定的武器
 CLASS.SWEP = "weapon_zs_wildpoisonzombie"
 

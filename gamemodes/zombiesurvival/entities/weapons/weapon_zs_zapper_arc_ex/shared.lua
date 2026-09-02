@@ -19,7 +19,7 @@ SWEP.GhostStatus = "ghost_zapper_arc_ex"
 SWEP.DeployClass = "prop_zapper_arc_ex"
 
 -- 陷阱对触碰僵尸造成的伤害
-SWEP.Primary.Damage = 45
+SWEP.Primary.Damage = 90
 
 -- 武器等级（Tier 4）
 SWEP.Tier = 4

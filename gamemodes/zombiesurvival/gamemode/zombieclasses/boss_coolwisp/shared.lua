@@ -22,7 +22,7 @@ CLASS.Boss = true
 CLASS.SWEP = "weapon_zs_coolwisp"
 
 -- 生命值
-CLASS.Health = 900
+CLASS.Health = 1800
 
 -- 击杀得分
 CLASS.Points = 20

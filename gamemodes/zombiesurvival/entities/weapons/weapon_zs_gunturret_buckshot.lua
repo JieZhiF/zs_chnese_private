@@ -13,7 +13,7 @@ SWEP.PrintName = ""..translate.Get("weapon_zs_gunturret_buckshot")
 SWEP.Description = ""..translate.Get("weapon_zs_gunturret_buckshot_description")
 
 -- 炮台单发伤害
-SWEP.Primary.Damage = 6.75
+SWEP.Primary.Damage = 13.5
 
 -- 放置预览幽灵状态 / 部署出的炮台实体
 SWEP.GhostStatus = "ghost_gunturret_buckshot"

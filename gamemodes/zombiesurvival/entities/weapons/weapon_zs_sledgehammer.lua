@@ -33,7 +33,7 @@ SWEP.WorldModel = "models/weapons/w_sledgehammer.mdl"
 SWEP.UseHands = true
 
 -- 近战伤害：基础 75 乘劳工时间倍率（与游戏进度相关）
-SWEP.MeleeDamage = 75 * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 150 * GAMEMODE.LabourTime
 -- 近战攻击距离
 SWEP.MeleeRange = 64
 -- 近战攻击判定范围半径

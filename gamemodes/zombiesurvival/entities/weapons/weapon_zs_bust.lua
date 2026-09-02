@@ -43,7 +43,7 @@ SWEP.WorldModel = Model("models/props_combine/breenbust.mdl")
 SWEP.UseHands = true
 
 -- 近战伤害 / 攻击距离 / 攻击判定范围
-SWEP.MeleeDamage = 50
+SWEP.MeleeDamage = 100
 SWEP.MeleeRange = 50
 SWEP.MeleeSize = 1.4
 

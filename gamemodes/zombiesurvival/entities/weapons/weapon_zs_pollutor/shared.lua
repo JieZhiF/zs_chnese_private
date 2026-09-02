@@ -28,7 +28,7 @@ SWEP.Primary.Ammo = "chemical"
 SWEP.Primary.Delay = 0.45
 SWEP.Primary.DefaultClip = 20
 -- 单发伤害 34、每次 1 发
-SWEP.Primary.Damage = 34
+SWEP.Primary.Damage = 68
 SWEP.Primary.NumShots = 1
 
 -- 扩散范围（最大/最小准星扩散）

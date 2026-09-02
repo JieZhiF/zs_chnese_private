@@ -33,7 +33,7 @@ SWEP.CSMuzzleFlashes = false -- 不使用 CS 样式枪口闪光
 SWEP.ReloadDelay = 0.5 -- 单发装填间隔
 
 SWEP.Primary.Sound = Sound("weapons/shotgun/shotgun_dbl_fire.wav") -- 开火音效（双管声）
-SWEP.Primary.Damage = 27 -- 单粒弹丸伤害
+SWEP.Primary.Damage = 54 -- 单粒弹丸伤害
 SWEP.Primary.NumShots = 6 -- 每发基础弹丸数
 SWEP.Primary.Delay = 1 -- 射击间隔
 

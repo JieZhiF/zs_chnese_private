@@ -23,7 +23,7 @@ SWEP.WorldModel          = "models/weapons/w_shotgun.mdl"
 -- 使用玩家手臂模型
 SWEP.UseHands            = true
 -- 单颗弹丸伤害
-SWEP.Primary.Damage		= 12	
+SWEP.Primary.Damage		= 24	
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots	= 6		
 -- 单次射击后坐力

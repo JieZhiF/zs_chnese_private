@@ -78,7 +78,7 @@ SWEP.CSMuzzleFlashes = false
 SWEP.ReloadSound = Sound("Weapon_SMG1.Reload")
 SWEP.Primary.Sound = Sound("Weapon_Hurricane.Single")
 -- 单发伤害
-SWEP.Primary.Damage = 12.5
+SWEP.Primary.Damage = 25
 -- 每次射击的子弹数量
 SWEP.Primary.NumShots = 1
 -- 射击间隔（高射速）

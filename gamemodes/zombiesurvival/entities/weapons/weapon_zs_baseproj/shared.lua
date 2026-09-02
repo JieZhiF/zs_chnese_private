@@ -21,3 +21,7 @@ SWEP.CooldownExtraSize = 1
 
 -- 投射物默认初速度（3200 单位/秒）
 SWEP.Primary.ProjVelocity = 3200
+
+-- 后坐力视角震动幅度（默认 0 = 无后坐力）
+-- 继承此基类的武器若不设置 Recoil，开火时 init/cl_init 的 `self.Recoil > 0` 会因 nil 报错
+SWEP.Recoil = 0

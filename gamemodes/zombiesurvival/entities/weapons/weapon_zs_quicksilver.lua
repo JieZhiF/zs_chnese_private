@@ -44,7 +44,7 @@ SWEP.UseHands = true
 
 -- 开火音效 / 单发伤害 / 单次射击弹数 / 射击间隔
 SWEP.Primary.Sound = Sound("Weapon_G3SG1.Single")
-SWEP.Primary.Damage = 78.5
+SWEP.Primary.Damage = 157
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.38
 

@@ -24,7 +24,7 @@ SWEP.Secondary.DefaultClip = 1 -- 副默认弹药
 SWEP.Secondary.Ammo = "dummy" -- 副弹药类型（占位）
 
 --SWEP.MeleeDamage = 35 -- Reduced due to instant swing speed
-SWEP.MeleeDamage = 30 -- 近战伤害
+SWEP.MeleeDamage = 60 -- 近战伤害
 SWEP.MeleeRange = 90 -- 近战范围
 SWEP.MeleeSize = 0.875 -- 近战判定大小
 

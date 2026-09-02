@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_akbar"
 
-SWEP.Primary.Damage = 85
+SWEP.Primary.Damage = 170
 
 SWEP.ConeMax = 2.5
 SWEP.ConeMin = 1

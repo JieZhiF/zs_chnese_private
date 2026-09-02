@@ -39,7 +39,7 @@ SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 
 -- 近战数值（伤害随劳工时间成长）
-SWEP.MeleeDamage = 53 * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 106 * GAMEMODE.LabourTime
 SWEP.MeleeRange = 67
 SWEP.MeleeSize = 1.7
 SWEP.MeleeKnockBack = 90

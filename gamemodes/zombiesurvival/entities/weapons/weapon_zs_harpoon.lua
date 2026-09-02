@@ -29,7 +29,7 @@ SWEP.ViewModel = "models/weapons/c_stunstick.mdl"
 SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 
-SWEP.MeleeDamage = 45 * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 90 * GAMEMODE.LabourTime
 SWEP.MeleeRange = 94
 SWEP.MeleeSize = 0.8
 

@@ -6,7 +6,7 @@ SWEP.Description = "加油吧"
 
 SWEP.SlotPos = 0
 
-SWEP.Primary.BaseDamage = 25
+SWEP.Primary.BaseDamage = 50
 SWEP.Primary.Damage = SWEP.Primary.BaseDamage
 SWEP.Primary.Delay = 0.1
 SWEP.Primary.ClipSize = 38

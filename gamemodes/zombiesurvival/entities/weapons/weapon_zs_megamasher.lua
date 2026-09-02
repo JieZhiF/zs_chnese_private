@@ -46,7 +46,7 @@ SWEP.ViewModel = "models/weapons/v_sledgehammer/c_sledgehammer.mdl"
 SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true -- 使用玩家手臂模型握持
 
-SWEP.MeleeDamage = 190 -- 近战伤害（一击重锤）
+SWEP.MeleeDamage = 380 -- 近战伤害（一击重锤）
 SWEP.MeleeRange = 75 -- 近战攻击距离
 SWEP.MeleeSize = 4 -- 命中判定范围（巨大锤面）
 SWEP.MeleeKnockBack = 420 -- 命中击退力度

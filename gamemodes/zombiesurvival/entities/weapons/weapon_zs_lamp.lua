@@ -39,7 +39,7 @@ SWEP.HoldType = "melee2"
 SWEP.DamageType = DMG_CLUB
 
 -- 近战伤害 44、攻击距离 68、判定半径 2
-SWEP.MeleeDamage = 44
+SWEP.MeleeDamage = 88
 SWEP.MeleeRange = 68
 SWEP.MeleeSize = 2
 

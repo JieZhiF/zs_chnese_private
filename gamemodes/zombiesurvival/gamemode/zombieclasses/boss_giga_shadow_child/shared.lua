@@ -23,7 +23,7 @@ CLASS.MiniBoss = true
 CLASS.Hidden = true
 
 -- 生命值
-CLASS.Health = 2000
+CLASS.Health = 4000
 -- 移动速度
 CLASS.Speed = 235
 

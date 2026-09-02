@@ -39,7 +39,7 @@ SWEP.UseHands = true
 
 -- 主攻击：单发伤害与快速射击间隔，全自动
 SWEP.Primary.Sound = Sound("Weapon_ELITE.Single")
-SWEP.Primary.Damage = 22
+SWEP.Primary.Damage = 44
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.15
 

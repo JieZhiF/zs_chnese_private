@@ -76,7 +76,7 @@ SWEP.WorldModel = "models/weapons/w_pist_deagle.mdl"
 SWEP.UseHands = true
 
 -- 基础伤害与强击退
-SWEP.Primary.Damage = 53
+SWEP.Primary.Damage = 106
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.32
 SWEP.Primary.KnockbackScale = 2

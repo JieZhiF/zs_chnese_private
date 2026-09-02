@@ -55,7 +55,7 @@ SWEP.UseHands = true
 -- 开火音效
 SWEP.Primary.Sound = Sound("Weapon_Glock.Single")
 -- 单发伤害
-SWEP.Primary.Damage = 15.5
+SWEP.Primary.Damage = 31
 -- 每次开火射出 3 发（三连发）
 SWEP.Primary.NumShots = 3
 -- 射击间隔 0.3 秒

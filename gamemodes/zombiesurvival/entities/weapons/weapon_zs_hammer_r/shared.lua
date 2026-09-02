@@ -20,7 +20,7 @@ SWEP.Secondary.DefaultClip = 1
 SWEP.Secondary.Ammo = "dummy"
 
 --SWEP.MeleeDamage = 35 -- Reduced due to instant swing speed
-SWEP.MeleeDamage = 8
+SWEP.MeleeDamage = 16
 SWEP.MeleeRange = 230
 SWEP.MeleeSize = 0.875
 

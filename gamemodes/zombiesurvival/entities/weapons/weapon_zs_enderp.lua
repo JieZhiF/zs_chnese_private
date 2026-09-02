@@ -62,7 +62,7 @@ SWEP.HoldType				= "ar2"
 SWEP.WeaponType = "rifle"
 
 -- 单发伤害
-SWEP.Primary.Damage			= 17
+SWEP.Primary.Damage			= 34
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots		= 1
 -- 开火音效

@@ -831,3 +831,32 @@ concommand.Add("zs_mutationshop_click", function(sender, command, arguments)
 	net.Send(sender)
 
 end)
+
+-- ============================================================================
+-- zs_selfrevive - PvE 自救道具使用命令
+-- 倒地（ZSDowned 状态）时消耗一次自救次数，立即爬起回血。
+-- 对应 PointShop 物品"自救道具"（selfrevive）。
+-- ============================================================================
+concommand.Add("zs_selfrevive", function(sender)
+	if not sender:IsValid() or not sender:IsConnected() then return end
+
+	-- 调试日志：确认客户端 R 键命令到达服务端
+	print("[ZS-SelfRevive] command received from " .. sender:Nick() .. " downed=" .. tostring(sender.ZSDowned ~= nil) .. " revives=" .. tostring(sender.ZSSelfRevives or 0))
+
+	-- 必须在倒地状态
+	if not sender.ZSDowned or not sender.ZSDowned:IsValid() then
+		sender:CenterNotify(COLOR_RED, "你当前没有倒地，无法使用自救道具")
+		return
+	end
+
+	-- 必须有自救次数
+	if (sender.ZSSelfRevives or 0) <= 0 then
+		sender:CenterNotify(COLOR_RED, "你没有自救道具（在军火箱商店购买）")
+		return
+	end
+
+	-- 消耗一次自救次数并爬起
+	sender.ZSSelfRevives = sender.ZSSelfRevives - 1
+	GAMEMODE:RescueZSDowned(sender, sender)
+	sender:CenterNotify(COLOR_GREEN, "你使用自救道具站了起来（剩余 " .. sender.ZSSelfRevives .. " 次）")
+end)

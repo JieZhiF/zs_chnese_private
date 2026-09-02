@@ -68,7 +68,7 @@ SWEP.ReloadDelay = 0.45
 
 -- 主攻击：7 弹丸 × 13 伤害，射击间隔 0.9 秒
 SWEP.Primary.Sound = Sound("Weapon_M3.Single")
-SWEP.Primary.Damage = 13
+SWEP.Primary.Damage = 26
 SWEP.Primary.NumShots = 7
 SWEP.Primary.Delay = 0.9
 

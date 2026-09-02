@@ -2,7 +2,6 @@
 	cl_namecards.lua - 名片系统（客户端）
 	zs_namecard：我的名片（本地保存，变更时通过 net 上报服务器鉴权）
 	zs_hide_namecards：屏蔽他人的名片（仅本地偏好）
-	zs_namecard_debug：调试输出开关（客户端控制台）
 	控制台输入 zs_namecard_check 可对整条链路做一键自检。
 ]]
 
@@ -13,15 +12,6 @@ local file_Exists = file.Exists
 CreateClientConVar("zs_namecard", NAMECARD_NONE, true, false)
 -- 屏蔽他人名片：仅本地偏好，不上传
 CreateClientConVar("zs_hide_namecards", 0, true, false)
--- 调试输出开关
-CreateClientConVar("zs_namecard_debug", 0, true, false)
-
-local function DebugPrint(...)
-	local cvar = GetConVar("zs_namecard_debug")
-	if cvar and cvar:GetBool() then
-		print("[NameCards][客户端]", ...)
-	end
-end
 
 -- 材质缓存：ID -> IMaterial 或 false（加载失败，避免反复查找）
 local matCache = {}
@@ -45,32 +35,15 @@ function GM:GetNameCardMaterial(card)
 		end
 	end
 
-	DebugPrint("材质加载 " .. card.ID .. " -> " .. (mat ~= false and "成功" or "失败（找不到 materials/" .. path .. ".png/.vmt）"))
-
 	matCache[card.ID] = mat
 	return mat or nil
 end
 
 -- ============================================================
 -- GM:GetPlayerNameCardMaterial - 获取玩家名片的绘制用材质（遵守屏蔽设置）
--- 调试模式下会在玩家名片状态变化时打印一次
 -- ============================================================
-local lastCardState = {}
-
 function GM:GetPlayerNameCardMaterial(pl, ignoreBlock)
 	local card = self:GetPlayerNameCard(pl, ignoreBlock)
-
-	local dbg = GetConVar("zs_namecard_debug")
-	if dbg and dbg:GetBool() and IsValid(pl) then
-		local state = (card and card.ID or "无")
-		if pl ~= LocalPlayer() and GetConVar("zs_hide_namecards"):GetBool() then
-			state = state .. "（被屏蔽）"
-		end
-		if lastCardState[pl] ~= state then
-			lastCardState[pl] = state
-			print("[NameCards][客户端] " .. pl:Name() .. " 当前名片: " .. state)
-		end
-	end
 
 	return self:GetNameCardMaterial(card)
 end
@@ -108,7 +81,6 @@ local function SendNameCardToServer()
 	if not cvar then return end
 
 	local value = cvar:GetString()
-	DebugPrint("上报名片选择: \"" .. value .. "\"")
 
 	net.Start(NET_MSG.NAMECARD)
 		net.WriteString(value)

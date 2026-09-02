@@ -7,7 +7,7 @@ SWEP.Primary.Automatic = true
 SWEP.Primary.Ammo = "none"
 SWEP.Primary.Delay = 1
 
-SWEP.MeleeDamage = 30
+SWEP.MeleeDamage = 60
 SWEP.MeleeRange = 65
 SWEP.MeleeSize = 1.5
 SWEP.MeleeKnockBack = 0

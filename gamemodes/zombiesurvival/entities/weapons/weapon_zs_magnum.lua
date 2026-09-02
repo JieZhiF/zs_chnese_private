@@ -49,7 +49,7 @@ SWEP.CSMuzzleFlashes = false
 -- 主攻击：左轮枪声、0.7 秒间隔、59 伤害、单发
 SWEP.Primary.Sound = Sound("Weapon_357.Single")
 SWEP.Primary.Delay = 0.7
-SWEP.Primary.Damage = 59
+SWEP.Primary.Damage = 118
 SWEP.Primary.NumShots = 1
 
 -- 弹匣 6 发、半自动、消耗手枪弹药、开火手势

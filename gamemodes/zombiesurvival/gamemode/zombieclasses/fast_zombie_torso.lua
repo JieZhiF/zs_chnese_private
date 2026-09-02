@@ -25,7 +25,7 @@ CLASS.Model = Model("models/zombie/fast_torso.mdl")
 CLASS.SWEP = "weapon_zs_fastzombietorso"
 
 -- 生命值
-CLASS.Health = 75
+CLASS.Health = 150
 -- 移动速度
 CLASS.Speed = 150
 -- 跳跃力

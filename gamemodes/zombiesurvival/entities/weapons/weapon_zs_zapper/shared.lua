@@ -21,7 +21,7 @@ SWEP.Primary.DefaultClip = 1
 SWEP.Primary.Ammo = "zapper"
 SWEP.Primary.Delay = 1
 SWEP.Primary.Automatic = true
-SWEP.Primary.Damage = 25
+SWEP.Primary.Damage = 50
 
 -- 副攻击：占位定义（无实际功能）
 SWEP.Secondary.ClipSize = 1

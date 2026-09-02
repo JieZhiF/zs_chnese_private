@@ -25,7 +25,7 @@ SWEP.UseHands = true
 SWEP.HoldType = "melee"
 
 -- 近战伤害、腿部伤害与攻击距离/判定半径
-SWEP.MeleeDamage = 32
+SWEP.MeleeDamage = 64
 SWEP.LegDamage = 20
 SWEP.MeleeRange = 49
 SWEP.MeleeSize = 1.5

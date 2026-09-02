@@ -23,7 +23,7 @@ CLASS.Unlocked = true
 CLASS.Hidden = true
 
 -- 生命值
-CLASS.Health = 20
+CLASS.Health = 40
 -- 移动速度
 CLASS.Speed = 150
 

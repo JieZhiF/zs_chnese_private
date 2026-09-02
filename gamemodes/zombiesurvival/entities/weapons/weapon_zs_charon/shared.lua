@@ -30,7 +30,7 @@ SWEP.Primary.Delay = 0.4
 -- 按住左键可连发
 SWEP.Primary.Automatic = true
 -- 单发伤害
-SWEP.Primary.Damage = 68
+SWEP.Primary.Damage = 136
 
 -- 弹匣容量
 SWEP.Primary.ClipSize = 8

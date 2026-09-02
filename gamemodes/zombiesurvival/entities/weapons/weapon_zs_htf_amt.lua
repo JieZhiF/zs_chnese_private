@@ -230,7 +230,7 @@ sound.Add( {
 SWEP.UseHands = true
 
 SWEP.Primary.Sound = Sound("Weapon_HArdballsere.Silende") 
-SWEP.Primary.Damage = 23.5
+SWEP.Primary.Damage = 47
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.15
 

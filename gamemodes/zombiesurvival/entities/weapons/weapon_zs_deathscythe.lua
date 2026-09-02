@@ -11,7 +11,7 @@ SWEP.PrintName = "" .. translate.Get("weapon_zs_deathscythe")
 SWEP.Description = "" .. translate.Get("weapon_zs_deathscythe_description")
 SWEP.HoldType = "melee2"
 
-SWEP.MeleeDamage = 35
+SWEP.MeleeDamage = 70
 SWEP.MeleeRange = 90
 SWEP.MeleeSize = 4
 SWEP.MeleeKnockBack = 0

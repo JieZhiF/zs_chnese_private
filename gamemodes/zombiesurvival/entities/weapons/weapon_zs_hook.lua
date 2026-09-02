@@ -40,7 +40,7 @@ SWEP.WorldModel = "models/props_junk/meathook001a.mdl"
 SWEP.UseHands = true
 
 -- 近战伤害（随游戏进程倍率缩放），攻击距离与判定盒大小
-SWEP.MeleeDamage = 40 * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 80 * GAMEMODE.LabourTime
 SWEP.MeleeRange = 50
 SWEP.MeleeSize = 1.15
 

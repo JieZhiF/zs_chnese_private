@@ -366,7 +366,7 @@ sound.Add( {
 	sound = "weapons/sg550/sg550-1.wav"
 } )
 SWEP.Primary.Sound = Sound("Weapon_PyatnadtsatSosilence.SingleHeavy") 
-SWEP.Primary.Damage = 24.5
+SWEP.Primary.Damage = 49
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.11
 

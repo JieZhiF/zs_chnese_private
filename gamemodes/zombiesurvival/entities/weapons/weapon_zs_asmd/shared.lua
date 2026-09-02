@@ -23,7 +23,7 @@ SWEP.WorldModel = "models/weapons/w_shot_m3super90.mdl"
 SWEP.UseHands = true
 
 -- 单发伤害 53.5，每次 1 颗子弹，间隔 0.45 秒
-SWEP.Primary.Damage = 53.5
+SWEP.Primary.Damage = 107
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.45
 

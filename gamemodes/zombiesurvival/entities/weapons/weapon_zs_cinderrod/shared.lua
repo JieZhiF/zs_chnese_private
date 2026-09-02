@@ -10,7 +10,7 @@ SWEP.PrintName = ""..translate.Get("weapon_zs_cinderrod")
 SWEP.Base = "weapon_zs_blareduct"
 
 -- 单发伤害 54，一次 1 发弹丸，开火间隔 1.5 秒
-SWEP.Primary.Damage = 54
+SWEP.Primary.Damage = 108
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 1.5
 

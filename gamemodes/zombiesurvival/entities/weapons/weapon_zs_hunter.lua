@@ -65,7 +65,7 @@ SWEP.UseHands = true
 SWEP.ReloadSound = Sound("Weapon_AWP.ClipOut")
 SWEP.Primary.Sound = Sound("Weapon_Hunter.Single")
 -- 单发伤害、子弹数、攻击延迟
-SWEP.Primary.Damage = 111
+SWEP.Primary.Damage = 222
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 1.5
 -- 换弹延迟等于攻击延迟

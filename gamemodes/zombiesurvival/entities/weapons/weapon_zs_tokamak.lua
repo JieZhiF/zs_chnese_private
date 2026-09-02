@@ -53,7 +53,7 @@ SWEP.ViewModelFlip 			= false
 SWEP.HoldType				= "ar2"
 
 -- 单发伤害
-SWEP.Primary.Damage			= 32
+SWEP.Primary.Damage			= 64
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots		= 1
 -- 开火音效

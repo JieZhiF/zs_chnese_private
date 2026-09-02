@@ -44,7 +44,7 @@ SWEP.CSMuzzleFlashes = false
 SWEP.ReloadSound = Sound("Weapon_SMG1.Reload")
 SWEP.Primary.Sound = Sound("Weapon_AR2.NPC_Single")
 -- 单发伤害 14，每次射击 1 颗子弹，间隔 0.15 秒
-SWEP.Primary.Damage = 14
+SWEP.Primary.Damage = 28
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.15
 

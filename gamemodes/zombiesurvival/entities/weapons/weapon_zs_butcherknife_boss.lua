@@ -28,7 +28,7 @@ SWEP.NoDroppedWorldModel = true
 --[[SWEP.BoxPhysicsMax = Vector(8, 1, 4)
 SWEP.BoxPhysicsMin = Vector(-8, -1, -4)]]
 
-SWEP.MeleeDamage = 30
+SWEP.MeleeDamage = 60
 SWEP.MeleeRange = 50
 SWEP.MeleeSize = 0.875
 SWEP.Primary.Delay = 0.45

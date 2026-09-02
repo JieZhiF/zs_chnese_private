@@ -35,7 +35,7 @@ CLASS.Points = 40
 CLASS.SWEP = "weapon_zs_shitslapper"
 
 -- 生命值
-CLASS.Health = 4000
+CLASS.Health = 8000
 -- 移动速度
 CLASS.Speed = 225
 -- 跳跃力

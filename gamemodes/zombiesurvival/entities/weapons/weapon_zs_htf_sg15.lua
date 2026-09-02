@@ -124,7 +124,7 @@ SWEP.IronSights = {
 }
 
 SWEP.Primary.Sound = Sound("Weapon_Shotpupoksaki.SingleHeavy") 
-SWEP.Primary.Damage = 9.5
+SWEP.Primary.Damage = 19
 SWEP.Primary.NumShots = 8
 SWEP.Primary.Delay = 0.4
 

@@ -61,7 +61,7 @@ SWEP.UseHands = true -- 使用玩家手部模型
 
 SWEP.Primary.Sound = Sound("weapons/xm1014/xm1014-1.wav") -- 开火音效（XM1014）
 SWEP.ReloadSound = Sound("Weapon_Deagle.Clipout") -- 换弹音效
-SWEP.Primary.Damage = 10.5 -- 单发弹丸伤害
+SWEP.Primary.Damage = 21 -- 单发弹丸伤害
 SWEP.Primary.NumShots = 8 -- 每次射击的弹丸数
 SWEP.Primary.Delay = 0.31 -- 射击间隔（秒）
 

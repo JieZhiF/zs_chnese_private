@@ -50,7 +50,7 @@ SWEP.UseHands = true
 -- 开火音效（P90 单发音）
 SWEP.Primary.Sound = Sound("Weapon_p90.Single")
 -- 单发伤害
-SWEP.Primary.Damage = 17.5
+SWEP.Primary.Damage = 35
 -- 每次开火射出 1 发（机瞄时 2 发，见 PrimaryAttack）
 SWEP.Primary.NumShots = 1
 -- 射击间隔 0.07 秒（极高射速）

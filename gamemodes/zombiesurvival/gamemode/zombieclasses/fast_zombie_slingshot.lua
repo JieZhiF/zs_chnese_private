@@ -24,7 +24,7 @@ CLASS.Help = "controls_fast_zombie_slingshot"
 CLASS.Revives = false
 
 -- 生命值
-CLASS.Health = 180
+CLASS.Health = 360
 -- 移动速度
 CLASS.Speed = 235
 -- 绑定的武器

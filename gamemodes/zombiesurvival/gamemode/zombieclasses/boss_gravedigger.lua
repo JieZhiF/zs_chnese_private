@@ -21,7 +21,7 @@ CLASS.Help = "controls_gravedigger"
 CLASS.Boss = true
 
 -- 生命值
-CLASS.Health = 4500
+CLASS.Health = 9000
 -- 移动速度
 CLASS.Speed = 200
 

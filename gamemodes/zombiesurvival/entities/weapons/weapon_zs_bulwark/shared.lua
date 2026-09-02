@@ -26,7 +26,7 @@ SWEP.ShowWorldModel = false
 SWEP.UseHands = true
 
 -- 单发伤害
-SWEP.Primary.Damage = 24
+SWEP.Primary.Damage = 48
 -- 每次射击的子弹数量
 SWEP.Primary.NumShots = 1
 -- 射击间隔（预转后由蓄能决定实际射速）

@@ -27,7 +27,7 @@ SWEP.Primary.Automatic = true
 SWEP.Primary.Ammo = "impactmine"
 SWEP.Primary.Delay = 0.7
 SWEP.Primary.DefaultClip = 4
-SWEP.Primary.Damage = 26
+SWEP.Primary.Damage = 52
 SWEP.Primary.NumShots = 1
 
 -- 扩散范围（最大/最小准星扩散）

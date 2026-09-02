@@ -17,7 +17,7 @@ CLASS.Name = "Super Zombie"
 CLASS.TranslationName = "class_super_zombie"
 
 -- 超高血量
-CLASS.Health = 8888
+CLASS.Health = 17776
 -- 使用僵尸逃跑模式的僵尸速度
 CLASS.Speed = SPEED_ZOMBIEESCAPE_ZOMBIE
 -- 极低得分

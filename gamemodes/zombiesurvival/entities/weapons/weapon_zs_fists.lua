@@ -13,7 +13,7 @@ SWEP.HoldType = "fist"
 SWEP.WalkSpeed = SPEED_NORMAL
 SWEP.OldWalkSpeed = 0
 
-SWEP.MeleeDamage = 15
+SWEP.MeleeDamage = 30
 SWEP.DamageType = DMG_CLUB
 SWEP.UppercutDamageMultiplier = 3
 SWEP.HitDistance = 40

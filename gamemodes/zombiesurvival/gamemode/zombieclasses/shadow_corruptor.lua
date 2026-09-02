@@ -25,7 +25,7 @@ CLASS.Help = "controls_shadow_corruptor"
 CLASS.Wave = 6 / 6
 
 -- 生命值
-CLASS.Health = 100
+CLASS.Health = 200
 -- 移动速度
 CLASS.Speed = 150
 

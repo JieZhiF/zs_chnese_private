@@ -24,7 +24,7 @@ SWEP.DamageType = DMG_CLUB
 
 -- 攻击间隔 0.8 秒；近战伤害 28、距离 50、判定范围 0.875
 SWEP.Primary.Delay = 0.8
-SWEP.MeleeDamage = 28
+SWEP.MeleeDamage = 56
 SWEP.MeleeRange = 50
 SWEP.MeleeSize = 0.875
 

@@ -56,7 +56,7 @@ SWEP.CSMuzzleFlashes = false
 -- 主攻击：自定义开火音效、单发伤害与射击间隔
 SWEP.Primary.Sound = Sound("weapons/zs_longarm/longarm_fire.ogg")
 SWEP.Primary.Delay = 0.73
-SWEP.Primary.Damage = 120
+SWEP.Primary.Damage = 240
 SWEP.Primary.NumShots = 1
 
 -- 弹匣 10 发，至少 2 发才能换弹，半自动，消耗手枪弹药

@@ -144,92 +144,141 @@ end
 ---
 -- @function SWEP:Draw2DHUD
 -- @description 绘制屏幕右下角的 2D 武器信息 HUD。
+-- 布局（参考目标截图，从左到右）：弹药图标 -> 大字体弹匣数字 -> 武器图标，
+-- 小字体备弹数字垫在弹匣数字下方并与之重叠，主弹药（弹匣）浮在备弹上面。
+-- 字体 ZSWeaponHUDClip / ZSWeaponHUDReserve 在 cl_init.lua GM:CreateScalingFonts 中创建。
 --
-function SWEP:Draw2DHUD()
-	-- 尺寸和位置计算，适配不同屏幕分辨率
-    local screenscale = BetterScreenScale()
-    local padding = 8 * screenscale
-    local elementHeight = 64 * screenscale
-    local sw, sh = ScrW(), ScrH()
-	local panelx = 300 * screenscale
-    local x = sw - panelx
-    local y = sh - elementHeight - padding * 4
 
-    -- 获取弹药信息
-    local clip = self:Clip1()
-    local owner = self:GetOwner()
-    local ammocount = owner:GetAmmoCount(self:GetPrimaryAmmoType())
-    local maxclip = self:GetPrimaryClipSize()
+-- 武器HUD颜色
+local colClipNormal = Color(235, 235, 235, 245) -- 弹匣数字（白）
+local colClipEmpty = Color(255, 70, 70, 255)    -- 弹匣打空时（红）
+local colReserve = Color(125, 125, 125, 235)    -- 备弹数字（暗灰，垫底层）
+
+local FONT_CLIP = "ZSWeaponHUDClip"       -- 大字体弹匣数字
+local FONT_RESERVE = "ZSWeaponHUDReserve" -- 小字体备弹数字
+
+-- 测量击杀图标的绘制尺寸：字体字形取原始尺寸（位图字体无法缩放），材质按比例缩入最大盒
+local function MeasureKillicon(iconname, maxw, maxh)
+	if not iconname then return 0, 0 end
+	local data = killicon.Get(iconname)
+	if not data then return 0, 0 end
+
+	if killicon.GetFont(iconname) then
+		surface.SetFont(data[1])
+		return surface.GetTextSize(data[2])
+	end
+
+	local mat = Material(data[1])
+	if not mat or mat:IsError() then return 0, 0 end
+
+	local mw, mh = mat:Width(), mat:Height()
+	if mw <= 0 or mh <= 0 then return maxw, maxh end
+	local s = math.min(maxw / mw, maxh / mh)
+	return mw * s, mh * s
+end
+
+-- 在指定位置（左上角）按测量好的尺寸绘制击杀图标
+local function DrawKillicon(iconname, x, y, w, h)
+	local data = killicon.Get(iconname)
+	if not data then return end
+
+	if killicon.GetFont(iconname) then
+		surface.SetFont(data[1])
+		surface.SetTextColor(data[3] or color_white)
+		surface.SetTextPos(x, y)
+		surface.DrawText(data[2])
+		return
+	end
+
+	local mat = Material(data[1])
+	if not mat or mat:IsError() then return end
+	surface.SetMaterial(mat)
+	surface.SetDrawColor(data[2] or color_white)
+	surface.DrawTexturedRect(x, y, w, h)
+end
+
+function SWEP:Draw2DHUD()
+	local owner = self:GetOwner()
+	if not owner:IsValid() then return end
+
+	local screenscale = BetterScreenScale()
+
+	-- 获取弹药信息
+	local clip = self:Clip1()
+	local ammocount = owner:GetAmmoCount(self:GetPrimaryAmmoType())
+	local maxclip = self:GetPrimaryClipSize()
 	local dclip, dbackammo, dmaxclip = self:GetDisplayAmmo(clip, ammocount, maxclip)
 
-    -- 计算文本尺寸以实现动态布局
-    surface.SetFont("ZSA_HUD_Name")
-    local wname = self:GetPrintName()
-    local nameW, nameH = surface.GetTextSize(wname)
-    
-    surface.SetFont("ZSA_HUD_Clip")
-    local clipText = tostring(dclip)
-    local clipW = surface.GetTextSize(clipText)
-    
-    surface.SetFont("ZSA_HUD_Ammo")
-    local ammoText = " / " .. tostring(dbackammo)
-    local ammoW = surface.GetTextSize(ammoText)
-    
-    -- 计算面板总宽度
-    local totalWidth = math.max(nameW, clipW + ammoW) + 96 * screenscale
-    
-    -- 绘制背景面板
-    surface.SetDrawColor(30, 30, 30, 220)
-    surface.DrawRect(x, y, totalWidth, elementHeight)
-    
-    -- 绘制武器名称
-    surface.SetTextColor(255, 255, 255)
-    surface.SetFont("ZSA_HUD_Name")
-    surface.SetTextPos(x + padding, y + padding)
-    surface.DrawText(wname)
-    
-    -- 绘制弹药数量
-    local numbersY = y + elementHeight - 32 * screenscale - padding
-    surface.SetFont("ZSA_HUD_Clip")
-    surface.SetTextPos(x + padding, numbersY)
-    surface.DrawText(clipText)
-    
-    surface.SetFont("ZSA_HUD_Ammo")
-    surface.SetTextPos(x + padding + clipW, numbersY + (32 - 20) * screenscale / 2)
-    surface.DrawText(ammoText)
-    
-    -- 绘制弹药进度条
-    local barHeight = 4 * screenscale
-    local barY = y + elementHeight - barHeight - padding
-    local progress = (dmaxclip > 0) and math.Clamp(dclip / dmaxclip, 0, 1) or 0
-    
-    surface.SetDrawColor(50, 50, 50, 220) -- 进度条背景
-    surface.DrawRect(x + padding, barY, totalWidth - padding * 2, barHeight)
-    
-    surface.SetDrawColor(204, 204, 204) -- 进度条前景
-    surface.DrawRect(x + padding, barY, (totalWidth - padding * 2) * progress, barHeight)
-    
-    -- 绘制武器的击杀图标 (Killicon)
-    local iconSize = 48 * screenscale
-    local iconX = x + totalWidth - iconSize - padding
-    local iconY = y + (elementHeight - iconSize) / 2
-    
-    local killiconData = killicon.Get(self:GetClass())
-    if killiconData then
-        if killicon.GetFont(self:GetClass()) then
-            -- 如果是字体图标
-            surface.SetFont(killiconData[1])
-            surface.SetTextColor(killiconData[3] or color_white)
-            local tw, th = surface.GetTextSize(killiconData[2])
-            surface.SetTextPos(iconX + (iconSize - tw) / 2, iconY + (iconSize - th) / 2)
-            surface.DrawText(killiconData[2])
-        else
-            -- 如果是材质图标
-            surface.SetMaterial(Material(killiconData[1]))
-            surface.SetDrawColor(killiconData[2] or color_white)
-            surface.DrawTexturedRect(iconX, iconY, iconSize, iconSize)
-        end
-    end
+	local hasclip = dmaxclip > 0
+	-- 无限备弹（DefaultClip = 99999）的武器不显示备弹小字
+	local displayspare = hasclip and not (self.Primary and self.Primary.DefaultClip == 99999)
+
+	-- 大字体数字：有弹匣显示弹匣余量，否则显示备弹总量
+	local bignum = hasclip and dclip or dbackammo
+
+	-- 测量大字体弹匣数字
+	surface.SetFont(FONT_CLIP)
+	local bigw, bigh = surface.GetTextSize(tostring(bignum))
+
+	-- 测量小字体备弹数字
+	local sparew, spareh = 0, 0
+	if displayspare then
+		surface.SetFont(FONT_RESERVE)
+		sparew, spareh = surface.GetTextSize(tostring(dbackammo))
+	end
+
+	-- 弹药图标：与 pworth 购物车相同的取法——用 SWEP 声明的 Primary.Ammo 小写后查 GM.AmmoIcons
+	-- （不要用 game.GetAmmoName：客户端对自定义弹药不可靠，且武器声明的大小写不一，必须 lower）
+	local ammoiconname
+	local declaredammo = self.Primary and self.Primary.Ammo
+	if declaredammo and declaredammo ~= "none" then
+		ammoiconname = GAMEMODE.AmmoIcons[string.lower(declaredammo)] or nil
+	end
+	if ammoiconname and not killicon.Get(ammoiconname) then ammoiconname = nil end
+
+	local ammoiconsize = 46 * screenscale
+	local ammow, ammoh = MeasureKillicon(ammoiconname, ammoiconsize, ammoiconsize)
+
+	-- 武器图标：当前武器的击杀图标
+	local wepiconname = killicon.Get(self:GetClass()) and self:GetClass() or nil
+	local wepw, weph = MeasureKillicon(wepiconname, 132 * screenscale, 60 * screenscale)
+
+	-- 布局：整体锚定屏幕右下角，从右向左排布：武器图标 -> 弹匣数字 -> 弹药图标
+	local gap = 10 * screenscale
+	local rightmargin = 24 * screenscale
+	local bottommargin = 44 * screenscale
+
+	-- 备弹底边作为整组基线；主数字底边只上移少量（字体行高包含 ascent/descent 空隙），
+	-- 保证主数字的墨迹压住备弹墨迹的上半部，形成截图中那样的重叠效果
+	local overlap = displayspare and spareh * 0.15 or 0
+	local baseline = ScrH() - bottommargin
+	local bigbottom = baseline - overlap
+	local bigcentery = bigbottom - bigh / 2
+
+	local x = ScrW() - rightmargin
+	local wepx, wepy = x - wepw, bigcentery - weph / 2
+	local bigcenterx = wepx - gap - bigw / 2
+	local bigleft = bigcenterx - bigw / 2
+	local ammox, ammoy = bigleft - gap - ammow, bigcentery - ammoh / 2
+
+	-- 1) 小字体备弹数字（先画，垫在底层），中心相对弹匣数字略微左偏
+	if displayspare then
+		draw.SimpleText(tostring(dbackammo), FONT_RESERVE, bigcenterx - bigw * 0.15, baseline, colReserve, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+	end
+
+	-- 2) 弹药图标
+	if ammoiconname and ammow > 0 then
+		DrawKillicon(ammoiconname, ammox, ammoy, ammow, ammoh)
+	end
+
+	-- 3) 大字体弹匣数字（后画，浮在备弹上面），打空时变红
+	local colClip = hasclip and dclip == 0 and colClipEmpty or colClipNormal
+	draw.SimpleText(tostring(bignum), FONT_CLIP, bigcenterx, bigbottom, colClip, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
+
+	-- 4) 武器图标
+	if wepiconname and wepw > 0 then
+		DrawKillicon(wepiconname, wepx, wepy, wepw, weph)
+	end
 end
 
 function SWEP:CooldownRingBinding()

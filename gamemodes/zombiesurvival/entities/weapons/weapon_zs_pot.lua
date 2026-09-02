@@ -37,7 +37,7 @@ SWEP.ViewModel = "models/weapons/c_stunstick.mdl"
 SWEP.WorldModel = "models/props_interiors/pot02a.mdl"
 SWEP.UseHands = true -- 使用玩家手臂模型握持
 
-SWEP.MeleeDamage = 40 * GAMEMODE.LabourTime -- 近战伤害（随游戏时长"劳工时间"增长）
+SWEP.MeleeDamage = 80 * GAMEMODE.LabourTime -- 近战伤害（随游戏时长"劳工时间"增长）
 SWEP.MeleeRange = 50 -- 近战攻击距离
 SWEP.MeleeSize = 1.15 -- 近战判定范围大小（命中半径）
 

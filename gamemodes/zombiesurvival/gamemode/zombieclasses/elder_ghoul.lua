@@ -23,7 +23,7 @@ CLASS.Help = "controls_elderghoul"
 CLASS.BetterVersion = "Noxious Ghoul"
 
 -- 生命值
-CLASS.Health = 175
+CLASS.Health = 350
 -- 移动速度
 CLASS.Speed = 165
 

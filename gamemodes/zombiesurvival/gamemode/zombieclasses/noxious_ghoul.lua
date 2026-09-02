@@ -20,7 +20,7 @@ CLASS.Description = "description_noxiousghoul"
 CLASS.Help = "controls_noxiousghoul"
 
 -- 生命值
-CLASS.Health = 320
+CLASS.Health = 640
 -- 移动速度
 CLASS.Speed = 185
 

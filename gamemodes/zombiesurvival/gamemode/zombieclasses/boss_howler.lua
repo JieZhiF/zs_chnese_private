@@ -37,7 +37,7 @@ CLASS.Model = Model("models/player/zombie_classic_hbfix.mdl")
 CLASS.OverrideModel = Model("models/player/zombie_lacerator2.mdl")
 
 -- 生命值
-CLASS.Health = 3300
+CLASS.Health = 6600
 -- 移动速度
 CLASS.Speed = 180
 

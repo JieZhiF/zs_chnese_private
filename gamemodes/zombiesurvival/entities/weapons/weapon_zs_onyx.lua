@@ -85,7 +85,7 @@ SWEP.UseHands = true
 
 -- 主攻击：SG550 枪声、单发伤害 86.5、1 秒射击间隔
 SWEP.Primary.Sound = Sound("weapons/sg550/sg550-1.wav")
-SWEP.Primary.Damage = 86.5
+SWEP.Primary.Damage = 173
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 1
 

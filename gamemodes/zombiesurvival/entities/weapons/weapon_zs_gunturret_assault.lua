@@ -12,7 +12,7 @@ SWEP.PrintName = ""..translate.Get("weapon_zs_gunturret_assault")
 SWEP.Description = ""..translate.Get("weapon_zs_gunturret_assault_description")
 
 -- 炮塔单发伤害
-SWEP.Primary.Damage = 22.5
+SWEP.Primary.Damage = 45
 
 -- 放置时的预览（虚影）实体与部署后生成的炮塔实体
 SWEP.GhostStatus = "ghost_gunturret_assault"

@@ -71,7 +71,7 @@ SWEP.MaxStock = 2
 
 -- 主要攻击（左键）设置
 SWEP.Primary.Recoil	= 0.1 -- 基础后坐力数值
-SWEP.Primary.Damage = 27 -- 每颗子弹的伤害
+SWEP.Primary.Damage = 54 -- 每颗子弹的伤害
 SWEP.Primary.KnockbackScale = 1 -- 击退效果的乘数
 SWEP.Primary.NumShots = 1 -- 每次攻击发射的子弹数量
 SWEP.Primary.ClipSize = 40 -- 弹匣容量

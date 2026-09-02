@@ -33,7 +33,7 @@ SWEP.Primary.Ammo = "XBowBolt"
 SWEP.Primary.Delay = 1.25
 SWEP.Primary.DefaultClip = 15
 -- 单发伤害
-SWEP.Primary.Damage = 69
+SWEP.Primary.Damage = 138
 
 -- 武器扩散（最大/最小）
 SWEP.ConeMax = 0.5

@@ -17,7 +17,7 @@ CLASS.Help = "controls_eradicator"
 CLASS.Wave = 6 / 6
 
 -- 生命值
-CLASS.Health = 330
+CLASS.Health = 660
 -- 移动速度
 CLASS.Speed = 150
 

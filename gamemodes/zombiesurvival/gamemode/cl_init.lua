@@ -717,6 +717,17 @@ local lastwarntim = -1
 function GM:_Think()
 	local time = CurTime()
 
+	-- PvE：倒地自救——轮询物理 R 键（input.IsKeyDown 直接读键盘，不受死亡状态/按键派发影响）
+	-- 死亡玩家的 GM:KeyPress/PlayerButtonDown 不触发，只能用物理检测
+	if MySelf and MySelf:IsValid() and MySelf.ZSDowned and MySelf.ZSDowned:IsValid() then
+		if input.IsKeyDown(KEY_R) and not MySelf.ZSReviveSent then
+			MySelf.ZSReviveSent = true
+			RunConsoleCommand("zs_selfrevive")
+		elseif not input.IsKeyDown(KEY_R) then
+			MySelf.ZSReviveSent = nil
+		end
+	end
+
 	if self:GetEscapeStage() == ESCAPESTAGE_DEATH then
 		self.DeathFog = math.min(self.DeathFog + FrameTime() / 5, 1)
 
@@ -825,6 +836,8 @@ end
 local cv_ShouldPlayMusic = CreateClientConVar("zs_playmusic", 1, true, false)
 local NextBeat = 0
 local LastBeatLevel = 0
+-- PvE 倒地队友标记显示模式（本地设置，每人独立）：0=不显示 1=可见 2=穿墙
+local cv_DownedMarker = CreateClientConVar("zs_downmarker", "1", true, false)
 -- 播放心跳/背景音乐节拍
 function GM:PlayBeats(teamid, fear)
 	if RealTime() <= NextBeat or not gamemode.Call("ShouldPlayBeats", teamid, fear) then return end
@@ -911,6 +924,44 @@ net.Receive(NET_MSG.NEXTRESUPPLYUSE, function(length)
 	MySelf.NextUse = net.ReadFloat()
 end)
 
+-- 接收 PvE 救援开始消息：记录"我在救谁"（用于救援读条 HUD）
+net.Receive(NET_MSG.ZSRESCUE, function(length)
+	local target = net.ReadEntity()
+	local rescuer = net.ReadEntity()
+	if MySelf and MySelf:IsValid() then
+		if not target:IsValid() then
+			-- 救援取消（NULL target）
+			if rescuer == MySelf then
+				MySelf.ZSRescuing = nil
+			end
+			return
+		end
+		if rescuer == MySelf then
+			MySelf.ZSRescuing = target
+		elseif target == MySelf then
+			-- 倒地者视角：记录救援者（HUD 显示"XX 正在救援你"）
+			MySelf.ZSRescuerName = rescuer:Name()
+		end
+	end
+end)
+
+-- 接收 PvE 倒地消息：客户端标记倒地状态（服务端实体已同步 ZSDowned，这里刷新次数显示）
+net.Receive(NET_MSG.ZSDOWNED, function(length)
+	local pl = net.ReadEntity()
+	local count = net.ReadUInt(8)
+	if pl == MySelf and MySelf:IsValid() then
+		MySelf.ZSDownedCount = count
+	end
+end)
+
+-- 接收 PvE 真死消息：清除本地救援状态
+net.Receive(NET_MSG.ZSTRUEDEATH, function(length)
+	if MySelf and MySelf:IsValid() then
+		MySelf.ZSRescuing = nil
+		MySelf.ZSRescuerName = nil
+	end
+end)
+
 -- ==================== 人类HUD ====================
 function GM:HumanHUD(screenscale)
 	local curtime = CurTime()
@@ -992,6 +1043,17 @@ function GM:_HUDPaint()
 
 	self:HUDDrawTargetID(myteam, screenscale)
 
+	-- PvE：倒地状态优先渲染倒地 HUD
+	if MySelf.ZSDowned and MySelf.ZSDowned:IsValid() then
+		self:ZSDownedHUD(screenscale)
+		return
+	end
+
+	-- PvE：救援者正在救倒地队友时显示读条
+	if MySelf.ZSRescuing and MySelf.ZSRescuing:IsValid() then
+		self:RescueProgressHUD(screenscale)
+	end
+
 	if self:GetWave() > 0 then
 		self:DrawFearMeter(self:CachedFearPower(), screenscale)
 	end
@@ -1005,6 +1067,149 @@ function GM:_HUDPaint()
 	if GetGlobalBool("classicmode") then
 		draw_SimpleTextBlurry(translate.Get("classic_mode"), "ZSHUDFontSmaller", 4, ScrH() - 4, COLOR_GRAY, TEXT_ALIGN_LEFT, TEXT_ALIGN_BOTTOM_REAL)
 	end
+end
+
+-- ==================== PvE 倒地 HUD（L4D2 风格） ====================
+function GM:ZSDownedHUD(screenscale)
+	local w, h = ScrW(), ScrH()
+	local status = MySelf.ZSDowned
+
+	local cur = status:GetDownedHealth()
+	local curmax = status:GetDownedHealthMax()
+	local count = status:GetDownedCount()
+	local frac = curmax > 0 and math.max(0, math.min(1, cur / curmax)) or 0
+
+	-- 屏幕中央红色提示
+	draw_SimpleTextBlurry("你被击倒了！", "ZSHUDFont", w * 0.5, h * 0.38, COLOR_SOFTRED, TEXT_ALIGN_CENTER)
+	draw_SimpleTextBlurry("等待队友救援（按住 E 拉起）", "ZSHUDFontSmall", w * 0.5, h * 0.38 + draw_GetFontHeight("ZSHUDFont") * 0.8, COLOR_GRAY, TEXT_ALIGN_CENTER)
+
+	-- 本局已倒地次数提示
+	if count > 0 then
+		draw_SimpleTextBlurry("倒地次数：" .. count .. " / " .. (GAMEMODE.ZSDownedLimit or 3), "ZSHUDFontSmaller", w * 0.5, h * 0.38 + draw_GetFontHeight("ZSHUDFont") * 1.5, COLOR_GRAY, TEXT_ALIGN_CENTER)
+	end
+
+	-- 自救道具提示
+	if (MySelf.ZSSelfRevives or 0) > 0 then
+		draw_SimpleTextBlurry("按 [R] 使用自救道具（剩余 " .. MySelf.ZSSelfRevives .. " 次）", "ZSHUDFontSmaller", w * 0.5, h * 0.38 + draw_GetFontHeight("ZSHUDFont") * 2.2, COLOR_GREEN, TEXT_ALIGN_CENTER)
+	end
+
+	-- 底部虚血条
+	local barw = w * 0.5
+	local barh = 22 * screenscale
+	local barx = w * 0.5 - barw / 2
+	local bary = h - barh - 30 * screenscale
+
+	-- 背景
+	draw.RoundedBox(4, barx, bary, barw, barh, Color(0, 0, 0, 160))
+	-- 虚血（红色渐隐）
+	local r = math.floor(220 * (0.5 + frac * 0.5))
+	draw.RoundedBox(4, barx + 2, bary + 2, (barw - 4) * frac, barh - 4, Color(r, 30, 30, 220))
+
+	-- 虚血数字
+	surface.SetFont("ZSHUDFontSmall")
+	surface.SetTextColor(255, 255, 255, 255)
+	local txt = math.ceil(cur) .. " / " .. math.ceil(curmax)
+	surface.SetTextPos(w * 0.5 - surface.GetTextSize(txt) / 2, bary + (barh - draw_GetFontHeight("ZSHUDFontSmall")) / 2)
+	surface.DrawText(txt)
+
+	-- 被救援读条提示
+	local rescuer = status:GetRescuer()
+	if rescuer and rescuer:IsValid() then
+		local pfrac = status:GetRescueProgress() or 0
+
+		draw_SimpleTextBlurry(rescuer:Name() .. " 正在救援你…", "ZSHUDFontSmall", w * 0.5, h * 0.45, COLOR_GREEN, TEXT_ALIGN_CENTER)
+
+		local pbarw = w * 0.3
+		local pbarh = 10 * screenscale
+		draw.RoundedBox(2, w * 0.5 - pbarw / 2, h * 0.45 + 26 * screenscale, pbarw, pbarh, Color(0, 0, 0, 160))
+		draw.RoundedBox(2, w * 0.5 - pbarw / 2 + 1, h * 0.45 + 26 * screenscale + 1, (pbarw - 2) * pfrac, pbarh - 2, Color(80, 200, 80, 220))
+	end
+end
+
+-- ==================== PvE 倒地队友位置标记（存活人类视角） ====================
+-- 模式（zs_downmarker）：0=不显示，1=可见显示（被墙挡不显示），2=穿墙显示（cam_IgnoreZ）
+-- 样式：DrawHorderallyIndicators 风格（3D2D 世界图标 + 名字 + 上下浮动 + 距离缩放）
+local matDowned = Material("zombiesurvival/knock_down.png")
+
+function GM:DrawDownedMarkers(screenscale)
+	local mode = cv_DownedMarker:GetInt()
+	if not mode or mode == 0 then return end
+
+	-- 仅存活的真人人类可见（自己倒地时看自己的倒地 HUD，不画队友标记）
+	if P_Team(MySelf) ~= TEAM_HUMAN or not MySelf:Alive() then return end
+	if MySelf.ZSDowned and MySelf.ZSDowned:IsValid() then return end
+
+	local eyepos = EyePos()
+
+	surface_SetMaterial(matDowned)
+
+	for _, pl in pairs(team.GetPlayers(TEAM_HUMAN)) do
+		if pl ~= MySelf and pl.ZSDowned and pl.ZSDowned:IsValid() and not pl:Alive() then
+			-- 标记锚点：状态实体位置（服务端 EnterZSDowned 时固定同步，最可靠）
+			local pos = pl.ZSDowned:GetPos() + Vector(0, 0, 40)
+
+			-- 可见性检测（模式 1：被墙挡不显示）
+			local visible = true
+			if mode == 1 then
+				local tr = util.TraceLine({
+					start = eyepos,
+					endpos = pos,
+					filter = { MySelf, pl },
+					mask = MASK_OPAQUE,
+				})
+				visible = not tr.Hit
+			end
+
+			if visible then
+				local distance = eyepos:DistToSqr(pos)
+				local ang = (eyepos - pos):Angle()
+				ang:RotateAroundAxis(ang:Right(), 270)
+				ang:RotateAroundAxis(ang:Up(), 90)
+
+				local alpha = math.min(230, 130 + math.sqrt(distance) / 6)
+
+				-- 穿墙模式：IgnoreZ 让图标穿过墙体可见
+				if mode == 2 then
+					cam_IgnoreZ(true)
+				end
+
+				cam_Start3D2D(pos, ang, math.max(220, math.sqrt(distance)) / 5000)
+
+				-- 红色击倒图标
+				surface_SetDrawColor(220, 30, 30, alpha)
+				surface_DrawTexturedRect(-128, -128, 256, 256)
+
+				-- 玩家名字（图标上方）
+				local name = pl:Nick()
+				draw_SimpleTextBlurry(name, "ZS3D2DFont2", 0, 140, Color(255, 230, 230, alpha), TEXT_ALIGN_CENTER)
+
+				cam_End3D2D()
+
+				if mode == 2 then
+					cam_IgnoreZ(false)
+				end
+			end
+		end
+	end
+end
+
+-- ==================== PvE 救援者读条 HUD ====================
+function GM:RescueProgressHUD(screenscale)
+	local w, h = ScrW(), ScrH()
+	local target = MySelf.ZSRescuing
+	if not target:IsValid() or not target.ZSDowned or not target.ZSDowned:IsValid() then return end
+
+	local status = target.ZSDowned
+	local pfrac = status:GetRescueProgress() or 0
+
+	-- 屏幕中央提示
+	draw_SimpleTextBlurry("正在救援 " .. target:Name() .. "…（按住 E）", "ZSHUDFontSmall", w * 0.5, h * 0.4, COLOR_GREEN, TEXT_ALIGN_CENTER)
+
+	-- 读条
+	local pbarw = w * 0.3
+	local pbarh = 14 * screenscale
+	draw.RoundedBox(2, w * 0.5 - pbarw / 2, h * 0.4 + 26 * screenscale, pbarw, pbarh, Color(0, 0, 0, 160))
+	draw.RoundedBox(2, w * 0.5 - pbarw / 2 + 1, h * 0.4 + 26 * screenscale + 1, (pbarw - 2) * pfrac, pbarh - 2, Color(80, 200, 80, 220))
 end
 
 -- ==================== 僵尸观察者HUD ====================
@@ -1125,6 +1330,8 @@ function GM:_PostDrawTranslucentRenderables()
 		self:DrawHumanIndicators()
 		self:DrawNestIndicators()
 		self:DrawHorderallyIndicators()
+		-- PvE：倒地队友位置标记（3D2D 世界图标，必须在 PostDrawTranslucentRenderables 绘制）
+		self:DrawDownedMarkers()
 	end
 end
 
@@ -1656,6 +1863,10 @@ function GM:CreateScalingFonts()
 	surface.CreateLegacyFont(fontfamily, screenscale * (72 + fontsizeadd), fontweight, fontaa, false, "ZSHUDFontBigBlur", false, false, 8)
 
 	surface.CreateLegacyFont(fontfamily, screenscale * (20 + fontsizeadd/2), 0, fontaa, false, "ZSAmmoName", false, false)
+
+	-- 武器HUD右下角：大字体弹匣数字 / 小字体备弹数字（备弹叠在弹匣数字下方）
+	surface.CreateFont("ZSWeaponHUDClip", {font = "Tahoma", size = math.max(34, screenscale * 62), weight = 700, antialias = true, outline = true, extended = true})
+	surface.CreateFont("ZSWeaponHUDReserve", {font = "Tahoma", size = math.max(20, screenscale * 36), weight = 500, antialias = true, outline = true, extended = true})
 
 	local liscreenscale = math.max(0.95, BetterScreenScale())
 
@@ -2504,6 +2715,11 @@ function GM:KeyPress(pl, key)
 			gamemode.Call("HumanMenu")
 		elseif team == TEAM_ZOMBIE then
 			gamemode.Call("ZombieSpawnMenu")
+		end
+	elseif key == IN_RELOAD then
+		-- PvE：倒地时按 R 使用自救道具
+		if pl.ZSDowned and pl.ZSDowned:IsValid() then
+			RunConsoleCommand("zs_selfrevive")
 		end
 	elseif key == IN_SPEED then
 		if pl:Alive() then

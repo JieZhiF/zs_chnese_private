@@ -17,7 +17,7 @@ CLASS.VoicePitch = 0.65
 
 CLASS.SWEP = "weapon_zs_redmarrow"
 
-CLASS.Health = 1800
+CLASS.Health = 3600
 CLASS.Speed = 180
 
 CLASS.Skeletal = true

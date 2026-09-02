@@ -59,7 +59,7 @@ SWEP.UseHands = true
 
 SWEP.ReloadSound = Sound("Weapon_AWP.ClipOut")
 SWEP.Primary.Sound			= Sound("weapons/colossus_fire.wav")
-SWEP.Primary.Damage = 110
+SWEP.Primary.Damage = 220
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 1.05
 SWEP.ReloadDelay = SWEP.Primary.Delay

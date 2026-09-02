@@ -27,7 +27,7 @@ SWEP.ReloadFinishSound = Sound("npc/vort/attack_shoot.wav")
 SWEP.Primary.Delay = 1
 SWEP.Primary.Automatic = true
 -- 伤害值
-SWEP.Primary.Damage = 123
+SWEP.Primary.Damage = 246
 
 -- 单发弹匣，使用十字弓螺栓弹药，默认携带 15 发
 SWEP.Primary.ClipSize = 1

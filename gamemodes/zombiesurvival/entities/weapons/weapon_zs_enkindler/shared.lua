@@ -31,7 +31,7 @@ SWEP.Primary.Sound = Sound("weapons/grenade_launcher1.wav")
 SWEP.Primary.Delay = 1
 
 -- 主攻击伤害
-SWEP.Primary.Damage = 36.5
+SWEP.Primary.Damage = 73
 -- 弹匣容量（每次装填 1 发）
 SWEP.Primary.ClipSize = 1
 -- 半自动（单发）

@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_glock3"
 
-SWEP.Primary.Damage = 90
+SWEP.Primary.Damage = 180
 SWEP.Primary.Delay = 0.27
 
 SWEP.ConeMax = 3.5

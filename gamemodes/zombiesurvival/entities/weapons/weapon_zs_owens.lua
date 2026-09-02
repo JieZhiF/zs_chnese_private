@@ -42,7 +42,7 @@ SWEP.CSMuzzleFlashes = false
 -- 换弹/开火音效与伤害（每次打出 2 发弹丸）
 SWEP.ReloadSound = Sound("Weapon_Pistol.Reload")
 SWEP.Primary.Sound = Sound("Weapon_Pistol.NPC_Single")
-SWEP.Primary.Damage = 14.2
+SWEP.Primary.Damage = 28.4
 SWEP.Primary.NumShots = 2
 SWEP.Primary.Delay = 0.18
 

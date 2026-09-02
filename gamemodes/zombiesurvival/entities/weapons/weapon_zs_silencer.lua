@@ -42,7 +42,7 @@ SWEP.WorldModel = "models/weapons/w_smg_tmp.mdl"
 SWEP.UseHands = true -- 使用玩家手臂模型握持
 
 SWEP.Primary.Sound = Sound("Weapon_TMP.Single") -- 开火音效
-SWEP.Primary.Damage = 20 -- 单发伤害
+SWEP.Primary.Damage = 40 -- 单发伤害
 SWEP.Primary.NumShots = 1 -- 每次射击的子弹数
 SWEP.Primary.Delay = 0.06 -- 射击间隔（射速极快）
 

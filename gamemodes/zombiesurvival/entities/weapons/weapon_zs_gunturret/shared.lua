@@ -27,7 +27,7 @@ SWEP.Primary.Ammo = "thumper"
 -- 射击间隔 2 秒（占位值）
 SWEP.Primary.Delay = 2
 -- 伤害（占位值）
-SWEP.Primary.Damage = 8.8
+SWEP.Primary.Damage = 17.6
 
 -- 禁用右键功能（-1 弹匣、无弹药、非自动）
 SWEP.Secondary.ClipSize = -1

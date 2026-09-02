@@ -26,7 +26,7 @@ CLASS.Model = Model("models/headcrab.mdl")
 CLASS.SWEP = "weapon_zs_bloodsucker_headcrab"
 
 -- 生命值
-CLASS.Health = 50
+CLASS.Health = 100
 
 -- 击杀得分
 CLASS.Points = CLASS.Health/GM.HeadcrabZombiePointRatio

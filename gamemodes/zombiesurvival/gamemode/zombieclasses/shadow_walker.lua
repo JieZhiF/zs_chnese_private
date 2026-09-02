@@ -33,7 +33,7 @@ CLASS.Wave = 2 / 6
 
 -- 生命值/速度
 -- 生命值
-CLASS.Health = 220
+CLASS.Health = 440
 -- 移动速度
 CLASS.Speed = 180
 

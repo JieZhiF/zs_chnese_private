@@ -69,7 +69,7 @@ SWEP.UseHands = true
 
 -- 每次射击 2 颗弹丸
 SWEP.Primary.Sound = Sound("Weapon_Gale.Single")
-SWEP.Primary.Damage = 8.5
+SWEP.Primary.Damage = 17
 SWEP.Primary.NumShots = 2
 SWEP.Primary.Delay = 0.12
 

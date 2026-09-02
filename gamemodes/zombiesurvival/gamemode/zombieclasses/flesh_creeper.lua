@@ -21,7 +21,7 @@ CLASS.Unlocked = true
 CLASS.NotRandomStart = true
 
 -- 生命值
-CLASS.Health = 175
+CLASS.Health = 350
 -- 绑定的武器
 CLASS.SWEP = "weapon_zs_fleshcreeper"
 -- 蚁狮模型

@@ -49,7 +49,7 @@ SWEP.UseHands = true
 -- 开火音效
 SWEP.Primary.Sound = Sound("Weapon_Deagle.Single")
 -- 单发伤害
-SWEP.Primary.Damage = 64
+SWEP.Primary.Damage = 128
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots = 1
 -- 射击间隔

@@ -46,7 +46,7 @@ SWEP.CSMuzzleFlashes = false
 SWEP.ReloadSound = Sound("Weapon_SMG1.Reload")
 SWEP.Primary.Sound = Sound("Airboat.FireGunHeavy")
 -- 单发伤害 29，每次 1 颗子弹，间隔 0.2 秒
-SWEP.Primary.Damage = 29
+SWEP.Primary.Damage = 58
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.2
 

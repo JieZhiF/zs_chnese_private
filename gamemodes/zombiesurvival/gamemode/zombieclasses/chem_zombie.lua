@@ -24,7 +24,7 @@ CLASS.Help = "controls_chem_zombie"
 CLASS.Wave = 6 / 6
 
 -- 生命值
-CLASS.Health = 200
+CLASS.Health = 400
 -- 绑定的武器
 CLASS.SWEP = "weapon_zs_chemzombie"
 -- 使用毒僵尸模型

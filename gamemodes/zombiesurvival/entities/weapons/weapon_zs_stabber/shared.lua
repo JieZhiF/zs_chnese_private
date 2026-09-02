@@ -14,7 +14,7 @@ SWEP.ViewModel = "models/weapons/tfa_dods/c_garand.mdl"
 SWEP.WorldModel = "models/weapons/w_garand.mdl"
 SWEP.UseHands = true
 
-SWEP.Primary.Damage = 65
+SWEP.Primary.Damage = 130
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.36
 
@@ -23,7 +23,7 @@ SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "357"
 SWEP.Primary.DefaultClip = 25
 
-SWEP.MeleeDamage = 45
+SWEP.MeleeDamage = 90
 SWEP.MeleeRange = 72
 SWEP.MeleeSize = 0.95
 SWEP.MeleeKnockBack = 0

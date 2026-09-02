@@ -44,7 +44,7 @@ SWEP.ShowWorldModel = false
 SWEP.UseHands = true
 
 -- 近战数值：40 伤害、48 距离、0.875 判定尺寸
-SWEP.MeleeDamage = 40
+SWEP.MeleeDamage = 80
 SWEP.MeleeRange = 48
 SWEP.MeleeSize = 0.875
 

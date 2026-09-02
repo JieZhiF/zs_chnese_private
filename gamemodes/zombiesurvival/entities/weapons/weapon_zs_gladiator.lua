@@ -65,7 +65,7 @@ SWEP.ReloadDelay = 0.3
 
 -- 单发 16 颗弹丸
 SWEP.Primary.Sound = Sound(")weapons/zs_glad/gladshot4.wav")
-SWEP.Primary.Damage = 14
+SWEP.Primary.Damage = 28
 SWEP.Primary.NumShots = 16
 SWEP.Primary.Delay = 1.2
 

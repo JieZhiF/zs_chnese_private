@@ -39,7 +39,7 @@ SWEP.WorldModel				= "models/weapons/w_pist_elite.mdl"
 SWEP.ViewModelFlip 			= false
 SWEP.HoldType = "duel"
 
-SWEP.Primary.Damage			= 26
+SWEP.Primary.Damage			= 52
 SWEP.Primary.NumShots		= 1
 SWEP.Primary.Sound			= Sound("weapons/davidgoliath2.wav")
 SWEP.Primary.ClipSize		= 30

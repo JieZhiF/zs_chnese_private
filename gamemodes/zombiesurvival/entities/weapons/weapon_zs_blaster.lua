@@ -35,7 +35,7 @@ SWEP.UseHands = false -- 不使用玩家手臂模型
 SWEP.ReloadDelay = 0.4 -- 换弹间隔
 
 SWEP.Primary.Sound = Sound("Weapon_Shotgun.NPC_Single") -- 开火音效
-SWEP.Primary.Damage = 8.325 -- 单粒弹丸伤害
+SWEP.Primary.Damage = 16.65 -- 单粒弹丸伤害
 SWEP.Primary.NumShots = 8 -- 一次射击 8 粒弹丸
 SWEP.Primary.Delay = 0.8 -- 射击间隔
 

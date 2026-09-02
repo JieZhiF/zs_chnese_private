@@ -52,7 +52,7 @@ SWEP.CSMuzzleFlashes = false
 SWEP.ReloadSound = Sound("weapons/alyx_gun/alyx_shotgun_cock1.wav")
 SWEP.Primary.Sound = Sound("weapons/alyx_gun/alyx_gun_fire3.wav")
 -- 左键开火：单发伤害 14.5、每次 1 发、0.2 秒射击间隔
-SWEP.Primary.Damage = 14.5
+SWEP.Primary.Damage = 29
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.2
 

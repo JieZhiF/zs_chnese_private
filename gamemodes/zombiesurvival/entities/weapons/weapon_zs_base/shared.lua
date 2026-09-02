@@ -44,7 +44,7 @@ SWEP.RecoilMultMove = 1.3 -- 移动时后坐力倍率
 
 SWEP.Primary.Sound = Sound("Weapon_Pistol.Single") --左键开火音效
 SWEP.DryFireSound = Sound("Weapon_Pistol.Empty") --没子弹音效
-SWEP.Primary.Damage = 30 --伤害
+SWEP.Primary.Damage = 60 --伤害
 SWEP.Primary.KnockbackScale = 1
 SWEP.Primary.NumShots = 1 --一次射击的子弹数目
 SWEP.Primary.Delay = 0.15 --一次射击的延迟

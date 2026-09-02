@@ -30,7 +30,7 @@ SWEP.WorldModel = "models/weapons/w_smg_mac10.mdl" -- 第三人称模型
 SWEP.UseHands = true -- 使用玩家手部模型
 
 SWEP.Primary.Sound = Sound("Weapon_MAC10.Single") -- 开火音效
-SWEP.Primary.Damage = 17 -- 单发伤害
+SWEP.Primary.Damage = 34 -- 单发伤害
 SWEP.Primary.NumShots = 1 -- 一次射击的子弹数
 SWEP.Primary.Delay = 0.075 -- 射击间隔（秒，极高射速）
 

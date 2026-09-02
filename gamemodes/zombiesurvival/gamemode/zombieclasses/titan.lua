@@ -15,7 +15,7 @@ CLASS.Help = "controls_titan"
 
 -- 生命值/速度
 -- 生命值
-CLASS.Health = 600
+CLASS.Health = 1200
 -- 移动速度
 CLASS.Speed = 120
 -- 击杀得分

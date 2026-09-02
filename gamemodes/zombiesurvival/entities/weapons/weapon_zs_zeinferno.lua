@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_inferno"
 
-SWEP.Primary.Damage = 80
+SWEP.Primary.Damage = 160
 
 SWEP.ConeMax = 2.5
 SWEP.ConeMin = 0.8

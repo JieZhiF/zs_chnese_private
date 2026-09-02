@@ -928,6 +928,16 @@ GM:AddPointShopItem("nanitecloud",		ITEMCAT_OTHER,			25,				"weapon_zs_naniteclo
 item.SkillRequirement = SKILL_U_NANITECLOUD
 
 -- ============================================================
+-- PvE 自救道具（PointShop 物品）
+-- 购买后获得一次自救次数；倒地（ZSDowned）时使用 zs_selfrevive 命令爬起
+-- ============================================================
+item =
+GM:AddPointShopItem("selfrevive",		ITEMCAT_OTHER,			40,				nil, "自救道具", "倒地时使用自救道具立即爬起（每人限购）。", "models/Items/healthkit.mdl", function(pl)
+	pl.ZSSelfRevives = (pl.ZSSelfRevives or 0) + 1
+	pl:CenterNotify(COLOR_GREEN, "你获得了一次自救次数（倒地时输入 !selfrevive 使用）")
+end)
+
+-- ============================================================
 -- genericcallback() - 荣誉提及通用回调函数
 -- 玩家的荣誉提及默认使用此回调来生成显示文本
 -- @param pl (Player) 玩家对象
@@ -1090,6 +1100,36 @@ GM.ZombieDamageMultiplier = math.Round(CreateConVar("zs_zombiedamagemultiplier",
 cvars.AddChangeCallback("zs_zombiedamagemultiplier", function(cvar, oldvalue, newvalue)
 	GAMEMODE.ZombieDamageMultiplier = math.ceil(100 * (tonumber(newvalue) or 1)) * 0.01
 end)
+
+-- ============================================================
+-- PvE 倒地系统 ConVar（zs_down_*）
+-- zs_downlimit - 每局最大倒地次数（超过则被放倒直接真死）
+-- zs_downdrain - 倒地虚血每秒衰减量
+-- zs_downrescuerange - 救援距离（单位）
+-- zs_downrescuetime - 救援读条时长（秒）
+-- ============================================================
+GM.ZSDownedLimit = CreateConVar("zs_downlimit", "3", FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_NOTIFY, "PvE：每局最大倒地次数，超过则被放倒直接真死。"):GetInt()
+cvars.AddChangeCallback("zs_downlimit", function(cvar, oldvalue, newvalue)
+	GAMEMODE.ZSDownedLimit = math.max(0, tonumber(newvalue) or 3)
+end)
+
+GM.ZSDownedHealthDrain = CreateConVar("zs_downdrain", "1.5", FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_NOTIFY, "PvE：倒地虚血每秒衰减量。"):GetFloat()
+cvars.AddChangeCallback("zs_downdrain", function(cvar, oldvalue, newvalue)
+	GAMEMODE.ZSDownedHealthDrain = math.max(0, tonumber(newvalue) or 1.5)
+end)
+
+GM.RescueRange = CreateConVar("zs_downrescuerange", "120", FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_NOTIFY, "PvE：救援倒地队友的距离（单位）。"):GetInt()
+cvars.AddChangeCallback("zs_downrescuerange", function(cvar, oldvalue, newvalue)
+	GAMEMODE.RescueRange = math.max(32, tonumber(newvalue) or 120)
+end)
+
+GM.RescueTime = CreateConVar("zs_downrescuetime", "2.5", FCVAR_REPLICATED + FCVAR_ARCHIVE + FCVAR_NOTIFY, "PvE：救援倒地队友的读条时长（秒）。"):GetFloat()
+cvars.AddChangeCallback("zs_downrescuetime", function(cvar, oldvalue, newvalue)
+	GAMEMODE.RescueTime = math.max(0.5, tonumber(newvalue) or 2.5)
+end)
+
+-- zs_downmarker 已改为客户端本地设置（CreateClientConVar，见 cl_init.lua），
+-- 每个玩家可单独设置倒地队友标记的显示模式（0=不显示 1=可见 2=穿墙）。
 
 -- ============================================================
 -- zs_timelimit - 游戏时间限制（以分钟为单位）

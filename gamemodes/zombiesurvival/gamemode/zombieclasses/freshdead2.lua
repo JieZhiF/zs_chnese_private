@@ -26,7 +26,7 @@ CLASS.Disabled = true
 CLASS.Unlocked = true
 
 -- 生命值
-CLASS.Health = 130
+CLASS.Health = 260
 -- 击杀得分
 CLASS.Points = CLASS.Health/GM.HumanoidZombiePointRatio
 

@@ -99,7 +99,7 @@ SWEP.WorldModel = "models/weapons/w_garand.mdl"
 SWEP.UseHands = true
 
 -- 单发伤害
-SWEP.Primary.Damage = 65
+SWEP.Primary.Damage = 130
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots = 1
 -- 射击间隔（半自动单发）
@@ -118,7 +118,7 @@ SWEP.Primary.DefaultClip = 25
 SWEP.ReloadSpeed = 0.64
 
 -- 近战（枪托）伤害
-SWEP.MeleeDamage = 45
+SWEP.MeleeDamage = 90
 -- 近战攻击距离
 SWEP.MeleeRange = 72
 -- 近战判定体积大小

@@ -50,7 +50,7 @@ SWEP.WorldModel = "models/props_c17/computer01_keyboard.mdl"
 SWEP.UseHands = true
 
 -- 近战数值：35 伤害、52 距离、1.25 判定尺寸
-SWEP.MeleeDamage = 35
+SWEP.MeleeDamage = 70
 SWEP.MeleeRange = 52
 SWEP.MeleeSize = 1.25
 

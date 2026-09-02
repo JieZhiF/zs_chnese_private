@@ -48,7 +48,7 @@ SWEP.UseHands = true -- 使用玩家手部模型
 SWEP.CSMuzzleFlashes = false -- 不使用 CS 风格枪口闪光
 
 SWEP.Primary.Delay = 0.5 -- 射击间隔（秒）
-SWEP.Primary.Damage = 85 -- 单发伤害
+SWEP.Primary.Damage = 170 -- 单发伤害
 
 SWEP.Primary.ClipSize = 4 -- 弹匣容量
 SWEP.Primary.Automatic = false -- 单发（非全自动）

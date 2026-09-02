@@ -23,7 +23,7 @@ CLASS.BetterVersion = "Poison Zombie"
 CLASS.Wave = 3 / 6
 
 -- 生命值
-CLASS.Health = 350
+CLASS.Health = 700
 -- 移动速度（缓慢）
 CLASS.Speed = 135
 

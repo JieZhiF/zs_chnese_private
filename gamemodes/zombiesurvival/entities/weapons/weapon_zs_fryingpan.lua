@@ -44,7 +44,7 @@ SWEP.WorldModel = "models/props_c17/metalpot002a.mdl"
 SWEP.UseHands = true
 
 -- 近战伤害
-SWEP.MeleeDamage = 40
+SWEP.MeleeDamage = 80
 -- 近战攻击距离
 SWEP.MeleeRange = 50
 -- 近战攻击范围体积

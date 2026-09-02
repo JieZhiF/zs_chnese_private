@@ -45,7 +45,7 @@ SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 
 -- 近战伤害：基础 34 × 游戏模式劳动时间系数（随波次进程成长的伤害）
-SWEP.MeleeDamage = 34 * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 68 * GAMEMODE.LabourTime
 -- 近战攻击距离
 SWEP.MeleeRange = 58
 -- 近战攻击范围体积

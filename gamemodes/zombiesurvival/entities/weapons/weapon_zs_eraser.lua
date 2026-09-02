@@ -45,7 +45,7 @@ SWEP.UseHands = true
 
 -- 开火音效 / 单发伤害 / 单次射击弹数 / 射击间隔
 SWEP.Primary.Sound = Sound("weapons/ar2/npc_ar2_altfire.wav")
-SWEP.Primary.Damage = 23.5
+SWEP.Primary.Damage = 47
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.15
 

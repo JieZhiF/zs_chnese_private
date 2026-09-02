@@ -39,7 +39,7 @@ SWEP.UseHands = true
 
 -- 主攻击：开火音效、伤害、弹数与射击间隔
 SWEP.Primary.Sound = Sound("Weapon_USP.Single")
-SWEP.Primary.Damage = 24
+SWEP.Primary.Damage = 48
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.2
 

@@ -18,7 +18,7 @@ CLASS.Description = "description_titan"
 CLASS.Help = "controls_titan"
 
 -- 生命值
-CLASS.Health = 900
+CLASS.Health = 1800
 -- 移动速度
 CLASS.Speed = 145
 -- 不可复活

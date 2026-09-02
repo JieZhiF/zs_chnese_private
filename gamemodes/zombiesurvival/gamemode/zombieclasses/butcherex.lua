@@ -17,7 +17,7 @@ CLASS.Help = "controls_butcherex"
 CLASS.KnockbackScale = 0
 
 -- 生命值
-CLASS.Health = 730
+CLASS.Health = 1460
 -- 移动速度
 CLASS.Speed = 220
 

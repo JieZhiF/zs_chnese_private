@@ -151,7 +151,7 @@ sound.Add( {
 SWEP.UseHands = true
 SWEP.Primary.SilencedSound = Sound("Weapon_KDP2011.Silende") -- This is the sound of the weapon, when silenced.
 SWEP.Primary.Sound = Sound("Weapon_KDP2011.SingleHeavy") 
-SWEP.Primary.Damage = 15.5
+SWEP.Primary.Damage = 31
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.18
 

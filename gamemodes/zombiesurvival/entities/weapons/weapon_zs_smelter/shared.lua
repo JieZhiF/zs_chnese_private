@@ -26,7 +26,7 @@ SWEP.CSMuzzleFlashes = false
 SWEP.Primary.Sound = Sound("Weapon_Crossbow.Single")
 SWEP.Primary.Delay = 1.25
 SWEP.Primary.Automatic = true
-SWEP.Primary.Damage = 20.5
+SWEP.Primary.Damage = 41
 SWEP.Primary.NumShots = 7
 
 -- 弹匣 6 发，使用废料（scrap）弹药，默认携带 15 发

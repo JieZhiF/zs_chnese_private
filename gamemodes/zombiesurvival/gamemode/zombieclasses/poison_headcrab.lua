@@ -28,7 +28,7 @@ CLASS.Threshold = 0.6
 CLASS.SWEP = "weapon_zs_poisonheadcrab"
 
 -- 生命值
-CLASS.Health = 85
+CLASS.Health = 170
 -- 移动/跳跃
 CLASS.Speed = 145
 CLASS.JumpPower = 100

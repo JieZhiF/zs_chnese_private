@@ -30,7 +30,7 @@ CLASS.HullDuck = {Vector(-16, -16, 0), Vector(16, 16, 28)}
 CLASS.SWEP = "weapon_zs_fastzombietorso_slingshot"
 
 -- 生命值
-CLASS.Health = 140
+CLASS.Health = 280
 -- 移动速度
 CLASS.Speed = 160
 -- 跳跃力

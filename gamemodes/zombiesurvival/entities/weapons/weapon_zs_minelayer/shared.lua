@@ -30,7 +30,7 @@ SWEP.Primary.Sound = Sound("weapons/grenade_launcher1.wav")
 SWEP.Primary.Delay = 1
 
 -- 地雷直接命中伤害
-SWEP.Primary.Damage = 26.67
+SWEP.Primary.Damage = 53.34
 -- 弹匣容量（每次装填一颗地雷）
 SWEP.Primary.ClipSize = 1
 -- 非全自动，需逐发点击

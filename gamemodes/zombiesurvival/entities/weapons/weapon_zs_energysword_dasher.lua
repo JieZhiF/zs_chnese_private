@@ -37,7 +37,7 @@ SWEP.WorldModel = "models/weapons/w_knife_t.mdl" -- 第三人称模型
 SWEP.UseHands = true -- 使用玩家手臂
 SWEP.HitDecal = "Manhackcut" -- 命中贴花
 
-SWEP.MeleeDamage = 119 -- 近战伤害
+SWEP.MeleeDamage = 238 -- 近战伤害
 SWEP.MeleeRange = 99 -- 近战范围
 SWEP.MeleeSize = 2 -- 近战判定大小
 SWEP.Tier = 3 -- 武器等级

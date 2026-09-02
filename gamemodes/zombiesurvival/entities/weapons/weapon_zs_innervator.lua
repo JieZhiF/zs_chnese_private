@@ -80,7 +80,7 @@ SWEP.UseHands = true
 SWEP.Primary.Sound = Sound("weapons/zs_inner/innershot.ogg")
 -- 换弹音效（引擎启动声）
 SWEP.ReloadSound = Sound("ambient/machines/thumper_startup1.wav")
-SWEP.Primary.Damage = 11
+SWEP.Primary.Damage = 22
 SWEP.Primary.NumShots = 5
 SWEP.Primary.Delay = 1.6
 -- 子弹最大射程 288 单位；每次开火连射 5 轮（由 Think 分轮发射）

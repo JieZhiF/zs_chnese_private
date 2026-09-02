@@ -67,7 +67,7 @@ SWEP.ShowWorldModel = false
 -- 开火音效（双管霰弹枪音）
 SWEP.Primary.Sound = Sound("weapons/shotgun/shotgun_dbl_fire.wav")
 -- 单颗弹丸伤害
-SWEP.Primary.Damage = 7.7625
+SWEP.Primary.Damage = 15.525
 -- 每次开火射出 8 颗弹丸（霰弹散射）
 SWEP.Primary.NumShots = 8
 -- 射击间隔 0.75 秒

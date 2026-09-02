@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_tempest"
 
-SWEP.Primary.Damage = 77.5
+SWEP.Primary.Damage = 155
 
 SWEP.WalkSpeed = SPEED_ZOMBIEESCAPE_NORMAL
 

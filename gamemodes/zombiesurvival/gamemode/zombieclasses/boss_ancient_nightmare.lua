@@ -20,7 +20,7 @@ CLASS.Help = "controls_ancient_nightmare"
 CLASS.Boss = true
 
 -- 生命值
-CLASS.Health = 3500
+CLASS.Health = 7000
 -- 移动速度
 CLASS.Speed = 170
 

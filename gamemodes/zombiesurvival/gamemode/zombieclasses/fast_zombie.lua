@@ -27,7 +27,7 @@ CLASS.Infliction = 0.5
 CLASS.Revives = true
 
 -- 生命值
-CLASS.Health = 150
+CLASS.Health = 300
 -- 移动速度
 CLASS.Speed = 255
 -- 绑定的武器

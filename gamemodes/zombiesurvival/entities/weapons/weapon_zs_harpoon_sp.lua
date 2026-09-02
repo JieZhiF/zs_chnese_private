@@ -5,7 +5,7 @@ SWEP.Description = "攻击时对目标附加'流血'层数，流血层数是伤�
 
 SWEP.Base = "weapon_zs_harpoon"
 
-SWEP.MeleeDamage = 113
+SWEP.MeleeDamage = 226
 SWEP.MeleeRange = 104
 SWEP.MeleeSize = 0.8
 

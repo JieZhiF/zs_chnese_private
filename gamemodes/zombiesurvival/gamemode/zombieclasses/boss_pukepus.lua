@@ -23,7 +23,7 @@ CLASS.KnockbackScale = 0
 CLASS.FearPerInstance = 1
 
 -- 生命值
-CLASS.Health = 3300
+CLASS.Health = 6600
 -- 绑定的武器
 CLASS.SWEP = "weapon_zs_pukepus"
 

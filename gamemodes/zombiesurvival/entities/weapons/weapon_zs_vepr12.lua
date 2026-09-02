@@ -44,7 +44,7 @@ SWEP.UseHands = true
 -- 开火音效
 SWEP.Primary.Sound = Sound("Weapon_Galil.Single")
 -- 单颗弹丸伤害
-SWEP.Primary.Damage = 14
+SWEP.Primary.Damage = 28
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots = 7
 -- 射击间隔

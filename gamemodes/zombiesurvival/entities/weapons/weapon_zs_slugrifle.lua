@@ -73,7 +73,7 @@ SWEP.WorldModel = "models/weapons/w_shot_xm1014.mdl"
 SWEP.UseHands = true -- 使用玩家手臂模型握持
 
 SWEP.Primary.Sound = Sound("Weapon_AWP.Single") -- 开火音效（AWP 枪声）
-SWEP.Primary.Damage = 118 -- 单发伤害
+SWEP.Primary.Damage = 236 -- 单发伤害
 SWEP.Primary.NumShots = 1 -- 单发独头弹
 SWEP.Primary.Delay = 1.3 -- 射击间隔
 SWEP.ReloadDelay = 0.6 -- 单发装填间隔

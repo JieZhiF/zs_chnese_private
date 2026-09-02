@@ -122,6 +122,10 @@ NET_MSG = {
 	BUFFGUN_SELECT = "zs_buffgun_select",
 	SPAWNMENU = "zs_spawnmenu",
 	LASTSPAWNCHOICE = "zs_lastspawnchoice", -- 服务器将最终分配阵营回写客户端本地 cvar（zs_lastspawnchoice）
+	-- PvE 倒地系统消息
+	ZSDOWNED = "zs_zsdowned",       -- 玩家进入倒地（虚血+次数）
+	ZSTRUEDEATH = "zs_zstruedeath", -- 玩家真死（变僵尸）
+	ZSRESCUE = "zs_zsrescue",       -- 玩家开始救援倒地队友（读条）
 	-- 语音提示类消息（voice_ 前缀为语音预留）
 	VOICE_EYEPAIN = "voice_eyepain",
 	VOICE_GIVEAMMO = "voice_giveammo",

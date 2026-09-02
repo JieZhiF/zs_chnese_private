@@ -41,7 +41,7 @@ SWEP.ReloadDelay = 0.45
 
 -- 主攻击：M3 枪声、每发 8 弹片 × 14.75 伤害、0.87 秒开火间隔
 SWEP.Primary.Sound = Sound("Weapon_M3.Single")
-SWEP.Primary.Damage = 14.75
+SWEP.Primary.Damage = 29.5
 SWEP.Primary.NumShots = 8
 SWEP.Primary.Delay = 0.87
 

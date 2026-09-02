@@ -42,7 +42,7 @@ SWEP.UseHands = true -- 使用玩家手臂模型握持
 SWEP.CSMuzzleFlashes = false -- 不使用 CS 样式枪口闪光
 
 SWEP.Primary.Sound = Sound("Weapon_Shotgun.Single") -- 开火音效
-SWEP.Primary.Damage = 74 -- 单发伤害
+SWEP.Primary.Damage = 148 -- 单发伤害
 SWEP.Primary.NumShots = 1 -- 单发独头弹
 SWEP.Primary.Delay = 0.9 -- 射击间隔
 

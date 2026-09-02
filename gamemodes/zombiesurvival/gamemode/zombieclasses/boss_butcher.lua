@@ -20,7 +20,7 @@ CLASS.Boss = true
 CLASS.KnockbackScale = 0
 
 -- 生命值
-CLASS.Health = 3000
+CLASS.Health = 6000
 -- 移动速度
 CLASS.Speed = 270
 

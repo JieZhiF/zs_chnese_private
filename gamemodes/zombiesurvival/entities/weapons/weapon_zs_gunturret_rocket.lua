@@ -12,7 +12,7 @@ SWEP.PrintName = ""..translate.Get("weapon_zs_gunturret_rocket")
 SWEP.Description = ""..translate.Get("weapon_zs_gunturret_rocket_description")
 
 -- 火箭炮塔单发伤害
-SWEP.Primary.Damage = 104
+SWEP.Primary.Damage = 208
 
 -- 建造时显示的幽灵模型
 SWEP.GhostStatus = "ghost_gunturret_rocket"

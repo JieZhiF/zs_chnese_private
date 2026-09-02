@@ -28,7 +28,7 @@ SWEP.Primary.Sound = Sound("Weapon_Crossbow.Single")
 SWEP.Primary.Delay = 15/33
 SWEP.Primary.Automatic = true
 -- 单发伤害
-SWEP.Primary.Damage = 62
+SWEP.Primary.Damage = 124
 
 -- 弹匣容量与消耗弹药类型
 SWEP.Primary.ClipSize = 8

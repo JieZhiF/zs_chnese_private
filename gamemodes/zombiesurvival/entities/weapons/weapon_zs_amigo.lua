@@ -44,7 +44,7 @@ SWEP.UseHands = true
 -- 换弹/开火音效与基础伤害
 SWEP.ReloadSound = Sound("Weapon_SG552.Clipout")
 SWEP.Primary.Sound = Sound("Weapon_SG552.Single")
-SWEP.Primary.Damage = 18.5
+SWEP.Primary.Damage = 37
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.15
 

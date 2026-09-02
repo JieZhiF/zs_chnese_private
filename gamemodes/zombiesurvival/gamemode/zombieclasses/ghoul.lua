@@ -22,7 +22,7 @@ CLASS.Unlocked = true
 CLASS.BetterVersion = "Noxious Ghoul"
 
 -- 生命值
-CLASS.Health = 200
+CLASS.Health = 400
 -- 移动速度
 CLASS.Speed = 175
 

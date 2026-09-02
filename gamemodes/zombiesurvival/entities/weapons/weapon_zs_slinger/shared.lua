@@ -38,7 +38,7 @@ SWEP.Primary.Delay = 1
 -- 自动开火
 SWEP.Primary.Automatic = true
 -- 单发伤害
-SWEP.Primary.Damage = 59
+SWEP.Primary.Damage = 118
 
 -- 单发弹匣（每次装填一根弩箭）
 SWEP.Primary.ClipSize = 1

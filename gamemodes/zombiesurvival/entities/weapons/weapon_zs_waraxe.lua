@@ -55,7 +55,7 @@ SWEP.WorldModel = "models/weapons/w_pist_glock18.mdl"
 SWEP.UseHands = true
 
 -- 主攻击设置：伤害14、3发子弹、0.3秒延迟
-SWEP.Primary.Damage = 14
+SWEP.Primary.Damage = 28
 SWEP.Primary.NumShots = 3
 SWEP.Primary.Delay = 0.3
 

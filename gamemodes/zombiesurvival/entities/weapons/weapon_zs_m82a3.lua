@@ -104,7 +104,7 @@ SWEP.UseHands = true
 -- 开火音效（自定义注册音效）
 SWEP.Primary.Sound = Sound("Weapon_Renegade.Single")
 -- 单发伤害（重型反器材）
-SWEP.Primary.Damage = 255
+SWEP.Primary.Damage = 510
 -- 每次射击的弹丸数
 SWEP.Primary.NumShots = 1
 -- 射击间隔（慢速栓动）

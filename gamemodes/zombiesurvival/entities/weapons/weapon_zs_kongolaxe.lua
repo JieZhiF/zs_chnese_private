@@ -50,7 +50,7 @@ SWEP.UseHands = true
 SWEP.HoldType = "melee2"
 
 -- 近战伤害、攻击范围、攻击判定大小、击退力度
-SWEP.MeleeDamage = 150
+SWEP.MeleeDamage = 300
 SWEP.MeleeRange = 75
 SWEP.MeleeSize = 3
 SWEP.MeleeKnockBack = 350

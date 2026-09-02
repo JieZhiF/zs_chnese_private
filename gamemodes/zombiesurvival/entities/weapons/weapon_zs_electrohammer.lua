@@ -34,7 +34,7 @@ end
 
 SWEP.Base = "weapon_zs_hammer"
 
-SWEP.MeleeDamage = 15    --40
+SWEP.MeleeDamage = 30    --40
 SWEP.HealStrength = 2.25
 SWEP.Radius = 125
 SWEP.Secondary.Delay = 20

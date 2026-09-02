@@ -16,7 +16,7 @@ SWEP.ShowWorldModel = false -- 不显示默认第三人称模型
 SWEP.UseHands = true -- 使用玩家手部模型
 
 SWEP.Primary.Sound = Sound("weapons/gauss/fire1.wav") -- 开火音效（高斯炮）
-SWEP.Primary.Damage = 26.5 -- 单发伤害
+SWEP.Primary.Damage = 53 -- 单发伤害
 SWEP.Primary.NumShots = 1 -- 一次射击的子弹数
 SWEP.Primary.Delay = 0.2 -- 射击间隔（秒）
 

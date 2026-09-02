@@ -75,7 +75,7 @@ SWEP.WorldModel = "models/weapons/w_snip_sg550.mdl"
 SWEP.UseHands = true
 
 SWEP.Primary.Sound = Sound("Weapon_Renegade.Single")
-SWEP.Primary.Damage = 110
+SWEP.Primary.Damage = 220
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.25
 

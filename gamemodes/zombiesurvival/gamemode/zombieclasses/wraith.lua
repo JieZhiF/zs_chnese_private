@@ -23,7 +23,7 @@ CLASS.Wave = 0
 CLASS.Unlocked = true
 
 -- 生命值
-CLASS.Health = 135
+CLASS.Health = 270
 
 -- 绑定的武器
 CLASS.SWEP = "weapon_zs_wraith"

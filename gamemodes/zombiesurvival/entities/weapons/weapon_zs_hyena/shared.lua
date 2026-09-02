@@ -20,7 +20,7 @@ SWEP.Primary.ClipSize = 3 -- 弹匣容量
 SWEP.Primary.Automatic = true -- 全自动
 SWEP.Primary.Ammo = "impactmine" -- 消耗的弹药类型（感应地雷）
 SWEP.Primary.DefaultClip = 3 -- 默认赠送的弹匣倍数
-SWEP.Primary.Damage = 80 -- 单发伤害
+SWEP.Primary.Damage = 160 -- 单发伤害
 
 SWEP.ConeMin = 0.0001 -- 最小扩散（近似精确）
 SWEP.ConeMax = 0.0001 -- 最大扩散

@@ -111,7 +111,7 @@ SWEP.UseHands = true
 
 -- 主攻击设置：开火音效、伤害、子弹数、延迟
 SWEP.Primary.Sound = Sound("Weapon_Scar.Single")
-SWEP.Primary.Damage = 27.5
+SWEP.Primary.Damage = 55
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.1
 

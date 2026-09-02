@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_eraser"
 
-SWEP.Primary.Damage = 115
+SWEP.Primary.Damage = 230
 
 SWEP.WalkSpeed = SPEED_ZOMBIEESCAPE_NORMAL
 

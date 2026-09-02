@@ -26,7 +26,7 @@ SWEP.WorldModel = "models/weapons/w_knife_t.mdl"
 SWEP.UseHands = true
 
 -- 近战伤害、攻击范围、攻击判定大小
-SWEP.MeleeDamage = 500
+SWEP.MeleeDamage = 1000
 SWEP.MeleeRange = 62
 SWEP.MeleeSize = 0.875
 

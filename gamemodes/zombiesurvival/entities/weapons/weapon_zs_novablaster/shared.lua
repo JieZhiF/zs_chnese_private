@@ -26,7 +26,7 @@ SWEP.CSMuzzleFlashes = false
 -- 左键开火：单发伤害 46、每次 1 发、0.65 秒射击间隔
 SWEP.Primary.Sound = Sound("Weapon_357.Single")
 SWEP.Primary.Delay = 0.65
-SWEP.Primary.Damage = 46
+SWEP.Primary.Damage = 92
 SWEP.Primary.NumShots = 1
 
 -- 弹匣 27 发、半自动、消耗脉冲弹药（备弹 27 发）

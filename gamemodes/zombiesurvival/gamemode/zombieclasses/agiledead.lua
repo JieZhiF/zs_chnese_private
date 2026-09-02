@@ -26,7 +26,7 @@ CLASS.SWEP = "weapon_zs_agiledead"
 CLASS.Unlocked = true
 
 -- 生命值
-CLASS.Health = 125
+CLASS.Health = 250
 -- 击杀得分 = 生命值 / 无头箱判定比率
 CLASS.Points = CLASS.Health/GM.NoHeadboxZombiePointRatio
 -- 移动速度

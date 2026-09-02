@@ -11,7 +11,7 @@ CLASS.Threshold = 0
 CLASS.Unlocked = true
 CLASS.Hidden = true
 
-CLASS.Health = 100
+CLASS.Health = 200
 CLASS.Speed = 170
 CLASS.JumpPower = 250
 

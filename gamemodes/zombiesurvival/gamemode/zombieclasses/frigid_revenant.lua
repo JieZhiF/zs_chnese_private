@@ -24,7 +24,7 @@ CLASS.SWEP = "weapon_zs_frigidrevenant"
 CLASS.Wave = 4 / 6
 
 -- 生命值
-CLASS.Health = 300
+CLASS.Health = 600
 -- 移动速度
 CLASS.Speed = 180
 

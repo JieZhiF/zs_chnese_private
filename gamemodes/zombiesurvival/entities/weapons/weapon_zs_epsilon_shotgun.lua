@@ -56,7 +56,7 @@ SWEP.ShowWorldModel         = false
 
 
 -- 单颗弹丸伤害
-SWEP.Primary.Damage			= 21.7
+SWEP.Primary.Damage			= 43.4
 -- 每次射击的弹丸数（分裂成多发）
 SWEP.Primary.NumShots		= 6
 -- 开火音效

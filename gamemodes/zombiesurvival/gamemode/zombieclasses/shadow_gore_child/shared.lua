@@ -19,7 +19,7 @@ CLASS.Description = "description_shadow_gore_child"
 CLASS.Help = "controls_shadow_gore_child"
 
 -- 生命值（极低，脆弱的暗影小怪）
-CLASS.Health = 15
+CLASS.Health = 30
 -- 移动速度
 CLASS.Speed = 155
 

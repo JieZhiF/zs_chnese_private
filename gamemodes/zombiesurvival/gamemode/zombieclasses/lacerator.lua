@@ -26,7 +26,7 @@ CLASS.Model = Model("models/player/zombie_lacerator2.mdl")
 CLASS.Wave = 4 / 6
 
 -- 生命值
-CLASS.Health = 225
+CLASS.Health = 450
 -- 移动速度
 CLASS.Speed = 270
 -- 绑定的武器

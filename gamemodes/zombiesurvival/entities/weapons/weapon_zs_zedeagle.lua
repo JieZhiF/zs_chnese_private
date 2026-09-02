@@ -33,7 +33,7 @@ SWEP.WorldModel = "models/weapons/w_pist_deagle.mdl"
 SWEP.UseHands = true
 
 SWEP.Primary.Sound = Sound("Weapon_Deagle.Single")
-SWEP.Primary.Damage = 250
+SWEP.Primary.Damage = 500
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.28
 

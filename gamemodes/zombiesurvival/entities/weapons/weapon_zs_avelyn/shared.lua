@@ -31,7 +31,7 @@ SWEP.Primary.Automatic = true -- 按住可连续射击
 SWEP.Primary.Ammo = "XBowBolt" -- 弹药类型：弩箭
 SWEP.Primary.Delay = 0.75 -- 单次扣扳机之间的间隔
 SWEP.Primary.DefaultClip = 15 -- 默认备弹数
-SWEP.Primary.Damage = 74 -- 单支弩箭伤害
+SWEP.Primary.Damage = 148 -- 单支弩箭伤害
 SWEP.Primary.BurstShots = 3 -- 每次扣扳机连射 3 支
 
 SWEP.ConeMax = 2.25 -- 最大扩散

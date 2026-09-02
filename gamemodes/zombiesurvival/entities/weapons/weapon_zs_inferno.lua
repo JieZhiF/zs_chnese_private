@@ -46,7 +46,7 @@ SWEP.UseHands = true
 -- 左键开火音效（AUG 单发声）
 SWEP.Primary.Sound = Sound("Weapon_AUG.Single")
 -- 单发伤害
-SWEP.Primary.Damage = 23
+SWEP.Primary.Damage = 46
 -- 每次射击的子弹数量
 SWEP.Primary.NumShots = 1
 -- 射击间隔（高射速）

@@ -23,7 +23,7 @@ CLASS.Unlocked = true
 CLASS.Wave = 0
 
 -- 生命值（强化）
-CLASS.Health = 300
+CLASS.Health = 600
 -- 移动速度（强化）
 CLASS.Speed = 170
 

@@ -51,7 +51,7 @@ SWEP.WorldModel	= "models/weapons/w_grenade.mdl"
 SWEP.Weight = 4
 
 -- 近战伤害 / 命中腿部附加伤害
-SWEP.MeleeDamage = 86
+SWEP.MeleeDamage = 172
 SWEP.LegDamage = 17
 
 -- 非赤手空拳状态（拥有武器实体）

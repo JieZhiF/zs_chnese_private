@@ -19,7 +19,7 @@ CLASS.Help = "controls_death"
 CLASS.Boss = true
 
 -- 生命值
-CLASS.Health = 2400
+CLASS.Health = 4800
 -- 移动速度
 CLASS.Speed = 165
 

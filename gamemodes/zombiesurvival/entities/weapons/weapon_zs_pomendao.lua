@@ -3,7 +3,7 @@ AddCSLuaFile()
 SWEP.Base = "weapon_zs_swissarmyknife"
 SWEP.PrintName = ""..translate.Get("weapon_zs_pomendao")
 
-SWEP.MeleeDamage = 3
+SWEP.MeleeDamage = 6
 SWEP.OriginalMeleeDamage = SWEP.MeleeDamage
 SWEP.Primary.Delay = 0.15
 SWEP.AllowQualityWeapons = false

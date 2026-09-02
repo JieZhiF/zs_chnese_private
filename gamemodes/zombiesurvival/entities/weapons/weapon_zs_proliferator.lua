@@ -63,7 +63,7 @@ SWEP.UseHands = true
 -- 开火音效
 SWEP.Primary.Sound = Sound("weapons/zs_scar/scar_fire1.ogg")
 -- 每发伤害 7.2，每次射击 3 颗子弹（扇形），间隔 0.15 秒
-SWEP.Primary.Damage = 7.2
+SWEP.Primary.Damage = 14.4
 SWEP.Primary.NumShots = 3
 SWEP.Primary.Delay = 0.15
 

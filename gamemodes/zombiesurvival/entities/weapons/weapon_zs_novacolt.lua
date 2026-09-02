@@ -76,7 +76,7 @@ SWEP.ShowWorldModel = false
 SWEP.UseHands = true
 
 -- 单发伤害（高伤害大威力手枪）
-SWEP.Primary.Damage = 85
+SWEP.Primary.Damage = 170
 -- 每次射击的子弹数量
 SWEP.Primary.NumShots = 1
 -- 射击间隔

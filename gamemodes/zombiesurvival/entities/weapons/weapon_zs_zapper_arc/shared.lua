@@ -18,7 +18,7 @@ SWEP.GhostStatus = "ghost_zapper_arc"
 SWEP.DeployClass = "prop_zapper_arc"
 
 -- 电击伤害 45
-SWEP.Primary.Damage = 45
+SWEP.Primary.Damage = 90
 
 -- 武器等级 4
 SWEP.Tier = 4

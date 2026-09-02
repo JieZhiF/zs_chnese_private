@@ -44,7 +44,7 @@ SWEP.WorldModel				= "models/weapons/w_mach_m249para.mdl"
 SWEP.ViewModelFlip 			= false
 SWEP.HoldType				= "ar2"
 
-SWEP.Primary.Damage			= 25
+SWEP.Primary.Damage			= 50
 SWEP.Primary.NumShots		= 1
 SWEP.Primary.Sound			= Sound("weapons/citadel_fire.wav")
 SWEP.Primary.ClipSize		= 100

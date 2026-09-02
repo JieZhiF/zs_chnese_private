@@ -145,7 +145,7 @@ SWEP.Primary.SilencedSound = Sound("Weapon_IVP.SosilenceSingleHeavy")
 --SWEP.Primary.Sound = Sound("Weapon_IVP.SingleHeavy") 
 SWEP.Primary.Sound = Sound("Weapon_UMP45.Single")
 
-SWEP.Primary.Damage = 19.125
+SWEP.Primary.Damage = 38.25
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.09
 

@@ -201,7 +201,13 @@ function PANEL:PopulateOptionsData()
             { type = "combobox", label = "Option_HumanHealthDisplay", choices = {
                 { text = translate.Get("Option_PercentageHealth"), value = 0 },
                 { text = translate.Get("Option_NumericHealth"), value = 1 }
-            }, onselect = function(index, value) RunConsoleCommand("zs_healthtargetdisplay", value) end, getdefault = function() return GetConVarNumber("zs_healthtargetdisplay") end }
+            }, onselect = function(index, value) RunConsoleCommand("zs_healthtargetdisplay", value) end, getdefault = function() return GetConVarNumber("zs_healthtargetdisplay") end },
+            -- PvE：倒地队友标记显示模式（本地设置）
+            { type = "combobox", label = "Option_DownedMarker", choices = {
+                { text = translate.Get("Option_DownedMarkerOff"), value = 0 },
+                { text = translate.Get("Option_DownedMarkerVisible"), value = 1 },
+                { text = translate.Get("Option_DownedMarkerWallhack"), value = 2 }
+            }, onselect = function(index, value) RunConsoleCommand("zs_downmarker", value) end, getdefault = function() return GetConVarNumber("zs_downmarker") end }
         },
         Environment = {
             { type = "checkbox", label = "Option_EnableAmbientMusic", convar = "zs_beats" },

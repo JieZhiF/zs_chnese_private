@@ -40,7 +40,7 @@ SWEP.WorldModel = "models/props_junk/shovel01a.mdl"
 SWEP.UseHands = true
 
 -- 近战数值（伤害随劳工时间成长）
-SWEP.MeleeDamage = 50 * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 100 * GAMEMODE.LabourTime
 SWEP.MeleeRange = 68
 SWEP.MeleeSize = 1.5
 SWEP.MeleeKnockBack = 230

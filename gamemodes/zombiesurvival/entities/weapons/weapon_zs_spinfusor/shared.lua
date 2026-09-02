@@ -41,7 +41,7 @@ SWEP.UseHands = true
 SWEP.CSMuzzleFlashes = false
 
 -- 主攻击：单发伤害与射击间隔，单发模式，消耗脉冲弹药
-SWEP.Primary.Damage = 86
+SWEP.Primary.Damage = 172
 SWEP.Primary.Delay = 1.2
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "pulse"

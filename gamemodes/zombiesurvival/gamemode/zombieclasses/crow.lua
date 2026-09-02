@@ -12,7 +12,7 @@ CLASS.TranslationName = "class_crow"
 CLASS.Description = "description_crow"
 
 -- 极低生命值
-CLASS.Health = 5
+CLASS.Health = 10
 -- 波次/阈值（初始可用）
 CLASS.Wave = 0
 -- 阈值（0 表示无需任何条件）

@@ -53,7 +53,7 @@ SWEP.UseHands = true
 
 -- 武器参数
 SWEP.Primary.Sound = Sound("Weapon_XM1014.Single")
-SWEP.Primary.Damage = 16.5
+SWEP.Primary.Damage = 33
 SWEP.Primary.NumShots = 8
 SWEP.Primary.Delay = 0.31
 SWEP.Primary.Recoil = 6.5

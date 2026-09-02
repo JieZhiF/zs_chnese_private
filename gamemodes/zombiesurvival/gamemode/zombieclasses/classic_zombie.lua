@@ -18,7 +18,7 @@ CLASS.Name = "Classic Zombie"
 CLASS.TranslationName = "class_classic_zombie"
 
 -- 生命值
-CLASS.Health = 150
+CLASS.Health = 300
 -- 移动速度
 CLASS.Speed = 200
 -- 击杀得分

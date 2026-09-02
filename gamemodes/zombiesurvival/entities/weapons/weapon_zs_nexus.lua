@@ -26,7 +26,7 @@ SWEP.Tier = 5
 -- =================================================================
 --                      主要攻击属性 (Primary Fire)
 -- =================================================================
-SWEP.Primary.Damage			= 30
+SWEP.Primary.Damage			= 60
 SWEP.Primary.NumShots		= 1
 SWEP.Primary.Sound			= Sound("Weapon_Nexus.Single")
 SWEP.Primary.ClipSize		= 30

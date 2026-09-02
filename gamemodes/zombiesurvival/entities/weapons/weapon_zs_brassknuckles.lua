@@ -49,7 +49,7 @@ SWEP.WorldModel	= "models/weapons/w_grenade.mdl"
 SWEP.Weight = 4
 
 -- 近战伤害
-SWEP.MeleeDamage = 22.5
+SWEP.MeleeDamage = 45
 
 -- 不是徒手状态（拥有实体武器）
 SWEP.Unarmed = false

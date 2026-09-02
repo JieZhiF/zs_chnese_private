@@ -49,7 +49,7 @@ SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 
 -- 近战伤害/距离/判定范围/击退力度
-SWEP.MeleeDamage = 127
+SWEP.MeleeDamage = 254
 SWEP.MeleeRange = 60
 SWEP.MeleeSize = 3.55
 SWEP.MeleeKnockBack = 240

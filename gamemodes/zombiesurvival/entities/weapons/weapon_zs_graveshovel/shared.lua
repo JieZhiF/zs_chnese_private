@@ -11,7 +11,7 @@ SWEP.ViewModel = "models/weapons/c_crowbar.mdl"
 SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 
-SWEP.MeleeDamage = 130  * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 260  * GAMEMODE.LabourTime
 SWEP.MeleeRange = 78
 SWEP.MeleeSize = 1.5
 SWEP.MeleeKnockBack = 220
@@ -123,7 +123,7 @@ SWEP.ViewModel = "models/weapons/c_crowbar.mdl"
 SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
 SWEP.UseHands = true
 
-SWEP.MeleeDamage = 130  * GAMEMODE.LabourTime
+SWEP.MeleeDamage = 260  * GAMEMODE.LabourTime
 SWEP.MeleeRange = 78
 SWEP.MeleeSize = 1.5
 SWEP.MeleeKnockBack = 220

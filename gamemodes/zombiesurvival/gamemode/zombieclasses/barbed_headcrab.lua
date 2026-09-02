@@ -17,7 +17,7 @@ CLASS.Description = "description_barbed_headcrab"
 CLASS.Help = "controls_barbed_headcrab"
 
 -- 生命值
-CLASS.Health = 100
+CLASS.Health = 200
 -- 击杀得分 = 生命值 / 猎头蟹僵尸点数比率
 CLASS.Points = CLASS.Health/GM.HeadcrabZombiePointRatio
 -- 移动速度

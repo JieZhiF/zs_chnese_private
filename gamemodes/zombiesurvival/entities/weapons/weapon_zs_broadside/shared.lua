@@ -32,7 +32,7 @@ SWEP.Primary.ClipSize = 3
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = "impactmine"
 SWEP.Primary.DefaultClip = 3
-SWEP.Primary.Damage = 107
+SWEP.Primary.Damage = 214
 
 -- 换弹音效与开火音效
 SWEP.ReloadSound = Sound("vehicles/tank_readyfire1.wav")

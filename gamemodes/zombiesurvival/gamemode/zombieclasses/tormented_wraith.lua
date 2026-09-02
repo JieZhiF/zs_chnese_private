@@ -18,7 +18,7 @@ CLASS.Description = "description_tormented_wraith"
 CLASS.Help = "controls_tormented_wraith"
 
 -- 生命值
-CLASS.Health = 150
+CLASS.Health = 300
 -- 击杀得分
 CLASS.Points = CLASS.Health/GM.NoHeadboxZombiePointRatio
 -- 移动速度

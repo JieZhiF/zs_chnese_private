@@ -4,7 +4,7 @@ SWEP.PrintName = ""..translate.Get("weapon_zs_firesword")
 SWEP.Description = ""..translate.Get("weapon_zs_firesword_description")
 SWEP.Base = "weapon_zs_longsword"
 
-SWEP.MeleeDamage = 125
+SWEP.MeleeDamage = 250
 SWEP.MeleeRange = 80
 SWEP.MeleeSize = 2.5
 

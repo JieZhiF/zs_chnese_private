@@ -43,7 +43,7 @@ SWEP.UseHands = true
 
 -- 左键开火：单发伤害 21、单次 1 发、射速 0.08 秒一发
 SWEP.Primary.Sound = Sound("weapons/m249/m249-1.wav")
-SWEP.Primary.Damage = 21
+SWEP.Primary.Damage = 42
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.08
 

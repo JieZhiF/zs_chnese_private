@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_amigo"
 
-SWEP.Primary.Damage = 92
+SWEP.Primary.Damage = 184
 
 SWEP.WalkSpeed = SPEED_ZOMBIEESCAPE_SLOW
 

@@ -20,7 +20,7 @@ SWEP.UseHands = true
 SWEP.ReloadDelay = 0.45
 SWEP.WeaponType = "shotgun"
 SWEP.Primary.Sound = Sound("Weapon_M3.Single")
-SWEP.Primary.Damage = 8
+SWEP.Primary.Damage = 16
 SWEP.Primary.NumShots = 6
 SWEP.Primary.Delay = 1
 
@@ -215,7 +215,7 @@ function SWEP:DrawCooldowns()
     local radius = (1 + coneGap) * 10 * scale
     local thickness = 4 * (1 + coneGap)
 
-    local fillColor = Color(40, 255, 40, 255)
+    local fillColor = Color(255, 40, 40, 255) -- 与 weapon_zs_base 换弹环同款红色
     local emptyColor = Color(100, 100, 100, 150)
 
     for i = 1, maxClip do

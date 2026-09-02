@@ -81,7 +81,7 @@ SWEP.WorldModel = "models/weapons/w_shot_xm1014.mdl"
 SWEP.UseHands = false
 
 -- 单发伤害 / 单次射击弹数 / 射击间隔 / 爆头倍率 / 装填音效
-SWEP.Primary.Damage = 135
+SWEP.Primary.Damage = 270
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 1
 SWEP.HeadshotMulti = 1.75

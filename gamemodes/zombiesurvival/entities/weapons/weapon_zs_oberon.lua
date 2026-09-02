@@ -66,7 +66,7 @@ SWEP.CSMuzzleFlashes = false
 
 -- 每发 5 颗弹丸
 SWEP.Primary.Sound = Sound("Weapon_Oberon.Single")
-SWEP.Primary.Damage = 12
+SWEP.Primary.Damage = 24
 SWEP.Primary.NumShots = 5
 SWEP.Primary.Delay = 0.8
 

@@ -136,7 +136,7 @@ sound.Add( {
 	sound = "weapons/mac10/mac10-1.wav"
 } )
 SWEP.Primary.Sound = Sound("Weapon_GA4.SingleHeavy") 
-SWEP.Primary.Damage = 21
+SWEP.Primary.Damage = 42
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.09
 SWEP.TracerName = "SillyTracer"

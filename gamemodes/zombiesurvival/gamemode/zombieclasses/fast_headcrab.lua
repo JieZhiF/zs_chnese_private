@@ -26,7 +26,7 @@ CLASS.Wave = 2 / 6
 CLASS.SWEP = "weapon_zs_fastheadcrab"
 
 -- 生命值
-CLASS.Health = 40
+CLASS.Health = 80
 -- 移动速度
 CLASS.Speed = 230
 -- 跳跃力

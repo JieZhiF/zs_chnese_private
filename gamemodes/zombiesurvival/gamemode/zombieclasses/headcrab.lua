@@ -25,7 +25,7 @@ CLASS.Unlocked = true
 CLASS.SWEP = "weapon_zs_headcrab"
 
 -- 生命值
-CLASS.Health = 70
+CLASS.Health = 140
 -- 移动速度
 CLASS.Speed = 175
 -- 跳跃力

@@ -42,7 +42,7 @@ SWEP.ViewModelFlip 			= false
 SWEP.HoldType				= "ar2"
 SWEP.WeaponType = "rifle"
 
-SWEP.Primary.Damage			= 20
+SWEP.Primary.Damage			= 40
 SWEP.Primary.NumShots		= 1
 SWEP.Primary.Sound			= Sound("weapons/ender.wav")
 SWEP.Primary.ClipSize		= 30

@@ -45,7 +45,7 @@ SWEP.UseHands = true
 SWEP.AutoSwitchFrom	= true
 
 -- 近战伤害、攻击范围、攻击判定大小
-SWEP.MeleeDamage = 20
+SWEP.MeleeDamage = 40
 SWEP.MeleeRange = 45
 SWEP.MeleeSize = 0.875
 

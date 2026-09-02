@@ -21,7 +21,7 @@ SWEP.CSMuzzleFlashes = true
 SWEP.Primary.Sound = Sound( "Weapon_SMG1.Double" )
 SWEP.Primary.Delay = 1
 SWEP.Primary.Automatic = true
-SWEP.Primary.Damage = 70
+SWEP.Primary.Damage = 140
 
 SWEP.Primary.ClipSize = 1
 SWEP.Primary.Ammo = "impactmine"

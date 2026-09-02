@@ -49,7 +49,7 @@ SWEP.HoldType = "melee2"
 SWEP.Primary.Delay = 0.45
 
 -- 近战数值：32 伤害、55 距离、1.9 判定尺寸、100 击退、轻量视角震动
-SWEP.MeleeDamage = 32
+SWEP.MeleeDamage = 64
 SWEP.MeleeRange = 55
 SWEP.MeleeSize = 1.9
 SWEP.MeleeKnockBack = 100

@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 SWEP.Base = "weapon_zs_silencer"
 
-SWEP.Primary.Damage = 70
+SWEP.Primary.Damage = 140
 
 SWEP.ConeMax = 3.5
 SWEP.ConeMin = 2.5

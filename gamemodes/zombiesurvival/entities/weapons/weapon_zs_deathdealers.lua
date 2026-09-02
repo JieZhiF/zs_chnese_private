@@ -81,7 +81,7 @@ SWEP.WorldModel = "models/weapons/w_pist_elite.mdl"
 SWEP.FakeWorldModel = "models/weapons/w_shotgun.mdl"
 SWEP.UseHands = true -- 使用玩家手臂模型握持
 
-SWEP.Primary.Damage = 15.75 -- 单粒弹丸伤害
+SWEP.Primary.Damage = 31.5 -- 单粒弹丸伤害
 SWEP.Primary.NumShots = 8 -- 一次射击 8 粒弹丸
 SWEP.Primary.Delay = 0.6 -- 射击间隔
 

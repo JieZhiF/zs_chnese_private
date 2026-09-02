@@ -111,7 +111,7 @@ sound.Add( {
 } )
 SWEP.WeaponType = "rifle"
 SWEP.Primary.Sound = Sound("Weapon_enamtpr.Silende")
-SWEP.Primary.Damage = 21.75
+SWEP.Primary.Damage = 43.5
 SWEP.Primary.NumShots = 1
 SWEP.Primary.Delay = 0.12
 

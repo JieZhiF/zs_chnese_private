@@ -782,6 +782,10 @@ function GM:AddNetworkStrings()
 	util.AddNetworkString("zs_buffgun_select")
 	util.AddNetworkString("zs_spawnmenu")
 	util.AddNetworkString("zs_lastspawnchoice")
+	-- PvE 倒地系统网络消息
+	util.AddNetworkString("zs_zsdowned")
+	util.AddNetworkString("zs_zstruedeath")
+	util.AddNetworkString("zs_zsrescue")
 end
 
 --[[ GM:IsClassicMode 返回是否经典模式（原始ZS机制）]]
@@ -1698,6 +1702,38 @@ function GM:ThinkPlayersFrame(time, wave)
 			if P_GetPhantomHealth(pl) > 0 and P_Alive(pl) and pl:IsSkillActive(SKILL_BLOODLUST) then
 				pl:SetPhantomHealth(math_max(0, P_GetPhantomHealth(pl) - 5 * FrameTime()))
 			end
+
+			-- PvE：正在救援倒地的队友时，每帧累积读条进度
+			if pl.ZSRescuing and pl.ZSRescuing:IsValid() then
+				local target = pl.ZSRescuing
+				-- 松开 E / 离开范围 / 目标被救走 / 自己死亡 → 中断
+				if not pl:KeyDown(IN_USE) or not pl:Alive() or not target.ZSDowned or not target.ZSDowned:IsValid()
+				or pl:GetPos():DistToSqr(target:GetPos()) > (self.RescueRange or 120) ^ 2 then
+					pl.ZSRescuing = nil
+					local st = target.ZSDowned
+					if st and st:IsValid() then
+						st.RescueProgress = nil
+						st.Rescuer = nil
+						st:SetRescuer(NULL)
+						st:SetRescueProgress(0)
+					end
+
+					-- 通知客户端取消救援读条
+					net.Start(NET_MSG.ZSRESCUE)
+						net.WriteEntity(NULL)
+						net.WriteEntity(pl)
+					net.Broadcast()
+				else
+					local st = target.ZSDowned
+					if st and st:IsValid() then
+						st.RescueProgress = (st.RescueProgress or 0) + FrameTime()
+						if st.RescueProgress >= (self.RescueTime or 2.5) then
+							pl.ZSRescuing = nil
+							self:RescueZSDowned(target, pl)
+						end
+					end
+				end
+			end
 		end
 	end
 
@@ -1985,7 +2021,8 @@ function GM:CalculateInfliction(victim, attacker)
 				zombies = zombies + 1
 			elseif pl:HasWon() then
 				wonhumans = wonhumans + 1
-			else
+			elseif pl:Alive() then
+				-- PvE：只有"活着的人类"算存活（倒地/真死的不算，否则永不触发人类全灭）
 				humans = humans + 1
 				hum = pl
 			end
@@ -2001,6 +2038,19 @@ function GM:CalculateInfliction(victim, attacker)
 
 	if humans == 1 and 2 < zombies then
 		gamemode.Call("LastHuman", hum)
+	elseif humans == 0 and zombies > 0 then
+		-- PvE：所有人类都已倒地/真死（无存活人类）→ 僵尸赢
+		infliction = 1
+
+		if wonhumans >= 1 then
+			gamemode.Call("EndRound", TEAM_HUMAN)
+		else
+			gamemode.Call("EndRound", TEAM_UNDEAD)
+
+			if attacker and attacker:IsValid() and attacker:IsPlayer() and attacker:Team() == TEAM_UNDEAD and attacker ~= victim then
+				gamemode.Call("LastBite", victim, attacker)
+			end
+		end
 	elseif 1 <= infliction then
 		infliction = 1
 
@@ -3563,7 +3613,11 @@ function GM:PlayerDeathThink(pl)
 
 	if pl:Team() ~= TEAM_UNDEAD then
 		pl.StartCrowing = nil
+
+		-- PvE：倒地的死亡人类不做任何处理（等待被救/虚血归零变僵尸）；
+		-- 真死变僵尸后由 DelayedChangeToZombie 转到 TEAM_UNDEAD，走僵尸重生逻辑。
 		pl.StartSpectating = nil
+
 		return
 	end
 
@@ -4516,12 +4570,25 @@ end
 function GM:KeyPress(pl, key)
 	if key == IN_USE then
 		if pl:Team() == TEAM_HUMAN and pl:Alive() then
-			if pl:IsCarrying() then
+			-- PvE：优先尝试救援倒地的队友（倒地队友是死亡状态，ZSDowned 字段标记）
+			local downedtarget = self:FindDownedTargetNear(pl)
+			if downedtarget then
+				self:StartRescueDowned(pl, downedtarget)
+			elseif pl:IsCarrying() then
 				pl.status_human_holding:OnRemove() -- No idea...
 				pl.status_human_holding:RemoveNextFrame()
 			else
 				self:TryHumanPickup(pl, pl:TraceLine(64).Entity)
 			end
+		end
+	elseif key == IN_RELOAD then
+		-- PvE：倒地时按 R 使用自救道具（服务端直接处理，绕开客户端命令链路）
+		if pl.ZSDowned and pl.ZSDowned:IsValid() and (pl.ZSSelfRevives or 0) > 0 then
+			pl.ZSSelfRevives = pl.ZSSelfRevives - 1
+			self:RescueZSDowned(pl, pl)
+			pl:CenterNotify(COLOR_GREEN, "你使用自救道具站了起来（剩余 " .. pl.ZSSelfRevives .. " 次）")
+		elseif pl.ZSDowned and pl.ZSDowned:IsValid() then
+			pl:CenterNotify(COLOR_RED, "你没有自救道具（在军火箱商店购买）")
 		end
 	elseif key == IN_SPEED then
 		if pl:Alive() then
@@ -4803,12 +4870,8 @@ function GM:ZombieKilledHuman(pl, attacker, inflictor, dmginfo, headshot, suicid
 	end
 
 	if not pl.Gibbed and not suicide then
-		local status = pl:GiveStatus("revive_slump_human")
-		if status then
-			status:SetReviveTime(CurTime() + 4)
-			status:SetZombieInitializeTime(CurTime() + 2)
-		end
-
+		-- PvE：不再挂 revive_slump_human（旧的"瘫倒4秒变僵尸"），
+		-- 倒地流程由 status_zsdowned（L4D2 式倒地+虚血）接管，变僵尸职业在这里提前设定。
 		pl:SetZombieClassName(self.ZombieEscape and "Super Zombie" or self:IsClassicMode() and "Classic Zombie" or self:IsBabyMode() and "Gore Child" or "Fresh Dead")
 	end
 
@@ -4832,6 +4895,230 @@ local function DelayedChangeToZombie(pl)
 		pl:ChangeTeam(TEAM_UNDEAD)
 	end
 end
+
+-- ============================================================================
+-- PvE 倒地系统
+-- 人类被僵尸攻击致死 → 倒地（虚血+等待救援）；虚血归零/次数用尽 → 真死（变僵尸）。
+-- 被队友救起/自救道具/波间自动爬起 → 回人类。
+-- 限次倒地：每局每人可倒地 ZSDownedLimit 次，次数越多虚血越短。
+-- ============================================================================
+
+-- 每局最大倒地次数（超过则被放倒直接真死）——由 ConVar zs_downlimit 控制（sh_options.lua）
+-- GM.ZSDownedLimit = 3
+-- 虚血比例随倒地次数递减：第1次 50%，第2次 35%，第3次 20%
+GM.ZSDownedHealthRatios = { 0.5, 0.35, 0.2 }
+-- 倒地虚血每秒衰减量——由 ConVar zs_downdrain 控制（sh_options.lua）
+-- GM.ZSDownedHealthDrain = 8
+
+-- 人类被僵尸攻击致死：进入倒地状态
+function GM:EnterZSDowned(pl, attacker)
+	if not pl:IsValid() or pl:IsBot() then return end
+	if self.RoundEnded or pl:Team() ~= TEAM_HUMAN then return end
+
+	-- 限次倒地：超过上限直接真死
+	pl.ZSDownedCount = (pl.ZSDownedCount or 0) + 1
+	local downcount = pl.ZSDownedCount
+	if downcount > self.ZSDownedLimit then
+		self:EnterZSDownedTrueDeath(pl)
+		return
+	end
+
+	-- 计算虚血（按倒地次数递减，超出次数表用最后一项）
+	local ratio = self.ZSDownedHealthRatios[downcount] or self.ZSDownedHealthRatios[#self.ZSDownedHealthRatios] or 0.2
+	local downedmax = math.max(1, math.floor(pl:GetMaxHealth() * ratio))
+	local drain = self.ZSDownedHealthDrain or 8
+
+	-- 记录倒地前的武器（拉起后补回，L4D2 式"倒地起来保留武器"）
+	local weapons = {}
+	for _, wep in pairs(pl:GetWeapons()) do
+		if wep:IsValid() and wep.GetClass and not wep.Undroppable then
+			local class = wep:GetClass()
+			local ammo = wep.GetPrimaryAmmoCount and wep:GetPrimaryAmmoCount() or 0
+			local clip1 = wep.GetClip1 and wep:Clip1() or -1
+			local clip2 = wep.GetClip2 and wep:Clip2() or -1
+			weapons[#weapons + 1] = { Class = class, Ammo = ammo, Clip1 = clip1, Clip2 = clip2 }
+		end
+	end
+	pl.ZSDownedWeapons = weapons
+
+	local status = pl:GiveStatus("zsdowned")
+	if status and status:IsValid() then
+		status:SetDownedHealth(downedmax)
+		status:SetDownedHealthMax(downedmax)
+		status:SetDownedCount(downcount)
+
+		-- 固定倒地位置到状态实体（服务端同步到客户端，供存活玩家标记使用）
+		-- 死亡玩家实体位置在客户端可能不同步，状态实体位置是可靠的
+		status:SetPos(pl:GetPos())
+		status:SetAngles(pl:GetAngles())
+
+		-- 通知客户端显示倒地
+		net.Start(NET_MSG.ZSDOWNED)
+			net.WriteEntity(pl)
+			net.WriteUInt(downcount, 8)
+			net.WriteFloat(downedmax)
+		net.Broadcast()
+	end
+end
+
+-- 虚血归零 / 倒地次数耗尽：真死（变僵尸，走原版"被感染"循环）
+function GM:EnterZSDownedTrueDeath(pl)
+	if not pl:IsValid() then return end
+
+	pl:RemoveStatus("zsdowned", true, true)
+	pl.ZSDownedWeapons = nil -- 真死变僵尸，不再需要补回武器
+
+	-- 真死 = 变僵尸（走原版"被感染"循环：真人僵尸补位，d3bot 自动减少僵尸 bot）
+	if pl:Team() == TEAM_HUMAN then
+		timer.Simple(0, function()
+			if pl:IsValid() then
+				DelayedChangeToZombie(pl)
+			end
+		end)
+	end
+
+	net.Start(NET_MSG.ZSTRUEDEATH)
+		net.WriteEntity(pl)
+	net.Broadcast()
+end
+
+-- 被队友救起/自救道具：爬起回血
+-- 在倒地位置附近找安全复活点（无碰撞），避免重生后卡墙/卡模型
+function GM:FindSafeRevivePos(pl, pos)
+	-- 玩家包围盒尺寸（站立）
+	local mins = pl:OBBMins()
+	local maxs = pl:OBBMaxs()
+	local filter = pl
+
+	-- 候选点：原位置、向上 0/32/64 单位、向四周 50 单位偏移
+	local candidates = {
+		pos,
+		pos + Vector(0, 0, 32),
+		pos + Vector(0, 0, 64),
+		pos + Vector(50, 0, 0),
+		pos + Vector(-50, 0, 0),
+		pos + Vector(0, 50, 0),
+		pos + Vector(0, -50, 0),
+		pos + Vector(0, 0, 128),
+	}
+
+	for _, cand in ipairs(candidates) do
+		-- 检查该点是否有足够空间容纳玩家（TraceHull 无碰撞）
+		local tr = util.TraceHull({
+			start = cand,
+			endpos = cand + Vector(0, 0, 2),
+			mins = mins,
+			maxs = maxs,
+			mask = MASK_SOLID,
+			filter = filter,
+		})
+
+		if not tr.Hit then
+			return cand
+		end
+	end
+
+	-- 全部候选都卡，退回原位置（最差情况）
+	return pos
+end
+
+function GM:RescueZSDowned(pl, rescuer)
+	if not pl:IsValid() then return end
+
+	-- 必须处于倒地状态
+	if not pl.ZSDowned or not pl.ZSDowned:IsValid() then return end
+
+	-- 记录倒地位置（原地爬起用）
+	local pos = pl:GetPos()
+	local angles = pl:EyeAngles()
+
+	pl:RemoveStatus("zsdowned", true, true)
+
+	-- 恢复玩家本体与武器显示（PlayerSet 时隐藏了）
+	pl:DrawWorldModel(true)
+	pl:DrawViewModel(true)
+
+	-- 倒地玩家是死亡状态，救起 = 原地重生回人类（不回到出生点）
+	if not pl:Alive() then
+		pl:UnSpectateAndSpawn()
+		-- 在倒地位置附近找安全复活点（无碰撞），避免重生后卡墙
+		pl:SetPos(self:FindSafeRevivePos(pl, pos))
+		pl:SetEyeAngles(angles)
+	end
+
+	-- 爬起回血（回一半虚血上限对应的血量）
+	local maxhp = pl:GetMaxHealth()
+	pl:SetHealth(math.min(maxhp, pl:Health() + math.floor(maxhp * 0.5)))
+
+	if rescuer and rescuer:IsValid() and rescuer ~= pl then
+		pl:CenterNotify(COLOR_GREEN, "你已被 " .. rescuer:Name() .. " 救起")
+		rescuer:CenterNotify(COLOR_GREEN, "你救起了 " .. pl:Name())
+	elseif rescuer == pl then
+		pl:CenterNotify(COLOR_GREEN, "你使用自救道具站了起来")
+	end
+end
+
+-- 波间自动爬起（无人拉兜底）：由 WaveStateChanged 波间分支调用
+function GM:AutoReviveDowned()
+	for _, pl in pairs(team.GetPlayers(TEAM_HUMAN)) do
+		if pl.ZSDowned and pl.ZSDowned:IsValid() and not pl:Alive() then
+			local pos = pl:GetPos()
+			local angles = pl:EyeAngles()
+			pl:RemoveStatus("zsdowned", true, true)
+			pl:UnSpectateAndSpawn()
+			-- 在倒地位置附近找安全复活点（无碰撞），避免重生后卡墙
+			pl:SetPos(self:FindSafeRevivePos(pl, pos))
+			pl:SetEyeAngles(angles)
+		end
+	end
+end
+
+-- 救援读条时长（秒）——由 ConVar zs_downrescuetime 控制（sh_options.lua）
+-- GM.RescueTime = 2.5
+-- 救援距离（单位）——由 ConVar zs_downrescuerange 控制（sh_options.lua）
+-- GM.RescueRange = 120
+
+-- 查找救援者附近可救援的倒地队友
+function GM:FindDownedTargetNear(pl)
+	local plpos = pl:GetPos()
+	local best
+	local bestdist = self.RescueRange ^ 2
+
+	for _, other in pairs(team.GetPlayers(TEAM_HUMAN)) do
+		if other ~= pl and not other:Alive() and other.ZSDowned and other.ZSDowned:IsValid() then
+			local d = other:GetPos():DistToSqr(plpos)
+			if d <= bestdist then
+				bestdist = d
+				best = other
+			end
+		end
+	end
+
+	return best
+end
+
+-- 开始救援：按下 E 发起，读条进度由 ThinkPlayersFrame 每帧驱动
+function GM:StartRescueDowned(rescuer, target)
+	if not rescuer:IsValid() or not target:IsValid() or not target.ZSDowned or not target.ZSDowned:IsValid() then return end
+
+	local status = target.ZSDowned
+
+	-- 若已有其他救援者，允许接管并重置进度
+	if status.Rescuer and status.Rescuer:IsValid() and status.Rescuer ~= rescuer then
+		status.RescueProgress = nil
+	end
+
+	status.Rescuer = rescuer
+	status:SetRescuer(rescuer)
+	rescuer.ZSRescuing = target
+
+	-- 通知客户端显示读条
+	net.Start(NET_MSG.ZSRESCUE)
+		net.WriteEntity(target)
+		net.WriteEntity(rescuer)
+	net.Broadcast()
+end
+
 --[[
 	函数名: GM:DoPlayerDeath (玩家死亡主处理)
 	功能: 处理所有玩家死亡逻辑：布娃娃、团队变更、击杀广播、复活机制
@@ -4958,15 +5245,26 @@ function GM:DoPlayerDeath(pl, attacker, dmginfo)
 
 		pl:PlayDeathSound()
 
-		if attacker:IsPlayer() and attacker ~= pl then
+		-- PvE：判断是否由僵尸攻击致死（进入倒地）还是环境/自爆致死（直接变僵尸）
+		local zombiekilled = attacker:IsPlayer() and attacker ~= pl and attacker:Team() == TEAM_UNDEAD
+		if zombiekilled then
 			gamemode.Call("ZombieKilledHuman", pl, attacker, inflictor, dmginfo, headshot, suicide)
 		end
 
-		pl:DropAll()
-		timer.Simple(0, function() DelayedChangeToZombie(pl) end) -- We don't want people shooting barrels near teammates.
+		-- PvE：会倒地的死亡（僵尸咬死）不 DropAll——武器留在身上，拉起来直接继续用。
+		-- 直接变僵尸的死亡（环境/自爆）才掉武器（僵尸用不上枪，原版行为）。
 		self.PreviouslyDied[pl:SteamID64()] = CurTime()
 		if self:GetWave() == 0 then
 			pl.DiedDuringWave0 = true
+		end
+
+		if zombiekilled then
+			-- 僵尸攻击致死：进入倒地状态（虚血+等待救援）
+			self:EnterZSDowned(pl, attacker)
+		else
+			-- 环境/自爆致死：直接变僵尸（PvE 规则：只有僵尸攻击才触发倒地）
+			pl:DropAll()
+			timer.Simple(0, function() DelayedChangeToZombie(pl) end)
 		end
 
 		local frags = pl:Frags()
@@ -5376,6 +5674,37 @@ function GM:PlayerSpawn(pl)
 				end
 			end
 		end
+
+		-- PvE：倒地拉起后补回倒地前的武器（L4D2 式"倒地起来保留武器"）
+		if pl.ZSDownedWeapons then
+			local saved = pl.ZSDownedWeapons
+			pl.ZSDownedWeapons = nil
+
+			for _, data in ipairs(saved) do
+				if not pl:HasWeapon(data.Class) then
+					pl:Give(data.Class)
+				end
+
+				local wep = pl:GetWeapon(data.Class)
+				if wep and wep:IsValid() then
+					if data.Ammo > 0 and wep.GetPrimaryAmmoCount then
+						local cur = wep:GetPrimaryAmmoCount()
+						if cur < data.Ammo then
+							local ammotype = wep.Primary and wep.Primary.Ammo
+							if ammotype and ammotype ~= "none" then
+								pl:GiveAmmo(data.Ammo - cur, ammotype, true)
+							end
+						end
+					end
+					if data.Clip1 >= 0 and wep.SetClip1 then
+						wep:SetClip1(data.Clip1)
+					end
+					if data.Clip2 >= 0 and wep.SetClip2 then
+						wep:SetClip2(data.Clip2)
+					end
+				end
+			end
+		end
 		
 		local oldhands = pl:GetHands()
 		if IsValid(oldhands) then
@@ -5612,6 +5941,9 @@ function GM:WaveStateChanged(newstate)
 		end
 	else
 		gamemode.Call("SetWaveStart", CurTime() + (GetGlobalBool("classicmode") and self.WaveIntermissionLengthClassic or self.WaveIntermissionLength) + (self:GetWave() - 1) * self.WaveIntermissionLengthIncrease) --加上波次间隔时间和增加的间隔时间
+
+		-- PvE：波间自动复活倒地/真死的人类（无人拉兜底）
+		self:AutoReviveDowned()
 
 		net.Start(NET_MSG.WAVEEND)
 			net.WriteInt(self:GetWave(), 16)
