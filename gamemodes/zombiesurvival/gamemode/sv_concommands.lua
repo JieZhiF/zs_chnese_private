@@ -210,6 +210,21 @@ concommand.Add("zs_pointsshopbuy", function(sender, command, arguments)
 			end
 		end
 	end
+
+	-- v5.1 购物余款自动换废料：开关开启（玩家 userinfo convar zs_buyscrap > 0）时，在成功购买之后，
+	-- 按现有比价 GAMEMODE:PointsToScrap（70 点数 = 32 废料，见 sh_weaponquality.lua）循环把剩余点数
+	-- 换购成 scrap 零件：每轮固定换一份（70 点 → math.ceil(PointsToScrap(70)) = 32 废料），
+	-- 直到剩余点数买不起一份为止。此处位于购买成功路径末尾，沿用本次购买已通过的各项校验，
+	-- 不绕过任何波次/库存上限；兑换是玩家自身点数与废料的直接等价互换，
+	-- 不经过重构台交易，故不产生 cost/8 那类佣金
+	if sender:GetInfoNum("zs_buyscrap", 0) > 0 then
+		local lotcost = 70
+		local lotscrap = math.ceil(GAMEMODE:PointsToScrap(lotcost))
+		while sender:GetPoints() >= lotcost do
+			sender:TakePoints(lotcost)
+			sender:GiveAmmo(lotscrap, "scrap")
+		end
+	end
 end)
 
 -- 处理玩家拆解武器或物品以获得废料的指令
@@ -524,11 +539,15 @@ concommand.Add("zsemptyclip", function(sender, command, arguments)
 end)
 
 -- 辅助函数：尝试获取玩家面前的锁定目标（用于给予物品）
+-- 给予目标范围上限（平方值）。客户端弹出的「选择附近人类」列表同为 600 单位
+local GIVE_TARGET_RANGE_SQR = 600 * 600
+
 function GM:TryGetLockOnTrace(sender, arguments)
 	local ent
 	local dent = Entity(tonumbersafe(arguments[2] or 0) or 0)
-	-- 首先尝试从参数中获取有效的菜单锁定目标
-	if GAMEMODE:ValidMenuLockOnTarget(sender, dent) then
+	-- 首先尝试参数指定的目标：存活人类 + 在范围内即可，不要求正对或视线可见
+	-- （背包面板的「选择附近人类」列表按索引传参，选中谁就给谁）
+	if dent:IsValidLivingHuman() and sender:GetPos():DistToSqr(dent:GetPos()) <= GIVE_TARGET_RANGE_SQR then
 		ent = dent
 	end
 

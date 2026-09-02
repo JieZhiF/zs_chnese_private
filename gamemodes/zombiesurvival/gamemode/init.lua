@@ -206,6 +206,7 @@ AddCSLuaFile("vgui/dsidemenu.lua")
 AddCSLuaFile("vgui/dspawnmenu.lua")
 AddCSLuaFile("vgui/dteamselect.lua")  -- 出生团队选择界面
 AddCSLuaFile("vgui/dmodelkillicon.lua")
+AddCSLuaFile("vgui/dammobar.lua")  -- 背包面板底部弹药横栏
 
 AddCSLuaFile("vgui/dexroundedpanel.lua")
 AddCSLuaFile("vgui/dexroundedframe.lua")
@@ -224,6 +225,7 @@ AddCSLuaFile("vgui/pmutationshop.lua")--随便放
 AddCSLuaFile("vgui/pworth.lua")
 AddCSLuaFile("vgui/parsenal.lua")
 AddCSLuaFile("vgui/premantle.lua")
+AddCSLuaFile("vgui/pinventory.lua")  -- 双栏背包面板（人类菜单新入口）
 AddCSLuaFile("vgui/zshealtharea.lua")
 AddCSLuaFile("vgui/zsstatusarea.lua")
 AddCSLuaFile("vgui/zsgamestate.lua")
@@ -253,6 +255,7 @@ include("sv_block_melee_functions.lua")
 include("sv_profiling.lua")
 include("sv_sigils.lua")
 include("sv_concommands.lua")
+include("sv_quickremantle.lua")  -- 变体快速重组/购物余款换废料
 include("sv_devreload.lua")
 
 include("itemstocks/sv_stock.lua")

@@ -61,6 +61,8 @@ include("vgui/parsenal.lua")  -- 军械库
 include("vgui/premantle.lua")  -- 重铸面板
 include("vgui/dpingmeter.lua")  -- Ping表
 include("vgui/dsidemenu.lua")  -- 侧边菜单（保留作为 fallback）
+include("vgui/dammobar.lua")  -- 背包底部弹药横栏
+include("vgui/pinventory.lua")  -- 双栏背包面板（人类菜单新入口）
 include("vgui/dspawnmenu.lua")  -- 出生菜单
 include("vgui/dteamselect.lua")  -- 出生团队选择界面
 include("vgui/zsgamestate.lua")  -- 游戏状态
@@ -2204,107 +2206,10 @@ function GM:HumanMenu()
 		self.HumanMenuLockOn = nil
 	end
 
-	self:OpenInventory()
-	if self.HumanMenuPanel and self.HumanMenuPanel:IsValid() then
-		self.HumanMenuPanel:SetVisible(true)
-		self.HumanMenuPanel:OpenMenu()
-
-		self:DoAltSelectedItemUpdate()
-		return
-	end
-
-	local panel = vgui.Create("DSideMenu")
-	self.HumanMenuPanel = panel
-
-	local screenscale = BetterScreenScale()
-	for k, v in pairs(self.AmmoNames) do
-		local b = vgui.Create("DAmmoCounter", panel)
-		b:SetAmmoType(k)
-		b:SetTall(math.max(32, screenscale * 36))
-		panel:AddItem(b)
-	end
-
-	local hei = draw_GetFontHeight("ZSHUDFontSmall")
-	local selecteditemtitle = EasyLabel(panel, translate.Get("selected_item_title"), "ZSHUDFontSmall", color_white)
-	selecteditemtitle:SetContentAlignment(5)
-	panel:AddItem(selecteditemtitle)
-	
-	local selecteditemlabel = EasyLabel(panel, translate.Get("selected_item_fists"), "ZSHUDFontSmaller", color_white)
-	selecteditemlabel:SetContentAlignment(5)
-	panel:AddItem(selecteditemlabel)
-	panel.SelectedItemLabel = selecteditemlabel
-	
-	local gwbtn = vgui.Create("DButton")
-	gwbtn:SetFont("ZSHUDFontSmaller")
-	gwbtn:SetText(translate.Get("give_item"))
-	gwbtn:SetSize(panel:GetWide() - 8 * screenscale, hei - 4 * screenscale)
-	gwbtn:CenterHorizontal()
-	gwbtn.DoClick = GiveWeapon
-	panel:AddItem(gwbtn)
-	
-	gwbtn = vgui.Create("DButton")
-	gwbtn:SetFont("ZSHUDFontSmaller")
-	gwbtn:SetText(translate.Get("give_item_and_clips"))
-	gwbtn:SetSize(panel:GetWide() - 8 * screenscale, hei - 4 * screenscale)
-	gwbtn:CenterHorizontal()
-	gwbtn.DoClick = GiveWeaponClip
-	panel:AddItem(gwbtn)
-	
-	gwbtn = vgui.Create("DButton")
-	gwbtn:SetFont("ZSHUDFontSmaller")
-	gwbtn:SetText(translate.Get("drop_item"))
-	gwbtn:SetSize(panel:GetWide() - 8 * screenscale, hei - 4 * screenscale)
-	gwbtn:CenterHorizontal()
-	gwbtn.DoClick = DropWeapon
-	panel:AddItem(gwbtn)
-	
-	gwbtn = vgui.Create("DButton")
-	gwbtn:SetFont("ZSHUDFontSmaller")
-	gwbtn:SetText(translate.Get("empty_weapon_clip"))
-	gwbtn:SetSize(panel:GetWide() - 8 * screenscale, hei - 4 * screenscale)
-	gwbtn:CenterHorizontal()
-	gwbtn.DoClick = EmptyClip
-	panel:AddItem(gwbtn)
-	
-	gwbtn = vgui.Create("DButton")
-	gwbtn:SetFont("ZSHUDFontSmaller")
-	gwbtn:SetText(translate.Get("dismantle_item"))
-	gwbtn:SetSize(panel:GetWide() - 8 * screenscale, hei - 4 * screenscale)
-	gwbtn:CenterHorizontal()
-	gwbtn.DoClick = DismantleWeapon
-	panel:AddItem(gwbtn)
-	
-	panel:AddItem(EasyLabel(panel, translate.Get("resupply_ammo_selection"), "DefaultFont", color_white))
-	local dropdown = vgui.Create("DComboBox", panel)
-	dropdown:SetMouseInputEnabled(true)
-	dropdown:AddChoice(translate.Get("resupply_held_weapon"))
-	for k,v in pairs(self.AmmoResupply) do
-		dropdown:AddChoice(translate.Get("ammotype_"..k))
-	end
-	dropdown.OnSelect = function(me, index, value, data)
-		if value == translate.Get("resupply_held_weapon") then
-			MySelf.ResupplyChoice = nil
-			RunConsoleCommand("zs_resupplyammotype", "default")
-			return
-		end
-	
-		for k,v in pairs(self.AmmoNames) do
-			if value == v then
-				MySelf.ResupplyChoice = k
-				RunConsoleCommand("zs_resupplyammotype", k)
-				break
-			end
-		end
-
-	end
-	dropdown:SetText(translate.Get("resupply_held_weapon"))
-	
-	dropdown:SetTextColor(COLOR_WHITE)
-	panel:AddItem(dropdown)
-
-	self.HumanMenuSupplyChoice = dropdown
-
-	panel:OpenMenu()
+	-- 改用双栏背包面板（pinventory.lua）：旧 DSideMenu 侧栏不再由此创建，
+	-- 弹药横栏 / 变体 / 升级 / 动作按钮 / 补给选择都在新面板内。
+	-- HumanMenuLockOn 需先锁定：弹药「给予」等指令仍要用到。
+	self:OpenInventoryPanel()
 end
 
 -- ==================== 僵尸出生菜单 ====================
@@ -2756,6 +2661,11 @@ function GM:KeyRelease(pl, key)
 					v.On = false
 				end
 			end
+		end
+
+		-- 新背包面板（ZSInventoryPanel 单例）：松开菜单键即隐藏，下次按住 ALT 重开
+		if self.InventoryPanel and self.InventoryPanel:IsValid() then
+			self.InventoryPanel:SetVisible(false)
 		end
 	end
 end
