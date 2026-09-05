@@ -77,6 +77,7 @@ local CVAR_PIP_DEBUG = CreateClientConVar("zs_pip_debug", "0", true, false, "PIP
 local CVAR_PIP_SHADER = CreateClientConVar("zs_pip_lensshader", "1", true, false, "镜头着色器：畸变+色差+暗角（需 DX9+，自带编译版无需 ARC9）", 0, 1)
 local CVAR_PIP_PARALLAX = CreateClientConVar("zs_pip_parallax", "1", true, false, "镜内画面窗口：≤1=中心锁定(默认,镜内中心=开镜前准星=弹着点) >1=夸张浮动(观感优先,精度不保证)", 0, 2)
 local CVAR_PIP_SHADOW = CreateClientConVar("zs_pip_shadow", "1", true, false, "镜筒阴影层叠强度倍率：0=关闭 1=ARC9 标准 2=加强", 0, 2)
+local CVAR_PIP_EYEFFECT = CreateClientConVar("zs_pip_eyeffect", "0.5", true, false, "镜内眼位动态（暗角/色差随视线漂移）幅度倍率：0=完全静态 0.5=收敛(默认,适配未调校摇摆) 1=ARC9 标准 2=夸张", 0, 2)
 
 -- [镜内显示内容] 分划板样式 / 自定义颜色 / 亮度 / 读数开关 / 视线门控
 local CVAR_SCOPE_RETICLE = CreateClientConVar("zs_scope_reticle", "auto", true, false, "分划板样式覆盖：auto=武器默认 | mil-dot/cross/dot/chevron/german/tdot/acog | 材质路径")
@@ -173,8 +174,11 @@ end
 local function UpdateLensParams(w, h, eye_x, eye_y, eye_dist, camult, kmult)
 	if not mat_lens or mat_lens:IsError() then return end
 
-	local scrw2, scrh2 = ScrW(), ScrH()
-	local scrlength = math.sqrt(scrw2 * scrw2 + scrh2 * scrh2)
+	-- [像素空间统一] 全部参数必须用目标 RT 的像素尺寸（w/h = rt_pic_w/h）。
+	-- 旧移植版内部用 ScrW()/ScrH()：屏幕(2560x1440)与方形 RT(1440x1440) 尺寸不匹配，
+	-- 暗角中心/半径、色差方向整体错位——静止时就有不对称黑月与色带，
+	-- 一动眼偏移 t 叠加放大后甩动更剧烈。ARC9 原版 RT 与屏幕等大故无此问题。
+	local scrlength = math.sqrt(w * w + h * h)
 
 	eye_x = eye_x or 0.5
 	eye_y = eye_y or 0.5
@@ -184,15 +188,15 @@ local function UpdateLensParams(w, h, eye_x, eye_y, eye_dist, camult, kmult)
 
 	local eyelength = math.sqrt(eye_x * eye_x + eye_y * eye_y)
 
-	local center_p_x = scrw2 * 0.5
-	local center_p_y = scrh2 * 0.5
+	local center_p_x = w * 0.5
+	local center_p_y = h * 0.5
 
 	local mouse_p_x, mouse_p_y
 	if eyelength < 0.01 then
 		mouse_p_x, mouse_p_y = center_p_x, center_p_y
 	else
-		mouse_p_x = eye_x * scrw2
-		mouse_p_y = eye_y * scrh2
+		mouse_p_x = eye_x * w
+		mouse_p_y = eye_y * h
 	end
 
 	local dir_p_x = mouse_p_x - center_p_x
@@ -209,7 +213,7 @@ local function UpdateLensParams(w, h, eye_x, eye_y, eye_dist, camult, kmult)
 	local max_dist = 0.25 * scrlength * VIG_FORG_BASE
 	local t = math_Clamp(dir_len / max_dist, 0, 1)
 
-	local offset_len = VIG_OFFSET * math_min(scrw2, scrh2) * t
+	local offset_len = VIG_OFFSET * math_min(w, h) * t
 	local c1_p_x = center_p_x + norm_dir_x * offset_len * 1.75
 	local c1_p_y = center_p_y + norm_dir_y * offset_len * 1.75
 
@@ -217,7 +221,7 @@ local function UpdateLensParams(w, h, eye_x, eye_y, eye_dist, camult, kmult)
 	mat_lens:SetFloat("$c0_y", c1_p_y)
 
 	-- 暗角半径随眼距收放（贴近镜片时视野扩张）
-	local rad1_p = ((0.8 - eye_dist) + VIG_R1) * scrh2
+	local rad1_p = ((0.8 - eye_dist) + VIG_R1) * h
 
 	mat_lens:SetFloat("$c0_z", rad1_p)
 	mat_lens:SetFloat("$c0_w", (0.55 - eye_dist) * rad1_p)
@@ -228,6 +232,13 @@ local function UpdateLensParams(w, h, eye_x, eye_y, eye_dist, camult, kmult)
 
 	mat_lens:SetFloat("$c1_x", c2_p_x)
 	mat_lens:SetFloat("$c1_y", c2_p_y)
+
+	-- [暗角半径 · 静态寄存器] ARC9 shadersetstaticvalues 同款（cl_pipscope_new.lua）：
+	-- 优化版 lens shader 的 c1_z/c1_w 是暗角外半径（屏幕像素），与逐帧数据无关。
+	-- 移植时漏写导致寄存器保持 0 → 暗角半径为 0 → 整幅画面被吞成纯黑
+	--（表现为镜内与 rt_pic 直绘预览全黑、RT 像素采样正常、zs_pip_lensshader 0 后恢复）
+	mat_lens:SetFloat("$c1_z", VIG_R2 * h)
+	mat_lens:SetFloat("$c1_w", 0.8 * VIG_R2 * h)
 
 	-- 色差：方向沿眼偏移，强度随偏移量与眼距增长
 	local mouse_ca_boost = t * 200 * camult
@@ -243,8 +254,8 @@ local function UpdateLensParams(w, h, eye_x, eye_y, eye_dist, camult, kmult)
 	mat_lens:SetFloat("$c2_w", lateral_ca * 0.8 * t)
 
 	mat_lens:SetFloat("$c3_x", LENS_K_BASE * kmult)
-	mat_lens:SetFloat("$c3_z", scrw2)
-	mat_lens:SetFloat("$c3_w", scrh2)
+	mat_lens:SetFloat("$c3_z", w)
+	mat_lens:SetFloat("$c3_w", h)
 end
 
 -- [显示材质] 采用文件 VMT（$basetexture 直引 _rt_zs_pip_*）：
@@ -298,6 +309,7 @@ end)
 local next_render_time = 0
 local pip_zoom_hint_shown = false -- 滚轮调焦提示：每会话只提示一次
 local last_capture_time = 0 -- 像素采样节流（GPU→CPU 同步读取昂贵且易崩）
+local last_pass_capture_time = 0 -- [DEBUG-p1px] rt_pass 采样独立节流
 
 local function ShouldRenderNow()
 	local fpslock = CVAR_PIP_FPSLOCK:GetInt()
@@ -629,6 +641,34 @@ function SWEP:RenderPIPPicture(alpha)
 			local eyedist = lpos:Distance(origin) + mreow * 20
 			local eye_dist = math_Clamp((mreow + eyedist * 0.1) * EYE_DISTANCE_INFLUENCE, -0.15, 0.8)
 
+			-- [眼位信号平滑] 指数平滑（τ≈0.12s）滤掉 viewmodel 摇摆/镜头弹簧的
+			-- 高频分量，保留缓慢有意眼移。ARC9 默认观感建立在已调校的摇摆之上；ARC9 摇摆
+			-- 移植尚未调参时，原始眼位信号会把行走/挥枪晃动直接灌进暗角/色差（t 的色差
+			-- 增益 ×200，反应剧烈）。zs_pip_eyeffect 同步缩放整体动态幅度，调好摇摆后可回 1。
+			local amt = math_Clamp(CVAR_PIP_EYEFFECT:GetFloat(), 0, 2)
+			if amt <= 0 then
+				offsetx, offsety, eye_dist = 0, 0, 0.1 -- 完全静态：暗角/色差钉在镜心
+			else
+				local k = 1 - math.exp(-RealFrameTime() / 0.12)
+				local smx = self.m_fPIPEyeSmX
+				local smy = self.m_fPIPEyeSmY
+				local smd = self.m_fPIPEyeSmD
+				if smx == nil then
+					smx, smy, smd = offsetx, offsety, eye_dist
+				else
+					smx = smx + (offsetx - smx) * k
+					smy = smy + (offsety - smy) * k
+					smd = smd + (eye_dist - smd) * k
+				end
+				self.m_fPIPEyeSmX = smx
+				self.m_fPIPEyeSmY = smy
+				self.m_fPIPEyeSmD = smd
+
+				offsetx = smx * amt
+				offsety = smy * amt
+				eye_dist = math_Clamp(smd * amt, -0.15, 0.8)
+			end
+
 			UpdateLensParams(rt_pic_w, rt_pic_h, offsetx + 0.5, offsety + 0.5, eye_dist)
 		else
 			UpdateLensParams(rt_pic_w, rt_pic_h, 0.5, 0.5, 0.1)
@@ -642,11 +682,29 @@ function SWEP:RenderPIPPicture(alpha)
 				render.SetMaterial(mat_lens)
 				render.DrawScreenQuad()
 			cam.End2D()
+
+			-- [DEBUG-p1px] 对 shader 输出 RT 采样，与 rt_pic 采样同帧对比：
+			-- pic 正常而 pass 全黑 => 黑屏发生在 lens shader 通道内部
+			if CVAR_PIP_DEBUG:GetInt() >= 2 and RealTime() >= (last_pass_capture_time or 0) then
+				last_pass_capture_time = RealTime() + 0.5
+
+				render.CapturePixels()
+				local function ReadPxPass(x, y)
+					local r, g, b = render.ReadPixel(math_floor(x), math_floor(y))
+					return { r = r or 0, g = g or 0, b = b or 0 }
+				end
+				self.m_tPIPDebugPassPx = {
+					ReadPxPass(rt_pic_w * 0.25, rt_pic_h * 0.5),
+					ReadPxPass(rt_pic_w * 0.5, rt_pic_h * 0.5),
+					ReadPxPass(rt_pic_w * 0.75, rt_pic_h * 0.5),
+				}
+			end
 		render.PopRenderTarget()
 
 		mat_pic:SetTexture("$basetexture", rt_pass)
 	else
 		mat_pic:SetTexture("$basetexture", rt_pic)
+		self.m_tPIPDebugPassPx = self.m_tPIPDebugPx -- [DEBUG-p1px] 无 shader 时与 pic 同源
 	end
 
 	-- [分划板烘焙 · 结构性防错位] 分划板直接画进显示 RT 中心，与画面同源永不分离：
@@ -655,10 +713,26 @@ function SWEP:RenderPIPPicture(alpha)
 	-- 直径取窗口高度的 96%（窗口恒包含 RT 中心，最大漂移也不会裁掉分划板）
 	local disp_rt = use_shader and rt_pass or rt_pic
 	local ret_dia = rt_pic_h * (1 / PIP_HEADROOM) * 0.96
-	render.PushRenderTarget(disp_rt, 0, 0, rt_pic_w, rt_pic_h)
+		render.PushRenderTarget(disp_rt, 0, 0, rt_pic_w, rt_pic_h)
 		cam.Start2D()
 			PaintReticle(self, rt_pic_w * 0.5, rt_pic_h * 0.5, ret_dia, alpha)
 		cam.End2D()
+
+		-- [DEBUG-p1px] 分划板烘焙后同样采样一次（烘焙污染前的 pass 状态已在上面留存）
+		if CVAR_PIP_DEBUG:GetInt() >= 2 and RealTime() >= (last_pass_capture_time or 0) then
+			last_pass_capture_time = RealTime() + 0.5
+
+			render.CapturePixels()
+			local function ReadPxRet(x, y)
+				local r, g, b = render.ReadPixel(math_floor(x), math_floor(y))
+				return { r = r or 0, g = g or 0, b = b or 0 }
+			end
+			self.m_tPIPDebugPassPx = {
+				ReadPxRet(rt_pic_w * 0.25, rt_pic_h * 0.5),
+				ReadPxRet(rt_pic_w * 0.5, rt_pic_h * 0.5),
+				ReadPxRet(rt_pic_w * 0.75, rt_pic_h * 0.5),
+			}
+		end
 	render.PopRenderTarget()
 
 	self.m_fPIPLastRender = RealTime()
@@ -1443,6 +1517,29 @@ function SWEP:DrawHUDBackground()
 			end
 			local age = self.m_fPIPLastRender and (RealTime() - self.m_fPIPLastRender) or -1
 
+			-- [DEBUG-p1px] lens shader 关键寄存器快照 + rt_pass 采样（shader 输出 RT）。
+			-- 判别逻辑：
+			--   RT像素(pic) 正常 + pass像素 全黑  => 黑屏发生在 lens shader 通道内部
+			--   c1_z/c1_w 为 0                    => 暗角半径未初始化，shader 吞掉整幅画面
+			local lensmat = mat_lens and not mat_lens:IsError() and mat_lens or nil
+			local shader_on = CVAR_PIP_SHADER:GetBool() and lensmat ~= nil and render.GetDXLevel() >= 90
+			local lentext = ""
+			if lensmat then
+				lentext = string.format(" | c1z=%.0f c1w=%.0f c3z=%.0f shader=%s",
+					lensmat:GetFloat("$c1_z") or -1,
+					lensmat:GetFloat("$c1_w") or -1,
+					lensmat:GetFloat("$c3_z") or -1,
+					shader_on and "on" or "off")
+			end
+			local passtext = ""
+			local passpx = self.m_tPIPDebugPassPx
+			if passpx and passpx[1] then
+				passtext = string.format(" | pass像素 L%d,%d,%d M%d,%d,%d R%d,%d,%d",
+					passpx[1].r, passpx[1].g, passpx[1].b,
+					passpx[2].r, passpx[2].g, passpx[2].b,
+					passpx[3].r, passpx[3].g, passpx[3].b)
+			end
+
 			-- [真弹着点参考] 沿武器实际弹道方向（GetShootPos + GetAimVector，与
 			-- ShootBullets 完全同源）射线求交，十字画在真实命中点的屏幕投影处。
 			-- 旧版画在 ScrW/2 的是"渲染画面中心"：镜头后坐力弹簧（cl_camera）只改
@@ -1491,6 +1588,10 @@ function SWEP:DrawHUDBackground()
 				CVAR_PIP_PARALLAX:GetFloat() > 1 and "浮动" or "锁定",
 				pxtext),
 				"DermaDefault", 8, ScrH() * 0.55, color_white)
+
+			draw.SimpleText(string.format("[DEBUG-p1px] dx%d use_shader=%s%s%s",
+				render.GetDXLevel(), shader_on and "1" or "0", lentext, passtext),
+				"DermaDefault", 8, ScrH() * 0.55 + 16, color_yellow)
 
 			if dbg >= 2 then
 				-- 绕开面片，直接把 rt_pic 方形区域平铺到屏幕左上角：

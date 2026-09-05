@@ -77,7 +77,8 @@ SWEP.Animations = {
 -- [2/5 开镜开火行为·按武器定位选其一，本段可不拷走基座默认]
 SWEP.CustomSightsAttackAnim = true -- akbar 现用：完全开镜不播关键帧、纯弹簧承担开火表现
 -- SWEP.DoFireAnimation = false    -- 备选：任何状态都不播开火关键帧（纯弹簧极端形态）
-SWEP.SuppressedFireFX = true   -- 备选开关：纯弹簧开火时不手动补发弹壳（枪口焰与此开关无关，始终由框架统一生成；默认补发）
+SWEP.SuppressedFireFX = true   -- 弹簧抑制路径的特效补偿（sh_anim SpawnSuppressedFireFX）：
+                               -- true=抑制开火动画时手动补发弹壳（默认）；false=不补
 
 -- [3/5 双轨后坐力·首行必选，数值按手感调]
 --   FireAnimationEvent 屏蔽，勿在子类重接）
@@ -99,6 +100,12 @@ SWEP.RecoilMax = 6 -- 热度上限
 SWEP.RecoilModifierCap = 1.2 -- 满热度时的后坐力倍率上限
 SWEP.RecoilMaxTotalUp = 45 -- [实际轨] 弹道垂直爬升累积上限(度)
 
+-- [状态倍率 · GetRecoilModifier] 按持枪状态缩放实际轨踢枪量
+SWEP.RecoilMultSights = 0.5 -- 瞄准时后坐力倍率
+SWEP.RecoilMultCrouch = 0.75 -- 蹲下
+SWEP.RecoilMultMidAir = 2.0 -- 空中
+SWEP.RecoilMultMove = 1.3 -- 移动
+
 -- [实际轨] 累积量经 cl_recoil_handler 渐进注入真实视角
 SWEP.RecoilPatternDrift = 0.35 -- 连射方向图案逐发漂移幅度(度)，越大水平走位越飘
 SWEP.RecoilAccumScale = 1 -- 实际轨累积量总乘数（服务器平衡旋钮；显式设定 [4/5] 弹簧参数后不影响视觉层）
@@ -114,8 +121,10 @@ SWEP.CamRecoilFOVStiffness = 200 -- FOV弹簧刚度
 SWEP.CamRecoilFOVDamping = 12 -- FOV弹簧阻尼
 SWEP.CamRecoilADSMult = 2.0 -- 开镜时镜头后坐力增强倍率（随开镜进度线性生效）
 
--- 枪模弹簧（ARC9 式双参数组：`*` 仅作用于开镜；腰射值由对应的 `*HipFire` 定义，
-SWEP.UseVisualRecoil = true -- 启用枪模物理后坐力
+-- 枪模弹簧（ARC9 式双参数组：`*` 仅作用于开镜；腰射值由对应的 `*HipFire` 定义）
+SWEP.UseVisualRecoil = true
+SWEP.VisualRecoilPositionBump = 1.5 -- [ARC9] 开镜越满枪模向眼轴冲程越大（sh_recoil Lerp(ads,1,此值)）
+SWEP.VisualRecoilPositionBumpUpRTScope = 0.12 -- [PIP 武器] 镜内开火枪模上顶分量（非 PIP 可不写） -- 启用枪模物理后坐力
 
 SWEP.VisualRecoilPunch = 0 -- [开镜组] 枪模后坐冲击感（沿视轴的短促抽动分量）
 SWEP.VisualRecoilPunchRandom = 0 -- [可选] 冲击感随机幅度
@@ -129,13 +138,19 @@ SWEP.VisualRecoilRollRandom = 0 -- [可选] 滚转随机幅度
 SWEP.VisualRecoilBack = 3 -- [开镜组] 沿枪身方向的后坐位移（朝射手方向的主体运动）
 SWEP.VisualRecoilBackRandom = 0.2 -- 后坐随机幅度：每发在基准 ± 此值间取落点（0=逐发完全一致）
 
---SWEP.VisualRecoilUpHipFire = 0.6 -- [腰射组示例] Punch/Up/Roll/Back 均有各自 *HipFire 对应项
+-- [腰射组] *HipFire 各项为腰射终值，与开镜组按开镜进度插值；未声明时腰射端按 0
+--（"开镜组字面生效"——akbar 腰射枪模弹簧量全部来自下方 Back 的插值基线）
+SWEP.VisualRecoilPunchHipFire = 0.8 -- 腰射冲击感
+SWEP.VisualRecoilUpHipFire = 0.6    -- 腰射垂直位移
+SWEP.VisualRecoilBackHipFire = 2.0  -- 腰射后坐位移
 SWEP.VisualRecoilStiffness = 200 -- 弹簧刚度 (越高越"硬")
 SWEP.VisualRecoilDamping = 20 -- 弹簧阻尼 (越高越快衰减)
 SWEP.VisualRecoilCenter = Vector(0, 0, 0)
 
 -- 微抖层：独立于上方振幅参数的高频细碎抖动系统（开火后 0.75s 内活跃）
--- 数值是强度倍率；要连主层一起完全静止，除上方振幅归零外还需本行 false
+-- 消费语义（cl_viewmodel/DoSubtleVisualRecoil）：false=关闭；数值=强度倍率
+--（默认 1，腰射端另有 SubtleVisualRecoilHipFire ×2 默认）；要连主层一起完全
+-- 静止，除上方振幅归零外还需本行 false
 SWEP.SubtleVisualRecoil = false
 SWEP.VisualRecoilYawFollow = 0 -- 水平跟随抖动：枪模偏航随实际轨水平漂移摆动（与三振幅参数解耦；0=关闭）
 
@@ -152,12 +167,20 @@ SWEP.BobSprintMult = 1 -- 奔跑摇摆倍率
 
 -- [5/5 弹道与特效·可选，不拷即继承基座默认]
 SWEP.TracerName = "zs_tracer"           -- 曳光：ZS 适配版 ARC9 曳光（基座已默认；置 nil 回引擎默认）
-SWEP.TracerSpeed = 15000                -- 曳光速度 units/s，越大尾迹越短
-SWEP.TracerColor = Color(255, 214, 130) -- 曳光颜色覆写（示例：AKM 暖黄曳光）
-SWEP.TracerSize = 1                     -- 曳光粗细倍率
+SWEP.TracerSpeed = 15000                -- 曳光速度 units/s，越大尾迹越短（zs_tracer 特效读取）
+SWEP.TracerColor = Color(255, 214, 130) -- 曳光颜色覆写（示例：AKM 暖黄曳光，zs_tracer 特效读取）
+SWEP.TracerSize = 1                     -- 曳光粗细倍率（zs_tracer 特效读取）
 SWEP.MuzzleFlashEffect = "zs_muzzleflash" -- 枪口焰：ARC9 同款 PCF 粒子（基座已默认；置 false 回引擎原版）
 -- SWEP.MuzzleParticle = "muzzleflash_ak47" -- [升级位] 枪口粒子按武器定制（默认按 HoldType 自动选 muzzleflash_ar 等）
 -- 纯弹簧开火时的弹壳补偿开关见 [2/5] 的 SuppressedFireFX
+
+-- [TPIK · 第三人称] 默认 bonemerge 镜像路径开箱即用（cl_tpik.lua），无需声明；
+-- 手工校准才解除注释改走手动锚定模式
+-- SWEP.WorldModelOffset = {
+-- 	Pos = Vector(-5.5, 3, -6), Ang = Angle(0, 0, 180),
+-- 	TPIKPos = Vector(-8, 2, -5), TPIKAng = Angle(-12, 0, 180),
+-- 	TPIKPosSightOffset = Vector(-1, 3, -2),
+-- }
 
 ---------------- >>>>>>>> 复制区结束 <<<<<<<< ----------------
 

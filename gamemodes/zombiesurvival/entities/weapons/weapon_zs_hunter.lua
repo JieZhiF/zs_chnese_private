@@ -56,7 +56,18 @@ SWEP.Scoped = true
 SWEP.PIPScope = true
 -- Unity Quad 方案：VElements 里的 pip_lens 面片开镜时显示 RT 放大画面（draw_func 基座自动注入）
 SWEP.ScopeLensElement = "pip_lens"
-SWEP.ScopeMagnification = 2 
+
+-- [PIP 光学配置 · 完整声明面见 weapon_zs_base/sh_scope.lua]
+-- （原文件尾部曾重复声明 Scoped/PIPScope/ScopeMagnification=4，已合并至此）
+SWEP.ScopeMagnification = 4   -- PIP 镜内光学倍率（灵敏度按此匹配）
+SWEP.ScopeMagMin = 2          -- 滚轮变焦下限（倍率）
+SWEP.ScopeMagMax = 8          -- 滚轮变焦上限（倍率）
+SWEP.PIPMainFOVMult = 0.88    -- PIP 完全瞄准时主视角保留的 FOV 倍率（ARC9 对齐的浅变焦）
+SWEP.ScopeReticle = "mil-dot" -- 分划板样式：mil-dot/cross/dot/chevron/german/tdot/acog |
+                              -- 材质路径（如 "vgui/uplp_reticles/pso.png"）| 自绘函数
+-- SWEP.ScopeReticleColor = Color(190, 45, 45) -- 分划板颜色（缺省暗红）
+-- SWEP.ScopeLegacyStyle = "futuristic" -- 经典模式（zs_pipscope=0）遮罩覆盖；缺省走原版全屏圆镜
+-- SWEP.ScopePaintFunc = function(wep) end -- RT 内后处理（夜视/FLIR 等），可选
 SWEP.WorldModel = "models/weapons/w_snip_awp.mdl"
 -- 使用 C 模型手部
 SWEP.UseHands = true
@@ -85,12 +96,14 @@ SWEP.ReloadGesture = ACT_HL2MP_GESTURE_RELOAD_SHOTGUN
 SWEP.ConeMax = 2
 SWEP.ConeMin = 0
 
--- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
+-- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移，Magnification=开镜主视角变焦倍率
+--（FOV÷值；PIP 武器上仅影响贴瞄过程的浅变焦，深倍率由镜内画面承担），
+-- ViewModelFOV=开镜时视模型 FOV 平滑过渡目标
 SWEP.IronSights = {
 	Pos = Vector(-7.435, -8.89, 2.326),
 	Ang = Angle(0, 0, 0),
-	Magnification = 1.15,	
-	ViemModelFOV = 60,
+	Magnification = 1.15,
+	ViewModelFOV = 60,
 }
 
 -- 持有时的移动速度（较慢）
@@ -102,6 +115,85 @@ SWEP.Tier = 3
 SWEP.AimDownSightsTime = 0.47
 -- 弹道曳光弹类型（大型狙击曳光）
 SWEP.TracerName = "tracer_sniper_big"
+
+-- ============================================================================
+-- [ARC9 移植配置 · hunter 为 PIP 狙击标杆]
+-- 双轨后坐力：实际轨（弹道）+ 视觉轨（镜头/枪模弹簧），语义同 akbar 复制区注释；
+-- 狙击定位差异：CamRecoilADSMult 收敛到 1（开镜打枪镜头不乱跳，画面稳定优先），
+-- 枪模弹簧仅保留轻微抽动——PVP 狙击的开火观感集中在枪口与后坐位移
+-- ============================================================================
+
+-- [动画框架接入] 单发栓动狙击：无专用 fire 序列，走扩展 Activity
+SWEP.Animations = {
+	fire = { Activity = ACT_VM_PRIMARYATTACK },
+}
+-- 完全开镜不播关键帧，纯弹簧承担开火表现（狙击镜内开火抖动最小的形态）
+SWEP.CustomSightsAttackAnim = true
+SWEP.SubtleVisualRecoil = false -- 微抖层关闭：镜内画面经 RT 放大后微抖会被放大到刺眼
+
+-- [实际轨 · 弹道] 单发重狙击：首发重踢、无连射热度堆积
+SWEP.Recoil_Enabled = true
+SWEP.RecoilUp = 2.4          -- 单发垂直踢枪（度），AWP 量级
+SWEP.RecoilSide = 0.4        -- 单发水平踢枪（度）
+SWEP.RecoilRandomUp = 0.3
+SWEP.RecoilRandomSide = 0.5
+SWEP.RecoilAutoControl = 1.4 -- 单发武器回正要快，快速补枪准星归位
+SWEP.RecoilAutoControlTime = 0.2
+SWEP.RecoilPerShot = 2       -- 单发热度即高（首发热度倍率仅作用于第 1 发）
+SWEP.RecoilMax = 3
+SWEP.RecoilModifierCap = 1.1
+SWEP.RecoilMaxTotalUp = 6    -- 单发上限即总上限
+SWEP.RecoilFirstShotMult = 1.0
+SWEP.RecoilPatternDrift = 0.4
+SWEP.RecoilAccumScale = 1
+SWEP.RecoilRiseSpeed = 25
+SWEP.RecoilTimeStep = 0.02
+
+-- [视觉轨 · 镜头] 单发清晰一击：FOV 冲击为主，角度弹跳收敛
+SWEP.CamRecoilUp = 0.12
+SWEP.CamRecoilSide = 0.04
+SWEP.CamRecoilRoll = 0.05
+SWEP.CamRecoilFOV = 2.2
+SWEP.CamRecoilFOVStiffness = 200
+SWEP.CamRecoilFOVDamping = 12
+SWEP.CamRecoilADSMult = 1.0  -- 开镜打枪镜头稳定（PIP 画面不受镜头弹簧影响，仅主视角）
+
+-- [视觉轨 · 枪模弹簧] 轻微抽动 + 后坐位移（作者量纲：填入值 = 内部 ×10）
+SWEP.UseVisualRecoil = true
+SWEP.VisualRecoilPunch = 1.2 -- 沿视轴短促抽动
+SWEP.VisualRecoilBack = 2.2  -- 朝射手后坐位移
+SWEP.VisualRecoilBackRandom = 0.3
+SWEP.VisualRecoilUp = 0      -- 垂直不抬（栓动狙击上跳交给镜头层）
+SWEP.VisualRecoilRoll = 0
+SWEP.VisualRecoilStiffness = 200
+SWEP.VisualRecoilDamping = 20
+SWEP.VisualRecoilCenter = Vector(0, 0, 0)
+SWEP.VisualRecoilYawFollow = 0
+
+-- [PIP 镜内后坐上抬] 开镜(PIP)时枪模向眼轴冲程的额外上抬分量（sh_recoil 消费，
+-- 默认 0.12；mirror 里表现为开枪瞬间镜内枪身轻微上顶——ARC9 RT 镜同款手感）
+SWEP.VisualRecoilPositionBumpUpRTScope = 0.12
+
+-- [状态倍率] 站立/移动/空中（狙击武器移动惩罚感）
+SWEP.RecoilMultSights = 0.5
+SWEP.RecoilMultCrouch = 0.75
+SWEP.RecoilMultMidAir = 2.0
+SWEP.RecoilMultMove = 1.3
+
+-- [摇摆 · ARC9 DarsuBob / 鼠标惯性] 狙击枪重、摆动慢（参考 cl_sway.lua 头部调法）
+SWEP.MouseSway = true
+SWEP.MouseSwayMult = 0.7     -- 长枪管惯性更大、响应更钝
+SWEP.BobWalkMult = 0.7
+SWEP.BobSprintMult = 0.6
+-- SWEP.BobSettingsMove = {0.7, 0.3, 0.9, 0.65, 1.8, 0.8} -- 逐枪微调位（默认 ARC9 标准值）
+
+-- [TPIK · 第三人称] 默认 bonemerge 镜像路径开箱即用，无需声明；
+-- 仅当第三人称持枪观感需要手工校准时才解除下行注释改走手动锚定（见 cl_tpik.lua 头）
+-- SWEP.WorldModelOffset = {
+-- 	Pos = Vector(-5.5, 3, -6), Ang = Angle(0, 0, 180),
+-- 	TPIKPos = Vector(-8, 2, -5), TPIKAng = Angle(-12, 0, 180),
+-- 	TPIKPosSightOffset = Vector(-1, 3, -2),
+-- }
 
 -- 武器修饰符：换弹速度+0.1
 GAMEMODE:AttachWeaponModifier(SWEP, WEAPON_MODIFIER_RELOAD_SPEED, 0.1)
@@ -215,7 +307,5 @@ function SWEP.BulletCallback(attacker, tr, dmginfo)
 	util.Effect("hit_hunter", effectdata)
 end
 
--- ==== 瞄准镜配置（重构：基座统一实现，见 weapon_zs_base/sh_scope.lua） ====
-SWEP.Scoped = true
-SWEP.PIPScope = true
-SWEP.ScopeMagnification = 4
+-- ==== 瞄准镜配置已全部收敛至文件上方 [PIP 光学配置] 区块 ====
+-- （原文件尾部重复声明 Scoped/PIPScope/ScopeMagnification=4 与上方合并，避免双值打架）
