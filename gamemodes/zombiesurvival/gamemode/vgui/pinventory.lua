@@ -144,7 +144,7 @@ local matBlurRT = CreateMaterial("pinv_blur_mat", "UnlitGeneric", {
     ["$ignorez"] = 1,
 })
 
--- [DEBUG-PINV-PERF] 临时探针（定位完成后：删除本段与全文件 [DEBUG-PINV-PERF] 标记）
+-- [DEBUG-PINV-PERF] 性能探针（长期保留）：pinv_perf 0 静音
 local PerfCvar = CreateClientConVar("pinv_perf", "1", true, false, "pinventory performance probes")
 local PerfState = nil
 local dbgChat = function(...) if PerfState and PerfState.enabled then chat.AddText(...) end end
