@@ -364,7 +364,7 @@ concommand.Add("zs_upgrade", function(sender, command, arguments)
 	if shortfallbuy then
 		sender:TakePoints(shortfallbuy.points)
 		sender:GiveAmmo(shortfallbuy.scrap, "scrap")
-		sender:CenterNotify(COLOR_CYAN, translate.ClientFormat(sender, "buyscrap_shortfall", shortfallbuy.scrap, shortfallbuy.points))
+		sender:CenterNotify(COLOR_CYAN, translate.ClientFormat(sender, "buyscrap_shortfall", shortfallbuy.points, shortfallbuy.scrap))
 	end
 
 	-- 执行升级：扣废料、给新武器、移除旧武器
