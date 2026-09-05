@@ -63,7 +63,7 @@
 --
 -- [区域] 开关行
 -- [位置] PANEL:BuildSwitchRow() / PANEL:UpdateSwitchRow()
--- [作用] 饰品排序/禁止拾取道具/自动购买废料三个复选框（暗红=关 绿=开）+ 返回按钮
+-- [作用] 饰品排序/禁止拾取道具/自动购买所缺零件三个复选框（暗红=关 绿=开）+ 返回按钮
 -- [常改] 复选框顺序、绑定的 ConVar、按钮宽度
 -- ============================================================================
 
@@ -145,7 +145,7 @@ local matBlurRT = CreateMaterial("pinv_blur_mat", "UnlitGeneric", {
 })
 
 -- [DEBUG-PINV-PERF] 性能探针（长期保留）：pinv_perf 0 静音
-local PerfCvar = CreateClientConVar("pinv_perf", "1", true, false, "pinventory performance probes")
+local PerfCvar = CreateClientConVar("pinv_perf", "0", true, false, "pinventory performance probes")
 local PerfState = nil
 local dbgChat = function(...) if PerfState and PerfState.enabled then chat.AddText(...) end end
 local dbgColR = Color(255, 120, 120)   -- 警告红
@@ -168,8 +168,8 @@ local function EnsurePinvFonts()
     surface.CreateFont("PINV_FontSmall", {font = "HarmonyOS Sans SC", size = math.ceil(14 * scale), weight = 500, extended = true, antialias = true})
 end
 
--- 自动购买废料开关（契约③：客户端归档 + userinfo）
-local cvBuyScrap = CreateClientConVar("zs_buyscrap", "0", true, true, "auto buy scrap with leftover points")
+-- 自动购买所缺零件开关（契约③：客户端归档 + userinfo；升级零件不够时自动补差额）
+local cvBuyScrap = CreateClientConVar("zs_buyscrap", "0", true, true, "auto buy missing scrap when upgrading")
 
 -- 分类常量（本地定义，避免依赖 INVCAT_* 全局的加载顺序）
 local CATEGORY_WEAPONS = 0
@@ -547,7 +547,7 @@ function PANEL:BuildSwitchRow()
     end
     self.CheckNoPickupProps = cbPickup
 
-    -- ③ 自动购买废料（zs_buyscrap，本文件创建）
+    -- ③ 自动购买所缺零件（zs_buyscrap，本文件创建；仅升级零件不足时生效）
     local cbBuy = MakeCheckBox(row, "pinv_buyscrap", cvBuyScrap:GetBool())
     cbBuy:SetWide(thirdw)
     cbBuy:Dock(LEFT)
@@ -1213,13 +1213,19 @@ function PANEL:RebuildActionRow(entry)
         btn.Host = self
 
         function btn:DoClick()
-            -- 给予 + 武器条目 + 已选附近人类：目标索引放 arguments[2]（服务端锁定位，
-            -- 非库存键时自动回退为给予手持武器）
-            if act[1] == "pinv_give" and not itemkey and self.Host.SelectedGiveTarget then
+            -- 给予：优先用「选择附近人类」选中的目标
+            -- 传参协议（与 zsgiveammo / zsdropweapon / 服务端 zsgiveweapon 对齐）：
+            --   arguments[1] = 库存物品键（空串 = 无，给予手持武器）
+            --   arguments[2] = 目标玩家实体索引
+            if act[1] == "pinv_give" and self.Host.SelectedGiveTarget then
                 local targetindex = self.Host.SelectedGiveTarget
                 local target = Entity(targetindex)
                 if IsValid(target) and target:IsPlayer() and target:Alive() then
-                    RunConsoleCommand("zsgiveweapon", "", tostring(targetindex))
+                    if itemkey then
+                        RunConsoleCommand(act[2], itemkey, tostring(targetindex))
+                    else
+                        RunConsoleCommand(act[2], "", tostring(targetindex))
+                    end
                     surface.PlaySound("ui/buttonclick.wav")
                     return
                 end
@@ -1739,12 +1745,14 @@ vgui.Register("ZSInventoryPanel", PANEL, "Panel")
 -- 注意：文件顶层定义须用 GM（加载期别名），加载后引擎令 GAMEMODE=GM，运行期即可用 self 调用
 function GM:OpenInventoryPanel()
     -- [DEBUG-PINV-PERF] 打开计数（首开时初始化会话统计）
-    PerfState = PerfState or {enabled = PerfCvar:GetBool(), opens = 0, rebuilds = 0, refreshes = 0,
-        thinks = 0, think_max_ms = 0, sig_max_ms = 0, rows_max = 0, blur_last_ms = 0}
-    PerfState.enabled = PerfCvar:GetBool()
-    PerfState.opens = PerfState.opens + 1
-    chat.AddText(dbgColG, string.format("[DEBUG-PINV-PERF] panel open #%d (pinv_perf 1=探针开)", PerfState.opens))
-
+    
+        PerfState = PerfState or {enabled = PerfCvar:GetBool(), opens = 0, rebuilds = 0, refreshes = 0,
+            thinks = 0, think_max_ms = 0, sig_max_ms = 0, rows_max = 0, blur_last_ms = 0}
+        PerfState.enabled = PerfCvar:GetBool()
+        PerfState.opens = PerfState.opens + 1
+        if probe then
+        chat.AddText(dbgColG, string.format("[DEBUG-PINV-PERF] panel open #%d (pinv_perf 1=探针开)", PerfState.opens))
+        end
     local panel = self.InventoryPanel
     if not (panel and panel:IsValid()) then
         panel = vgui.Create("ZSInventoryPanel")

@@ -85,8 +85,16 @@ end
 -- ============================================================================
 -- 动画框架（ARC9 子集移植）
 -- ============================================================================
-
+--[[
 SWEP.Animations = SWEP.Animations or {}
+]]
+SWEP.Animations = {
+	fire = { Activity = ACT_VM_PRIMARYATTACK },
+	-- [升级位] 模型添加 "fire_sights"（或 "fire_iron"）序列并在此声明后，
+	-- 开镜开火自动优先播专用动画，且优先生效于下方 [2/4] 的抑制开关：
+	-- fire_sights = { Source = "fire_sights", Time = 0.06 },
+}
+
 
 -- [兜底层①] idle/fire 恒真：即使模型没有对应资源也允许进入统一流程（ARC9 alwayshave）
 local alwayshave = {

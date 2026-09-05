@@ -211,20 +211,6 @@ concommand.Add("zs_pointsshopbuy", function(sender, command, arguments)
 		end
 	end
 
-	-- v5.1 购物余款自动换废料：开关开启（玩家 userinfo convar zs_buyscrap > 0）时，在成功购买之后，
-	-- 按现有比价 GAMEMODE:PointsToScrap（70 点数 = 32 废料，见 sh_weaponquality.lua）循环把剩余点数
-	-- 换购成 scrap 零件：每轮固定换一份（70 点 → math.ceil(PointsToScrap(70)) = 32 废料），
-	-- 直到剩余点数买不起一份为止。此处位于购买成功路径末尾，沿用本次购买已通过的各项校验，
-	-- 不绕过任何波次/库存上限；兑换是玩家自身点数与废料的直接等价互换，
-	-- 不经过重构台交易，故不产生 cost/8 那类佣金
-	if sender:GetInfoNum("zs_buyscrap", 0) > 0 then
-		local lotcost = 70
-		local lotscrap = math.ceil(GAMEMODE:PointsToScrap(lotcost))
-		while sender:GetPoints() >= lotcost do
-			sender:TakePoints(lotcost)
-			sender:GiveAmmo(lotscrap, "scrap")
-		end
-	end
 end)
 
 -- 处理玩家拆解武器或物品以获得废料的指令
@@ -342,10 +328,25 @@ concommand.Add("zs_upgrade", function(sender, command, arguments)
 		return
 	end
 
-	-- 检查玩家废料是否足够
+	-- 检查玩家废料是否足够；不足时若开启 zs_buyscrap 则校验点数能否补足差额（实际扣费延后到全部校验通过后）
+	local shortfallbuy = nil
 	if sender:GetAmmoCount("scrap") < scrapcost then
-		GAMEMODE:ConCommandErrorMessage(sender, translate.ClientGet(sender, "need_to_have_enough_scrap"))
-		return
+		-- 自动购买所缺零件：开启 zs_buyscrap（玩家 userinfo convar > 0）时，仅当本次升级零件不够，
+		-- 才按现有比价 GAMEMODE:PointsToScrap（70 点数 = 32 废料，见 sh_weaponquality.lua）用点数
+		-- 补足差额；补够升级所需即停，多余点数保持不动
+		if sender:GetInfoNum("zs_buyscrap", 0) > 0 then
+			local shortfall = scrapcost - sender:GetAmmoCount("scrap")
+			local needpoints = math.ceil(GAMEMODE:ScrapToPoints(shortfall))
+			if sender:GetPoints() < needpoints then
+				GAMEMODE:ConCommandErrorMessage(sender, translate.ClientGet(sender, "dont_have_enough_points"))
+				return
+			end
+
+			shortfallbuy = { scrap = shortfall, points = needpoints }
+		else
+			GAMEMODE:ConCommandErrorMessage(sender, translate.ClientGet(sender, "need_to_have_enough_scrap"))
+			return
+		end
 	end
 
 	-- 获取升级后的武器类型
@@ -357,6 +358,13 @@ concommand.Add("zs_upgrade", function(sender, command, arguments)
 	if sender:HasWeapon(upgclass) then
 		GAMEMODE:ConCommandErrorMessage(sender, translate.ClientGet(sender, "remantle_cannot"))
 		return
+	end
+
+	-- 全部校验通过后才执行自动购买：扣点数、补零件（补够升级所需即止，不动剩余点数）
+	if shortfallbuy then
+		sender:TakePoints(shortfallbuy.points)
+		sender:GiveAmmo(shortfallbuy.scrap, "scrap")
+		sender:CenterNotify(COLOR_CYAN, translate.ClientFormat(sender, "buyscrap_shortfall", shortfallbuy.scrap, shortfallbuy.points))
 	end
 
 	-- 执行升级：扣废料、给新武器、移除旧武器
@@ -624,9 +632,14 @@ concommand.Add("zsgiveweapon", function(sender, command, arguments)
 	if not (sender:IsValid() and sender:Alive() and sender:Team() == TEAM_HUMAN) then return end
 
 	-- 检查是否有指定要给予的库存物品
+	-- 传参协议（与 zsgiveammo / zsdropweapon / vgui/pinventory.lua 对齐）：
+	--   arguments[1] = 库存物品键（空串 = 无，给予手持武器）
+	--   arguments[2] = 目标玩家实体索引（可空，交由 GM:TryGetLockOnTrace 解析）
+	-- 修复记录：此前误读 arguments[2]，把「选择附近人类」传来的目标索引当成物品键，
+	-- 被 HasInventoryItem 静默拦截，导致背包面板「给予」永远无效。
 	local invitem
-	if #arguments > 0 then
-		invitem = arguments[2]
+	if #arguments > 0 and arguments[1] ~= "" then
+		invitem = arguments[1]
 	end
 	if invitem and not sender:HasInventoryItem(invitem) then return end
 

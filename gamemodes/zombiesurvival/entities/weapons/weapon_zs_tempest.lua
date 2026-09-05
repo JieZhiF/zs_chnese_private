@@ -84,7 +84,12 @@ SWEP.FireAnimSpeed = 1.5
 
 -- 换弹速度倍率
 SWEP.ReloadSpeed = 1.05
-
+SWEP.Animations = {
+	fire = { Activity = ACT_VM_PRIMARYATTACK },
+	-- [升级位] 模型添加 "fire_sights"（或 "fire_iron"）序列并在此声明后，
+	-- 开镜开火自动优先播专用动画，且优先生效于下方 [2/4] 的抑制开关：
+	-- fire_sights = { Source = "fire_sights", Time = 0.06 },
+}
 -- [机瞄配置 · ARC9 形式] Pos/Ang=开镜贴瞄偏移
 SWEP.IronSights = {
 	Magnification = 1.15,

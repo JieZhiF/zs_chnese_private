@@ -83,7 +83,5 @@ SWEP.IronSights = {
 	Ang = Angle(0, 0, 0),
 }
 
-
-
 -- 弹道曳光效果（激光曳光）
 SWEP.TracerName = "trancer_laser"

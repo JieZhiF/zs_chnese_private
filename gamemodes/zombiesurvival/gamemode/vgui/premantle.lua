@@ -565,6 +565,19 @@ function PANEL:OnMousePressed(mc)
 
 				return
 			else
+				-- 自动购买所缺零件：开关（zs_buyscrap）开启且点数足以补足差额时放行，
+				-- 由服务端校验后扣点补差额零件；点数也不够才提示
+				if MySelf:GetInfoNum("zs_buyscrap", 0) > 0 then
+					local shortfall = scost - MySelf:GetAmmoCount("scrap")
+					local needpoints = math.ceil(GAMEMODE:ScrapToPoints(shortfall))
+					if MySelf:GetPoints() >= needpoints then
+						GAMEMODE.RemantlerInterface.BranchCache = hovbranch
+						RunConsoleCommand("zs_upgrade", hovbranch ~= 0 and hovbranch)
+
+						return
+					end
+				end
+
 				GAMEMODE:CenterNotify(COLOR_RED, ""..translate.Get("Upgrade_NotEnoughScrap"))
 				surface.PlaySound("buttons/button8.wav")
 				return
