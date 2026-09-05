@@ -104,7 +104,8 @@ local AmmoCountFontReady = false
 local function EnsureAmmoCountFont()
 	if AmmoCountFontReady then return end
 	AmmoCountFontReady = true
-	surface.CreateFont(FONT_COUNT, {font = "Harmony OS Sans SC", size = math.ceil(17 * BetterScreenScale()), weight = 650, extended = true, antialias = true})
+	-- 族名 "HarmonyOS Sans SC"（无空格）；带空格的写法会回退 Tahoma（无 CJK 字形）
+	surface.CreateFont(FONT_COUNT, {font = "HarmonyOS Sans SC", size = math.ceil(17 * BetterScreenScale()), weight = 650, extended = true, antialias = true})
 end
 
 -- 获取给予目标索引：优先用面板「选择附近人类」选中的队友（SelectedGiveTarget），

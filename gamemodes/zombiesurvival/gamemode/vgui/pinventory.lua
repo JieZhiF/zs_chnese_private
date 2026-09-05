@@ -16,9 +16,9 @@
 --
 -- [区域] 根面板与字体
 -- [位置] PANEL:Init / PANEL:PerformLayout / EnsurePinvFonts / GAMEMODE:OpenInventoryPanel()
--- [作用] 屏幕居中主块（宽 0.48 屏宽、高 0.80 屏高）；Paint 画高斯模糊毛玻璃
---        并暗化；面板专属字体按 BetterScreenScale 懒创建（标题 30 / 条目 20 / 行 17 /
---        小字 14）；ALT 松开自动关闭
+-- [作用] 屏幕居中主块（宽 0.48 屏宽、高 0.80 屏高）；Paint 采样每帧更新的全屏
+--        毛玻璃 RT 并暗化；面板专属字体按 BetterScreenScale 懒创建
+--        （标题 30 / 条目 20 / 行 17 / 小字 14）；ALT 松开自动关闭
 -- [常改] 面板宽高比例、整体配色、字号层级、模糊与暗化强度
 --
 -- [区域] 顶部标题行
@@ -65,11 +65,6 @@
 -- [位置] PANEL:BuildSwitchRow() / PANEL:UpdateSwitchRow()
 -- [作用] 饰品排序/禁止拾取道具/自动购买废料三个复选框（暗红=关 绿=开）+ 返回按钮
 -- [常改] 复选框顺序、绑定的 ConVar、按钮宽度
---
--- [区域] 交互与状态同步
--- [位置] PANEL:Think / net.Receive(NET_MSG.REMANTLECONF)
--- [作用] ALT 松开 0.1s 防抖关闭、0.25s 手持与库存变化刷新、0.5s NearRemantler 轮询、重铸回包刷新右栏
--- [常改] 轮询间隔、防抖时长、刷新触发条件
 -- ============================================================================
 
 local PANEL = {}
@@ -135,8 +130,13 @@ local colActionBG = Color(10, 10, 11, 235)        -- 动作切段底
 local colActionBGHover = Color(50, 50, 52, 235)   -- 动作切段悬停底
 local colCheckOn = Color(74, 168, 82, 240)        -- 复选框开启（绿）
 local colCheckOff = Color(122, 36, 30, 235)       -- 复选框关闭（暗红）
+local colDimSwitch = Color(0, 0, 0, 140)          -- 开关行毛玻璃上的暗化层
+local colDimPane = Color(0, 0, 0, 120)            -- 页签内容区暗化层
+local colDimUpgrade = Color(0, 0, 0, 130)         -- 升级按钮暗化层
+local colNearbyBG = Color(8, 8, 10, 246)          -- 附近玩家弹出层底色
 
--- 背景毛玻璃（SUNRUST 式）：屏幕拷贝到自有 RT 后做高斯模糊，面板按 UV 采样
+-- 背景毛玻璃（SUNRUST 式）：屏幕拷贝到全屏 RT 后做高斯模糊，面板按 UV 采样；
+-- 面板可见期间每帧在 PostRender 更新（背景实时跟随游戏画面）
 -- （pp/blurscreen 的固定 tap 会把背后文字拉出重影，弃用）
 local blurRT = GetRenderTarget("pinv_blur_rt", ScrW(), ScrH())
 local matBlurRT = CreateMaterial("pinv_blur_mat", "UnlitGeneric", {
@@ -144,16 +144,28 @@ local matBlurRT = CreateMaterial("pinv_blur_mat", "UnlitGeneric", {
     ["$ignorez"] = 1,
 })
 
+-- [DEBUG-PINV-PERF] 临时探针（定位完成后：删除本段与全文件 [DEBUG-PINV-PERF] 标记）
+local PerfCvar = CreateClientConVar("pinv_perf", "1", true, false, "pinventory performance probes")
+local PerfState = nil
+local dbgChat = function(...) if PerfState and PerfState.enabled then chat.AddText(...) end end
+local dbgColR = Color(255, 120, 120)   -- 警告红
+local dbgColY = Color(255, 220, 120)   -- 计时黄
+local dbgColG = Color(120, 255, 120)   -- 生命周期绿
+local dbgColC = Color(120, 220, 255)   -- 汇总青
+local dbgColV = Color(170, 170, 255)   -- 刷新紫
+
 -- 面板专属字体（首次 Init 时按 BetterScreenScale 一次性创建，字号对齐靶子图层级）
 local PinvFontsReady = false
 local function EnsurePinvFonts()
     if PinvFontsReady then return end
     PinvFontsReady = true
     local scale = BetterScreenScale()
-    surface.CreateFont("PINV_FontTitle", {font = "Harmony OS Sans SC", size = math.ceil(30 * scale), weight = 650, extended = true, antialias = true})
-    surface.CreateFont("PINV_FontItem", {font = "Harmony OS Sans SC", size = math.ceil(20 * scale), weight = 600, extended = true, antialias = true})
-    surface.CreateFont("PINV_FontRow", {font = "Harmony OS Sans SC", size = math.ceil(17 * scale), weight = 550, extended = true, antialias = true})
-    surface.CreateFont("PINV_FontSmall", {font = "Harmony OS Sans SC", size = math.ceil(14 * scale), weight = 500, extended = true, antialias = true})
+    -- 注意族名是 "HarmonyOS Sans SC"（无空格）；多一个空格的写法会静默回退 Tahoma，
+    -- Tahoma 无 CJK 字形，绘制时逐字形回退查找是显著帧开销（探针实测证据）
+    surface.CreateFont("PINV_FontTitle", {font = "HarmonyOS Sans SC", size = math.ceil(30 * scale), weight = 650, extended = true, antialias = true})
+    surface.CreateFont("PINV_FontItem", {font = "HarmonyOS Sans SC", size = math.ceil(20 * scale), weight = 600, extended = true, antialias = true})
+    surface.CreateFont("PINV_FontRow", {font = "HarmonyOS Sans SC", size = math.ceil(17 * scale), weight = 550, extended = true, antialias = true})
+    surface.CreateFont("PINV_FontSmall", {font = "HarmonyOS Sans SC", size = math.ceil(14 * scale), weight = 500, extended = true, antialias = true})
 end
 
 -- 自动购买废料开关（契约③：客户端归档 + userinfo）
@@ -222,6 +234,20 @@ local function ResolveKillicon(classname, isitem)
     return kitbl or killicon.Get("default")
 end
 
+-- weapons.Get 深拷贝缓存：weapons.Get 每次调用都整表深拷贝 SWEP（含 Base 继承链），
+-- 打开面板/点分类时按行调用是卡顿尖峰。本文件所有消费方（PrintName/QualityTier/Branch/
+-- Tier/IsMelee 等）均为只读，进程内缓存同一类名共享同一张表即可。
+-- 注意：仅供本文件 UI 只读使用；需要可写副本的代码仍须自行 weapons.Get。
+local SweptCache = {}
+local function GetCachedSwept(classname)
+    local tbl = SweptCache[classname]
+    if tbl == nil then
+        tbl = weapons.Get(classname) or false
+        SweptCache[classname] = tbl
+    end
+    return tbl or nil
+end
+
 -- 画废料图标（升级/拆解行的数量用图标替代字体⚙；取弹药图标表 scrap 项，缺材质兜底齿轮字）
 local function DrawScrapIcon(x, y, size)
     local kitbl = killicon.Get(GAMEMODE.AmmoIcons and GAMEMODE.AmmoIcons["scrap"] or "ammo_scrap")
@@ -252,7 +278,7 @@ local function CollectWeaponEntries()
         local class = wep:GetClass()
         if class ~= "" and not seen[class] then
             seen[class] = true
-            local sweptable = weapons.Get(class)
+            local sweptable = GetCachedSwept(class)
             entries[#entries + 1] = {
                 type = "weapon",
                 class = class,
@@ -490,7 +516,7 @@ function PANEL:BuildSwitchRow()
         surface.SetMaterial(matBlurRT)
         surface.SetDrawColor(255, 255, 255, 255)
         surface.DrawTexturedRectUV(0, 0, w, h, x / ScrW(), y / ScrH(), (x + w) / ScrW(), (y + h) / ScrH())
-        draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 140))
+        draw.RoundedBox(0, 0, 0, w, h, colDimSwitch)
     end
     self.SwitchRow = row
 
@@ -745,7 +771,7 @@ function PANEL:BuildItemInfo()
     -- 黑色透明底 + 左侧 3px 白色竖线（与页签行样式一致）
     statviewer.Paint = function(me, w, h)
         local scale = BetterScreenScale()
-        draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 120))
+        draw.RoundedBox(0, 0, 0, w, h, colDimPane)
         surface.SetDrawColor(colTextBright.r, colTextBright.g, colTextBright.b, 255)
         surface.DrawRect(0, 2 * scale, 3 * scale, h - 4 * scale)
     end
@@ -786,7 +812,7 @@ function PANEL:BuildItemInfo()
     -- 黑色透明底 + 左侧 3px 白色竖线（与页签行样式一致）
     descviewer.Paint = function(me, w, h)
         local scale = BetterScreenScale()
-        draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 120))
+        draw.RoundedBox(0, 0, 0, w, h, colDimPane)
         surface.SetDrawColor(colTextBright.r, colTextBright.g, colTextBright.b, 255)
         surface.DrawRect(0, 2 * scale, 3 * scale, h - 4 * scale)
     end
@@ -870,7 +896,7 @@ function PANEL:UpdateItemInfo(entry)
     end
 
     if entry.type == "weapon" then
-        local sweptable = weapons.Get(entry.class)
+        local sweptable = GetCachedSwept(entry.class)
         if not sweptable then return end
 
         -- 标题：名称白字，品质档位以品质色 "+N" 跟随其后
@@ -923,7 +949,7 @@ function PANEL:RebuildVariantRow(entry)
         return
     end
 
-    local sweptable = weapons.Get(entry.class)
+    local sweptable = GetCachedSwept(entry.class)
     if not sweptable then
         self.VariantRow:SetVisible(false)
         return
@@ -1051,7 +1077,7 @@ function PANEL:BuildUpgradeBlock()
     upbtn.Paint = function(me, w, h)
         local scale = BetterScreenScale()
         -- 黑色透明底 + 左侧 3px 白色竖线（与页签/内容区样式一致）
-        draw.RoundedBox(0, 0, 0, w, h, Color(0, 0, 0, 130))
+        draw.RoundedBox(0, 0, 0, w, h, colDimUpgrade)
         surface.SetDrawColor(colTextBright.r, colTextBright.g, colTextBright.b, 255)
         surface.DrawRect(0, 2 * scale, 3 * scale, h - 4 * scale)
         if me.Maxed then
@@ -1105,7 +1131,7 @@ function PANEL:BuildUpgradeBlock()
 end
 
 function PANEL:UpdateUpgradeBlock(entry)
-    local sweptable = entry and entry.type == "weapon" and weapons.Get(entry.class) or nil
+    local sweptable = entry and entry.type == "weapon" and GetCachedSwept(entry.class) or nil
     if not sweptable then
         self.SegRow:SetVisible(false)
         self.UpgradeButton:SetVisible(false)
@@ -1240,7 +1266,7 @@ function PANEL:RebuildActionRow(entry)
     self.DismantleItemKey = itemkey
     local wtbl = nil
     if isweapon then
-        wtbl = weapons.Get(entry.class)
+        wtbl = GetCachedSwept(entry.class)
     else
         wtbl = GAMEMODE.ZSInventoryItemData and GAMEMODE.ZSInventoryItemData[entry.name] or nil
     end
@@ -1302,7 +1328,7 @@ function PANEL:ToggleNearbyPlayersMenu(anchor)
     menu:SetPos(px + anchor:GetWide() - menu:GetWide(), py - menu:GetTall() - 4 * scale)
 
     menu.Paint = function(me, w, h)
-        draw.RoundedBox(0, 0, 0, w, h, Color(8, 8, 10, 246))
+        draw.RoundedBox(0, 0, 0, w, h, colNearbyBG)
         surface.SetDrawColor(colBtnBorder.r, colBtnBorder.g, colBtnBorder.b, 210)
         surface.DrawOutlinedRect(0, 0, w, h)
     end
@@ -1400,7 +1426,7 @@ function PANEL:AddItemRow(entry)
     row.TierSuffix = ""
 
     if entry.type == "weapon" then
-        local sweptable = weapons.Get(entry.class)
+        local sweptable = GetCachedSwept(entry.class)
         local tier = sweptable and sweptable.QualityTier or nil
         row.DisplayName = (sweptable and sweptable.PrintName) or entry.class
         row.TierSuffix = tier and ("+" .. tostring(tier)) or ""
@@ -1477,6 +1503,10 @@ function PANEL:AddItemRow(entry)
 end
 
 function PANEL:BuildInventoryList()
+    -- [DEBUG-PINV-PERF] 重建计数 + 计时
+    local probe = PerfState ~= nil and PerfState.enabled
+    local t0 = probe and SysTime() or nil
+
     local canvas = self.ScrollPanel:GetCanvas()
     for _, child in pairs(canvas:GetChildren()) do
         child:Remove()
@@ -1519,6 +1549,16 @@ function PANEL:BuildInventoryList()
     end
 
     canvas:InvalidateLayout(true)
+
+    -- [DEBUG-PINV-PERF] 重建耗时 + 行数
+    if probe then
+        local dt = (SysTime() - t0) * 1000
+        PerfState.rebuilds = PerfState.rebuilds + 1
+        local rows = 0
+        for _ in pairs(canvas:GetChildren()) do rows = rows + 1 end
+        if rows > PerfState.rows_max then PerfState.rows_max = rows end
+        chat.AddText(dbgColY, string.format("[DEBUG-PINV-PERF] BuildInventoryList %.2fms (%d children)", dt, rows))
+    end
 end
 
 -- ============================================================================
@@ -1557,6 +1597,13 @@ end
 
 -- 打开或强制全量刷新（OpenInventoryPanel 调用）
 function PANEL:RefreshAll()
+    -- [DEBUG-PINV-PERF] 刷新计数
+    local probe = PerfState ~= nil and PerfState.enabled
+    if probe then
+        PerfState.refreshes = PerfState.refreshes + 1
+        chat.AddText(dbgColV, string.format("[DEBUG-PINV-PERF] RefreshAll #%d", PerfState.refreshes))
+    end
+
     self.LastSig = self:BuildWeaponSetSignature() .. "|" .. self:BuildInventorySignature()
     self:BuildInventoryList()
 
@@ -1574,6 +1621,11 @@ function PANEL:RefreshAll()
 end
 
 function PANEL:Think()
+    -- [DEBUG-PINV-PERF] Think 分段计时
+    local t0, t1, t2, t3, t4
+    local probe = PerfState ~= nil and PerfState.enabled
+    if probe then t0 = SysTime() end
+
     if not self:IsVisible() then
         self.LoseKeyDeadline = nil
         return
@@ -1590,11 +1642,19 @@ function PANEL:Think()
                 self.NearbyMenu:Remove()
                 self.NearbyMenu = nil
             end
+            -- [DEBUG-PINV-PERF] 关闭时输出汇总
+            if probe then
+                chat.AddText(dbgColC, string.format(
+                    "[DEBUG-PINV-PERF] closed | opens=%d rebuilds=%d refreshes=%d thinks=%d think_max=%.2fms sig_max=%.2fms rows_max=%d blur_last=%.2fms",
+                    PerfState.opens, PerfState.rebuilds, PerfState.refreshes, PerfState.thinks,
+                    PerfState.think_max_ms, PerfState.sig_max_ms, PerfState.rows_max, PerfState.blur_last_ms))
+            end
             return
         end
     else
         self.LoseKeyDeadline = nil
     end
+    if probe then t1 = SysTime() end
 
     local now = RealTime()
 
@@ -1607,9 +1667,18 @@ function PANEL:Think()
             self:UpdateRemantlerButtons()
         end
     end
+    if probe then t2 = SysTime() end
 
     -- 0.25s 对比手持武器与库存签名，变化时重建左栏并联动右栏
-    if now < (self.NextListCheck or 0) then return end
+    if now < (self.NextListCheck or 0) then
+        -- [DEBUG-PINV-PERF] 节流跳过帧也计入 think 峰值
+        if probe then
+            PerfState.thinks = PerfState.thinks + 1
+            local dt = (SysTime() - t0) * 1000
+            if dt > PerfState.think_max_ms then PerfState.think_max_ms = dt end
+        end
+        return
+    end
     self.NextListCheck = now + LIST_REFRESH_TIME
 
     local activeclass = ""
@@ -1620,10 +1689,16 @@ function PANEL:Think()
 
     -- 列表仅在武器集/库存变化时重建（切枪不重建，左栏字体型 killicon 不闪）
     local sig = self:BuildWeaponSetSignature() .. "|" .. self:BuildInventorySignature()
+    if probe then
+        t3 = SysTime()
+        local sigdt = (t3 - t2) * 1000
+        if sigdt > PerfState.sig_max_ms then PerfState.sig_max_ms = sigdt end
+    end
     if sig ~= self.LastSig then
         self.LastSig = sig
         self:BuildInventoryList()
     end
+    if probe then t4 = SysTime() end
 
     local entry = self.SelectedEntry
     if entry and entry.type == "item" then
@@ -1635,6 +1710,18 @@ function PANEL:Think()
         -- 武器选中跟随手持（升级/换轨后类名变化自然吸附新武器；类名没变不重刷）
         self.LastActiveClass = activeclass
         self:UpdateItemInfo(activeclass ~= "" and {type = "weapon", class = activeclass} or nil)
+    end
+
+    -- [DEBUG-PINV-PERF] 帧级峰值：>4ms 发单行警告并计入汇总
+    if probe then
+        PerfState.thinks = PerfState.thinks + 1
+        local dt = (SysTime() - t0) * 1000
+        if dt > PerfState.think_max_ms then PerfState.think_max_ms = dt end
+        if dt > 4 then
+            chat.AddText(dbgColR, string.format(
+                "[DEBUG-PINV-PERF] SLOW think %.2fms (sig %.2fms, rebuild %.2fms)",
+                dt, (t3 - t2) * 1000, t4 and (t4 - t3) * 1000 or 0))
+        end
     end
 end
 
@@ -1651,6 +1738,13 @@ vgui.Register("ZSInventoryPanel", PANEL, "Panel")
 -- 次序照 dsidemenu.lua OpenMenu：显示 → MakePopup → 防抖时间戳 → 刷新 → 鼠标居中
 -- 注意：文件顶层定义须用 GM（加载期别名），加载后引擎令 GAMEMODE=GM，运行期即可用 self 调用
 function GM:OpenInventoryPanel()
+    -- [DEBUG-PINV-PERF] 打开计数（首开时初始化会话统计）
+    PerfState = PerfState or {enabled = PerfCvar:GetBool(), opens = 0, rebuilds = 0, refreshes = 0,
+        thinks = 0, think_max_ms = 0, sig_max_ms = 0, rows_max = 0, blur_last_ms = 0}
+    PerfState.enabled = PerfCvar:GetBool()
+    PerfState.opens = PerfState.opens + 1
+    chat.AddText(dbgColG, string.format("[DEBUG-PINV-PERF] panel open #%d (pinv_perf 1=探针开)", PerfState.opens))
+
     local panel = self.InventoryPanel
     if not (panel and panel:IsValid()) then
         panel = vgui.Create("ZSInventoryPanel")
@@ -1662,6 +1756,7 @@ function GM:OpenInventoryPanel()
     -- 不吞移动键：ALT 通常按住移动时开启
     panel:SetKeyboardInputEnabled(false)
     panel.StartChecking = RealTime() + 0.1
+
     panel:RefreshAll()
 
     -- 首帧布局完成后：鼠标居中 + 二次刷新（修正首次打开时按 0 宽度计算的变体/动作按钮尺寸）
@@ -1688,16 +1783,30 @@ net.Receive(NET_MSG.REMANTLECONF, function()
     panel.LastSig = nil
 end)
 
--- 每帧在场景渲染完成后（VGUI 绘制之前）更新毛玻璃 RT：
--- 拷屏 + 高斯模糊都放这里，Paint 内只做纹理采样绘制
+-- 每帧在场景渲染完成后（VGUI 绘制之前）更新毛玻璃 RT：拷屏 + 高斯模糊，
+-- Paint 内只做纹理采样绘制（面板可见期间每帧执行，背景实时跟随）
 hook.Add("PostRender", "PINV_UpdateBlurRT", function()
     local panel = GAMEMODE.InventoryPanel
     if not (panel and panel:IsValid() and panel:IsVisible()) then return end
 
+    -- [DEBUG-PINV-PERF] 计时：每帧拷屏 + 模糊（必打点，观察逐帧开销）
+    local t0 = SysTime()
     render.CopyRenderTargetToTexture(blurRT)
     render.BlurRenderTarget(blurRT, 2, 2, 1)
+    local dt = (SysTime() - t0) * 1000
+    PerfState.blur_last_ms = dt
+    PerfState.blur_count = (PerfState.blur_count or 0) + 1
+    if dt > 2 and (PerfState.blur_count % 20 == 1) then
+        chat.AddText(dbgColY, string.format(
+            "[DEBUG-PINV-PERF] blur copy #%d: %.2fms (>2ms, 1/20 采样输出)", PerfState.blur_count, dt))
+    end
 end)
 
+-- ============================================================================
+-- [区域] 交互与状态同步
+-- [位置] PANEL:Think / net.Receive(NET_MSG.REMANTLECONF)
+-- [作用] ALT 松开 0.1s 防抖关闭、0.25s 手持与库存变化刷新、0.5s NearRemantler 轮询、重铸回包刷新右栏
+-- [常改] 轮询间隔、防抖时长、刷新触发条件
 -- ============================================================================
 -- 翻译键清单（需在 languages/ 注册）：
 --   pinv_title pinv_iteminfo pinv_remantler pinv_back

@@ -1807,10 +1807,11 @@ function GM:CreateNonScaleFonts()
 	surface.CreateFont("RemingtonNoiseless",{font=fontfamilyRemington,extended=false,size=22,shadow=true,outline=true})
 	surface.CreateFont("RemingtonNoiselessBlur",{font=fontfamilyRemington,extended=false,size=22,shadow=true,outline=true,blursize=4})
 
-	surface.CreateFont("ZS2DFontHarmonySmall", {font = "Harmony OS Sans SC",size=24,weight = 500 ,extended = true,antialias = true})
-	surface.CreateFont("ZS2DFontHarmony", {font = "Harmony OS Sans SC",size=28,weight = 500 ,extended = true,antialias = true})
-	surface.CreateFont("ZS2DFontHarmonyMiddle", {font = "Harmony OS Sans SC",size=34,weight = 500 ,extended = true,antialias = true})
-	surface.CreateFont("ZS2DFontHarmonyBig", {font = "Harmony OS Sans SC",size=50,weight = 200 ,extended = true,antialias = true})
+	-- 族名 "HarmonyOS Sans SC"（无空格）；带空格写法静默回退 Tahoma（无 CJK 字形，逐字形回退查找有帧开销）
+	surface.CreateFont("ZS2DFontHarmonySmall", {font = "HarmonyOS Sans SC",size=24,weight = 500 ,extended = true,antialias = true})
+	surface.CreateFont("ZS2DFontHarmony", {font = "HarmonyOS Sans SC",size=28,weight = 500 ,extended = true,antialias = true})
+	surface.CreateFont("ZS2DFontHarmonyMiddle", {font = "HarmonyOS Sans SC",size=34,weight = 500 ,extended = true,antialias = true})
+	surface.CreateFont("ZS2DFontHarmonyBig", {font = "HarmonyOS Sans SC",size=50,weight = 200 ,extended = true,antialias = true})
 end
 
 -- ==================== 字体创建完整示例（注释） ====================

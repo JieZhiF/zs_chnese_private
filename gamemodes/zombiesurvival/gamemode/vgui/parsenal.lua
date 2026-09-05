@@ -418,6 +418,10 @@ end
 -- ============================================================================
 -- AttachKillicon - 在物品面板上附加击杀图标
 -- ============================================================================
+-- fit 字体缓存：同名缩放字体只创建一次。列表每次重建都会对每行走 AttachKillicon，
+-- 重复 CreateFont 会使引擎字体图集失效并在渲染帧集中重建（打开/点分类卡顿尖峰）
+local PinvFitFontCache = {}
+
 function GM:AttachKillicon(kitbl, itempan, mdlframe, ammo, missing_skill)
 	local function imgAdj(img, maximgx, maximgy)
 		img:SizeToContents()
@@ -457,8 +461,15 @@ function GM:AttachKillicon(kitbl, itempan, mdlframe, ammo, missing_skill)
 		local _, fh = surface.GetTextSize(kitbl[2])
 		local maxh = mdlframe:GetTall() - 4
 		if fh > maxh then
-			iconfont = kitbl[1] .. "pafit"
-			surface.CreateFont(iconfont, {font = basefont, size = math.max(8, math.ceil(72 * screenscale * maxh / fh)), weight = 100, antialias = true})
+			-- fit 字号按图标框高度计算，不同框高需要不同字号：字体名内嵌字号
+			-- （同名同号、异名异号），缓存命中即跳过 CreateFont——既免每次重建
+			-- 重复创建字体（渲染侧卡顿源），又避免不同尺寸图标共用一个字号导致错位
+			local fitpx = math.max(8, math.ceil(72 * screenscale * maxh / fh))
+			iconfont = kitbl[1] .. "pafit" .. fitpx
+			if not PinvFitFontCache[iconfont] then
+				surface.CreateFont(iconfont, {font = basefont, size = fitpx, weight = 100, antialias = true})
+				PinvFitFontCache[iconfont] = true
+			end
 		end
 		label:SetFont(iconfont)
 		label:SetTextColor(kitbl[3] or color_white)
