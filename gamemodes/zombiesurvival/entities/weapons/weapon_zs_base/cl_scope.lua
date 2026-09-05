@@ -309,7 +309,6 @@ end)
 local next_render_time = 0
 local pip_zoom_hint_shown = false -- 滚轮调焦提示：每会话只提示一次
 local last_capture_time = 0 -- 像素采样节流（GPU→CPU 同步读取昂贵且易崩）
-local last_pass_capture_time = 0 -- [DEBUG-p1px] rt_pass 采样独立节流
 
 local function ShouldRenderNow()
 	local fpslock = CVAR_PIP_FPSLOCK:GetInt()
@@ -682,29 +681,11 @@ function SWEP:RenderPIPPicture(alpha)
 				render.SetMaterial(mat_lens)
 				render.DrawScreenQuad()
 			cam.End2D()
-
-			-- [DEBUG-p1px] 对 shader 输出 RT 采样，与 rt_pic 采样同帧对比：
-			-- pic 正常而 pass 全黑 => 黑屏发生在 lens shader 通道内部
-			if CVAR_PIP_DEBUG:GetInt() >= 2 and RealTime() >= (last_pass_capture_time or 0) then
-				last_pass_capture_time = RealTime() + 0.5
-
-				render.CapturePixels()
-				local function ReadPxPass(x, y)
-					local r, g, b = render.ReadPixel(math_floor(x), math_floor(y))
-					return { r = r or 0, g = g or 0, b = b or 0 }
-				end
-				self.m_tPIPDebugPassPx = {
-					ReadPxPass(rt_pic_w * 0.25, rt_pic_h * 0.5),
-					ReadPxPass(rt_pic_w * 0.5, rt_pic_h * 0.5),
-					ReadPxPass(rt_pic_w * 0.75, rt_pic_h * 0.5),
-				}
-			end
 		render.PopRenderTarget()
 
 		mat_pic:SetTexture("$basetexture", rt_pass)
 	else
 		mat_pic:SetTexture("$basetexture", rt_pic)
-		self.m_tPIPDebugPassPx = self.m_tPIPDebugPx -- [DEBUG-p1px] 无 shader 时与 pic 同源
 	end
 
 	-- [分划板烘焙 · 结构性防错位] 分划板直接画进显示 RT 中心，与画面同源永不分离：
@@ -713,26 +694,10 @@ function SWEP:RenderPIPPicture(alpha)
 	-- 直径取窗口高度的 96%（窗口恒包含 RT 中心，最大漂移也不会裁掉分划板）
 	local disp_rt = use_shader and rt_pass or rt_pic
 	local ret_dia = rt_pic_h * (1 / PIP_HEADROOM) * 0.96
-		render.PushRenderTarget(disp_rt, 0, 0, rt_pic_w, rt_pic_h)
+	render.PushRenderTarget(disp_rt, 0, 0, rt_pic_w, rt_pic_h)
 		cam.Start2D()
 			PaintReticle(self, rt_pic_w * 0.5, rt_pic_h * 0.5, ret_dia, alpha)
 		cam.End2D()
-
-		-- [DEBUG-p1px] 分划板烘焙后同样采样一次（烘焙污染前的 pass 状态已在上面留存）
-		if CVAR_PIP_DEBUG:GetInt() >= 2 and RealTime() >= (last_pass_capture_time or 0) then
-			last_pass_capture_time = RealTime() + 0.5
-
-			render.CapturePixels()
-			local function ReadPxRet(x, y)
-				local r, g, b = render.ReadPixel(math_floor(x), math_floor(y))
-				return { r = r or 0, g = g or 0, b = b or 0 }
-			end
-			self.m_tPIPDebugPassPx = {
-				ReadPxRet(rt_pic_w * 0.25, rt_pic_h * 0.5),
-				ReadPxRet(rt_pic_w * 0.5, rt_pic_h * 0.5),
-				ReadPxRet(rt_pic_w * 0.75, rt_pic_h * 0.5),
-			}
-		end
 	render.PopRenderTarget()
 
 	self.m_fPIPLastRender = RealTime()
@@ -1517,29 +1482,6 @@ function SWEP:DrawHUDBackground()
 			end
 			local age = self.m_fPIPLastRender and (RealTime() - self.m_fPIPLastRender) or -1
 
-			-- [DEBUG-p1px] lens shader 关键寄存器快照 + rt_pass 采样（shader 输出 RT）。
-			-- 判别逻辑：
-			--   RT像素(pic) 正常 + pass像素 全黑  => 黑屏发生在 lens shader 通道内部
-			--   c1_z/c1_w 为 0                    => 暗角半径未初始化，shader 吞掉整幅画面
-			local lensmat = mat_lens and not mat_lens:IsError() and mat_lens or nil
-			local shader_on = CVAR_PIP_SHADER:GetBool() and lensmat ~= nil and render.GetDXLevel() >= 90
-			local lentext = ""
-			if lensmat then
-				lentext = string.format(" | c1z=%.0f c1w=%.0f c3z=%.0f shader=%s",
-					lensmat:GetFloat("$c1_z") or -1,
-					lensmat:GetFloat("$c1_w") or -1,
-					lensmat:GetFloat("$c3_z") or -1,
-					shader_on and "on" or "off")
-			end
-			local passtext = ""
-			local passpx = self.m_tPIPDebugPassPx
-			if passpx and passpx[1] then
-				passtext = string.format(" | pass像素 L%d,%d,%d M%d,%d,%d R%d,%d,%d",
-					passpx[1].r, passpx[1].g, passpx[1].b,
-					passpx[2].r, passpx[2].g, passpx[2].b,
-					passpx[3].r, passpx[3].g, passpx[3].b)
-			end
-
 			-- [真弹着点参考] 沿武器实际弹道方向（GetShootPos + GetAimVector，与
 			-- ShootBullets 完全同源）射线求交，十字画在真实命中点的屏幕投影处。
 			-- 旧版画在 ScrW/2 的是"渲染画面中心"：镜头后坐力弹簧（cl_camera）只改
@@ -1588,10 +1530,6 @@ function SWEP:DrawHUDBackground()
 				CVAR_PIP_PARALLAX:GetFloat() > 1 and "浮动" or "锁定",
 				pxtext),
 				"DermaDefault", 8, ScrH() * 0.55, color_white)
-
-			draw.SimpleText(string.format("[DEBUG-p1px] dx%d use_shader=%s%s%s",
-				render.GetDXLevel(), shader_on and "1" or "0", lentext, passtext),
-				"DermaDefault", 8, ScrH() * 0.55 + 16, color_yellow)
 
 			if dbg >= 2 then
 				-- 绕开面片，直接把 rt_pic 方形区域平铺到屏幕左上角：
