@@ -187,7 +187,18 @@ AddCSLuaFile("cl_tpik.lua")
 
 AddCSLuaFile("skillweb/sh_skillweb.lua")
 AddCSLuaFile("skillweb/cl_skillweb.lua")
+-- registry.lua 为入口（兼容层），内部 include 下列拆分文件（加载顺序不可调整）
 AddCSLuaFile("skillweb/registry.lua")
+AddCSLuaFile("skillweb/registry_core.lua")
+AddCSLuaFile("skillweb/registry_consts.lua")
+AddCSLuaFile("skillweb/registry_mods.lua")
+AddCSLuaFile("skillweb/skillweb_health.lua")
+AddCSLuaFile("skillweb/skillweb_speed.lua")
+AddCSLuaFile("skillweb/skillweb_support.lua")
+AddCSLuaFile("skillweb/skillweb_building.lua")
+AddCSLuaFile("skillweb/skillweb_gun.lua")
+AddCSLuaFile("skillweb/skillweb_melee.lua")
+AddCSLuaFile("skillweb/skillweb_custom.lua")
 
 AddCSLuaFile("obj_vector_extend.lua")
 AddCSLuaFile("obj_entity_extend.lua")
