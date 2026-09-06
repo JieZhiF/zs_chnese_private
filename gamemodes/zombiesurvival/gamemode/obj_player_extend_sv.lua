@@ -201,7 +201,7 @@ function meta:ProcessDamage(dmginfo)
 				end
 
 				-- 大厨技能：有几率标记目标
-				if wep.Culinary and attacker:IsSkillActive(SKILL_MASTERCHEF) and math.random(9) == 1 then
+				if wep.Culinary and attacker:IsSkillActive(SKILL_MASTERCHEF) and math.random(4) == 1 then
 					self.ChefMarkOwner = attacker
 					self.ChefMarkTime = CurTime() + 1
 				end

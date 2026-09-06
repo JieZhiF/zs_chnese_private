@@ -52,8 +52,9 @@
 --
 -- [区域] 动作切段行与拆解行
 -- [位置] PANEL:RebuildActionRow(entry) / BuildItemInfo 内 DismantleButton
--- [作用] 丢弃|清空弹夹|给予 共享边框切段行 + 右端「选择附近人类」弹出列表（给予目标）；
---        拆解为独立全宽行（左标签右 +N 废料图标，返还数走 GM:GetDismantleScrap）
+-- [作用] 丢弃|清空弹夹|合成|给予 共享边框切段行 + 右端「选择附近人类」弹出列表（给予目标）；
+--        拆解为独立全宽行（左标签右 +N 废料图标，返还数走 GM:GetDismantleScrap）；
+--        合成切段仅含配方的物品条目显示，弹出「可合成目标」列表（ToggleCraftMenu）
 -- [常改] 按钮顺序、切段宽度、拆解返还取法
 --
 -- [区域] 弹药横栏挂载
@@ -109,18 +110,18 @@ local colColumnBG = Color(8, 8, 10, 170)          -- 栏底色
 local colHeaderBG = Color(5, 5, 6, 190)           -- 分类折叠头底色
 local colRowBG = Color(15, 15, 17, 110)           -- 列表行底色
 local colRowBGHover = Color(56, 56, 58, 215)      -- 列表行悬停底色
-local colRowSelected = Color(213, 213, 213, 255)  -- 选中行反白底色
-local colTextBright = Color(235, 235, 235)
-local colTextDim = Color(150, 150, 156)
-local colTextDisabled = Color(95, 95, 100)
+local colRowSelected = Color(213, 213, 213)       -- 选中行反白底色
+local colTextBright = Color(255, 255, 255)
+local colTextDim = Color(200, 200, 200)           -- 常规文字
+local colTextDisabled = Color(128, 128, 128)      -- 不可用文字
 local colTextDark = Color(18, 18, 18)             -- 反白行文字 / 选中变体文字
 local colRowText = Color(224, 224, 224)           -- 未选中行名称
 local colRowSep = Color(0, 0, 0, 200)             -- 行间 1px 分隔线
 local colSegLit = Color(240, 240, 240, 255)       -- 分段条亮段
 local colSegDark = Color(62, 62, 64, 220)         -- 分段条暗段
-local colUpgradeRed = Color(206, 56, 46)          -- UPGRADE 大字红
+local colUpgradeRed = Color(218, 47, 34)          -- UPGRADE 大字红
 local colUpgradeRedHover = Color(240, 92, 78)     -- UPGRADE 悬停红
-local colUpgradeDisabled = Color(120, 56, 52)     -- UPGRADE 禁用红
+local colUpgradeDisabled = Color(150, 56, 52)     -- UPGRADE 禁用红
 local colBtnBG = Color(16, 16, 17, 225)           -- 通用按钮底
 local colBtnBGHover = Color(46, 46, 48, 235)      -- 通用按钮悬停底
 local colBtnDisabled = Color(24, 24, 26, 180)     -- 通用按钮禁用底
@@ -145,14 +146,35 @@ local matBlurRT = CreateMaterial("pinv_blur_mat", "UnlitGeneric", {
 })
 
 -- [DEBUG-PINV-PERF] 性能探针（长期保留）：pinv_perf 0 静音
+-- 开关关闭时不建 PerfState、不计时、不统计，探针自身零开销；开启后本会话持续统计
 local PerfCvar = CreateClientConVar("pinv_perf", "0", true, false, "pinventory performance probes")
 local PerfState = nil
-local dbgChat = function(...) if PerfState and PerfState.enabled then chat.AddText(...) end end
 local dbgColR = Color(255, 120, 120)   -- 警告红
 local dbgColY = Color(255, 220, 120)   -- 计时黄
 local dbgColG = Color(120, 255, 120)   -- 生命周期绿
 local dbgColC = Color(120, 220, 255)   -- 汇总青
 local dbgColV = Color(170, 170, 255)   -- 刷新紫
+
+-- 探针开关读取（PerfState 存在即代表本会话已开启过；cvars.ChangeCallback 里同步值）
+local function PerfEnabled()
+    return PerfState ~= nil and PerfState.enabled
+end
+
+-- pinv_perf 实时开关：开启时初始化统计表，关闭时置 disabled（保留累计值，重启开关不清零）
+cvars.AddChangeCallback("pinv_perf", function(_, _, newval)
+    if not PerfState then
+        PerfState = {enabled = false, opens = 0, rebuilds = 0, refreshes = 0,
+            thinks = 0, think_max_ms = 0, sig_max_ms = 0, rows_max = 0, blur_last_ms = 0, blur_count = 0}
+    end
+    PerfState.enabled = tonumber(newval) == 1
+end, "PINV_PerfToggle")
+
+-- 加载即按归档值初始化：convar 上次会话已为 1 时，本次启动不触发 ChangeCallback，
+-- 需在此补一次初始化，否则探针会静默失效
+if PerfCvar:GetBool() then
+    PerfState = {enabled = true, opens = 0, rebuilds = 0, refreshes = 0,
+        thinks = 0, think_max_ms = 0, sig_max_ms = 0, rows_max = 0, blur_last_ms = 0, blur_count = 0}
+end
 
 -- 面板专属字体（首次 Init 时按 BetterScreenScale 一次性创建，字号对齐靶子图层级）
 local PinvFontsReady = false
@@ -1162,9 +1184,12 @@ end
 
 -- ============================================================================
 -- [区域] 动作切段行与拆解行
--- [位置] PANEL:RebuildActionRow
--- [作用] 丢弃|清空弹夹|给予 共享边框切段 + 右端装饰下拉段；拆解行更新物品键与返还数
--- [常改] 按钮顺序、指令名、参数规则、返还数取法
+-- [位置] PANEL:RebuildActionRow / PANEL:ToggleCraftMenu
+-- [作用] 丢弃|清空弹夹|合成|给予 共享边框切段 + 右端装饰下拉段；拆解行更新物品键与返还数；
+--        合成切段仅参与配方的条目显示（武器/物品均参与配方反查），弹出「可合成目标」列表
+--        实时随选中条目重建；行内灰置时右端具体标注所缺材料名（如“电磁电池”），
+--        成品已拥有标注“已拥有成品”
+-- [常改] 按钮顺序、指令名、参数规则、返还数取法、合成配方展示取法
 -- ============================================================================
 
 function PANEL:RebuildActionRow(entry)
@@ -1177,6 +1202,12 @@ function PANEL:RebuildActionRow(entry)
         self.DismantleButton:SetVisible(false)
         self.DismantleItemKey = nil
         self.DismantleButton.RefundText = ""
+        -- 选中清空：合成弹出层随动作行一并收起（锚点按钮已被移除）
+        if self.CraftMenu and self.CraftMenu:IsValid() then
+            self.CraftMenu:Remove()
+            self.CraftMenu = nil
+            self.CraftAnchor = nil
+        end
         return
     end
 
@@ -1189,12 +1220,53 @@ function PANEL:RebuildActionRow(entry)
     local roww = self.ActionRow:GetWide()
     local dropdownw = 34 * scale
 
-    -- {翻译键, 控制台指令, 仅武器条目显示}
+    -- {翻译键, 控制台指令, 仅武器条目显示, 附加处理}；合成切段插入后按有无配方决定去留
     local actions = {
         { "pinv_drop", "zsdropweapon", false },
         { "pinv_emptyclip", "zsemptyclip", true },
+        { "pinv_craft", "zs_trycraft", false, true },
         { "pinv_give", "zsgiveweapon", false },
     }
+
+    -- 该物品/武器作为合成材料（组件或基础件）可参与的配方集（照旧版 cl_inventory 的 Assemblies 反查）：
+    -- Assemblies[结果类名] = {组件, 基础件}，当前条目（武器类名或物品键）命中任一角色即收录
+    local craftables = nil
+    local selfkey = isweapon and entry.class or itemkey
+    if selfkey and GAMEMODE.Assemblies then
+        for result, reqs in pairs(GAMEMODE.Assemblies) do
+            local role = reqs[1] == selfkey and "component" or reqs[2] == selfkey and "base" or nil
+            if role then
+                craftables = craftables or {}
+                craftables[#craftables + 1] = { result = result, base = reqs[2], component = reqs[1], role = role }
+            end
+        end
+        table.sort(craftables or {}, function(a, b) return a.result < b.result end)
+    end
+    -- 无任何配方：移除合成切段；有配方：弹出层列出全部结果并具体标注所缺材料名
+    -- 实时更新：弹出层开着时——
+    --   切到无配方条目 → 弹出层随切段一并消失；
+    --   切到另一有配方条目 → 按新条目配方即时重建（无需再点一次合成）
+    if not (craftables and #craftables > 0) then
+        for i = #actions, 1, -1 do
+            if actions[i][1] == "pinv_craft" then
+                table.remove(actions, i)
+            end
+        end
+        if self.CraftMenu and self.CraftMenu:IsValid() then
+            self.CraftMenu:Remove()
+            self.CraftMenu = nil
+        end
+    elseif self.CraftMenu and self.CraftMenu:IsValid() then
+        -- 实时重建：锚点按钮随切段行重建换了新实例，用新锚点强制重建（不触发切换收起）
+        local oldanchor = self.CraftAnchor
+        self.CraftAnchor = nil
+        if not (oldanchor and oldanchor:IsValid()) then
+            self.CraftMenu:Remove()
+            self.CraftMenu = nil
+        else
+            self:ToggleCraftMenu(oldanchor, selfkey, craftables, true)
+        end
+    end
 
     local segs = {}
     for _, act in ipairs(actions) do
@@ -1213,6 +1285,14 @@ function PANEL:RebuildActionRow(entry)
         btn.Host = self
 
         function btn:DoClick()
+            -- 合成：弹出/切换可合成目标列表（ToggleCraftMenu 内实时按当前选中条目重建；
+            -- 无配方的条目弹出「—」占位层，与附近人类列表空态同款）
+            if act[4] then
+                surface.PlaySound("ui/buttonclick.wav")
+                self.Host:ToggleCraftMenu(btn, isweapon and entry.class or itemkey, craftables)
+                return
+            end
+
             -- 给予：优先用「选择附近人类」选中的目标
             -- 传参协议（与 zsgiveammo / zsdropweapon / 服务端 zsgiveweapon 对齐）：
             --   arguments[1] = 库存物品键（空串 = 无，给予手持武器）
@@ -1292,6 +1372,149 @@ function PANEL:RebuildActionRow(entry)
     self.DismantleButton.RefundText = refund
 end
 
+-- 弹出/刷新/收起「可合成目标」列表（合成切段用，样式复用 NearbyMenu 弹出层）
+-- entryname = 当前选中的物品键/武器类名；crafts = {{result, component, base, role}} 配方集
+-- forcerefresh = true（RebuildActionRow 实时重建路径）：跳过切换收起判定，直接按新配方重建
+-- 普通点击：同一锚点再次点击 = 收起；否则（含首次打开）重建
+-- 边界约束：弹出层完整落在面板内（超宽收窄、超高上移贴顶），不再越界被裁切
+-- 行内状态灰置并具体标注所缺材料名：另一材料未拥有/未持有 → 显示其名称；
+-- 结果成品已拥有 → 显示“已拥有成品”
+function PANEL:ToggleCraftMenu(anchor, entryname, crafts, forcerefresh)
+    -- 切换收起：同一锚点再次点击 = 关闭（实时重建路径跳过此判定）
+    if not forcerefresh and self.CraftMenu and self.CraftMenu:IsValid() and anchor == self.CraftAnchor then
+        self.CraftMenu:Remove()
+        self.CraftMenu = nil
+        self.CraftAnchor = nil
+        return
+    end
+
+    -- 实时更新 / 首次打开：拆掉旧弹出层，按当前配方重建
+    if self.CraftMenu and self.CraftMenu:IsValid() then
+        self.CraftMenu:Remove()
+        self.CraftMenu = nil
+    end
+
+    -- 互斥：打开合成菜单时收起「附近人类」弹出层
+    if self.NearbyMenu and self.NearbyMenu:IsValid() then
+        self.NearbyMenu:Remove()
+        self.NearbyMenu = nil
+    end
+
+    self.CraftAnchor = anchor
+
+    local scale = BetterScreenScale()
+    local menu = vgui.Create("Panel", self)
+    self.CraftMenu = menu
+
+    local rowh = 26 * scale
+    crafts = crafts or {}
+    menu:SetWide(math.max(260 * scale, anchor:GetWide() * 2))
+    menu:SetTall(math.max(#crafts, 1) * rowh + 8 * scale)
+
+    -- 锚点屏幕坐标换算为面板本地坐标，弹出层悬在按钮上方，并夹紧在面板边界内
+    local pw, ph = self:GetSize()
+    local ax, ay = anchor:LocalToScreen(0, 0)
+    local px, py = self:ScreenToLocal(ax, ay)
+    px = math.Clamp(px, 0, math.max(0, pw - menu:GetWide()))
+    py = math.Clamp(py - menu:GetTall() - 4 * scale, 0, math.max(0, ph - menu:GetTall()))
+    menu:SetPos(px, py)
+
+    menu.Paint = function(me, w, h)
+        draw.RoundedBox(0, 0, 0, w, h, colNearbyBG)
+        surface.SetDrawColor(colBtnBorder.r, colBtnBorder.g, colBtnBorder.b, 210)
+        surface.DrawOutlinedRect(0, 0, w, h)
+    end
+
+    if #crafts == 0 then
+        local empty = EasyLabel(menu, "—", FONT_ROW, colTextDim)
+        empty:Dock(TOP)
+        empty:SetTall(rowh)
+        empty:SetContentAlignment(5)
+        return
+    end
+
+    -- 配方材料显示名（库存物品走 ZSInventoryItemData，武器走 weapons.Get）
+    local function MaterialName(key)
+        local iitype = GAMEMODE:GetInventoryItemType(key) ~= -1
+        local tbl = iitype and GAMEMODE.ZSInventoryItemData and GAMEMODE.ZSInventoryItemData[key] or weapons.Get(key)
+        return tbl and tbl.PrintName or key, iitype
+    end
+
+    -- 材料是否就位：库存物品 → 须拥有；武器 → 须持有
+    local function MaterialReady(key, iitype)
+        if iitype then
+            return MySelf:HasInventoryItem(key)
+        end
+        return MySelf:HasWeapon(key)
+    end
+
+    for _, craft in ipairs(crafts) do
+        local btn = vgui.Create("DButton", menu)
+        btn:SetText("")
+        btn:Dock(TOP)
+        btn:SetTall(rowh)
+        btn.Host = self
+
+        local resname = MaterialName(craft.result)
+
+        -- 当前物品在配方中的角色决定另一材料的键：作为组件时另一材料是基础件，反之亦然
+        local otherkey = craft.role == "component" and craft.base or craft.component
+        local othername, otheriitype = MaterialName(otherkey)
+
+        -- 可用性镜像服务端 TryAssembleItem 校验：
+        -- ① 另一材料就位（库存物品须拥有 / 武器须持有）
+        local baseok = MaterialReady(otherkey, otheriitype)
+        -- ② 结果为武器且非 AmmoIfHas 时，已拥有成品则服务端拒绝
+        local iitype = GAMEMODE:GetInventoryItemType(craft.result) ~= -1
+        local resultok = true
+        if not iitype then
+            local rtbl = weapons.Get(craft.result)
+            resultok = rtbl and rtbl.AmmoIfHas and true or not MySelf:HasWeapon(craft.result)
+        end
+        -- ③ 当前条目自身须就位（合成会消耗其一身）：物品 → 须拥有；武器 → 须持有
+        local compok = MaterialReady(entryname, craft.role == "component")
+
+        btn.CraftOK = baseok and resultok and compok
+
+        function btn:Paint(w, h)
+            local scale = BetterScreenScale()
+            local enabled = self.CraftOK
+            draw.RoundedBox(0, 0, 0, w, h, enabled and self:IsHovered() and colRowBGHover or colRowBG)
+            local col = enabled and colRowText or colTextDisabled
+            draw.SimpleText(resname, FONT_ROW, 8 * scale, h * 0.5, col, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+            -- 右端具体标注：缺另一材料显示其名称，成品已拥有显示对应提示
+            if not baseok then
+                draw.SimpleText(othername, FONT_SMALL, w - 8 * scale, h * 0.5, colTextDim, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+            elseif not resultok then
+                draw.SimpleText(translate.Get("pinv_craft_owned"), FONT_SMALL, w - 8 * scale, h * 0.5, colTextDim, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER)
+            end
+        end
+
+        function btn:DoClick()
+            if not self.CraftOK then
+                surface.PlaySound("buttons/button10.wav")
+                return
+            end
+
+            -- 与服务端 net.Receive(NET_MSG.TRYCRAFT) 对齐：WriteString(组件), WriteString(基础件)
+            -- 当前物品是组件 → (entryname, base)；是基础件 → (component, entryname)
+            local component = craft.role == "component" and entryname or craft.component
+            local base = craft.role == "component" and craft.base or entryname
+            net.Start(NET_MSG.TRYCRAFT)
+                net.WriteString(component)
+                net.WriteString(base)
+            net.SendToServer()
+            surface.PlaySound("ui/buttonclick.wav")
+
+            if self.Host.CraftMenu and self.Host.CraftMenu:IsValid() then
+                self.Host.CraftMenu:Remove()
+                self.Host.CraftMenu = nil
+                self.Host.CraftAnchor = nil
+            end
+        end
+    end
+end
+
 -- 收集附近人类（600 单位内，按距离升序）
 function PANEL:CollectNearbyHumans()
     local list = {}
@@ -1317,6 +1540,12 @@ function PANEL:ToggleNearbyPlayersMenu(anchor)
         self.NearbyMenu:Remove()
         self.NearbyMenu = nil
         return
+    end
+
+    -- 互斥：打开附近玩家列表时收起合成弹出层
+    if self.CraftMenu and self.CraftMenu:IsValid() then
+        self.CraftMenu:Remove()
+        self.CraftMenu = nil
     end
 
     local scale = BetterScreenScale()
@@ -1509,8 +1738,8 @@ function PANEL:AddItemRow(entry)
 end
 
 function PANEL:BuildInventoryList()
-    -- [DEBUG-PINV-PERF] 重建计数 + 计时
-    local probe = PerfState ~= nil and PerfState.enabled
+    -- [DEBUG-PINV-PERF] 重建计数 + 计时（仅探针开启时）
+    local probe = PerfEnabled()
     local t0 = probe and SysTime() or nil
 
     local canvas = self.ScrollPanel:GetCanvas()
@@ -1603,9 +1832,8 @@ end
 
 -- 打开或强制全量刷新（OpenInventoryPanel 调用）
 function PANEL:RefreshAll()
-    -- [DEBUG-PINV-PERF] 刷新计数
-    local probe = PerfState ~= nil and PerfState.enabled
-    if probe then
+    -- [DEBUG-PINV-PERF] 刷新计数（仅探针开启时）
+    if PerfEnabled() then
         PerfState.refreshes = PerfState.refreshes + 1
         chat.AddText(dbgColV, string.format("[DEBUG-PINV-PERF] RefreshAll #%d", PerfState.refreshes))
     end
@@ -1615,7 +1843,13 @@ function PANEL:RefreshAll()
 
     local wep = IsValid(MySelf) and MySelf:GetActiveWeapon() or NULL
     self.LastActiveClass = IsValid(wep) and wep:GetClass() or nil
-    if IsValid(wep) then
+
+    -- 选中保持：此前选中的是物品（非武器）且仍存在时，不重置为手持武器——
+    -- 关闭再打开仍选中该物品（数量变化经下方 UpdateItemInfo 刷新）；已消耗才回退手持武器
+    local sel = self.SelectedEntry
+    if sel and sel.type == "item" and GAMEMODE.ZSInventory and GAMEMODE.ZSInventory[sel.name] then
+        self:UpdateItemInfo(sel)
+    elseif IsValid(wep) then
         self:UpdateItemInfo({type = "weapon", class = wep:GetClass()})
     else
         self:UpdateItemInfo(nil)
@@ -1627,9 +1861,9 @@ function PANEL:RefreshAll()
 end
 
 function PANEL:Think()
-    -- [DEBUG-PINV-PERF] Think 分段计时
+    -- [DEBUG-PINV-PERF] Think 分段计时（仅探针开启时）
     local t0, t1, t2, t3, t4
-    local probe = PerfState ~= nil and PerfState.enabled
+    local probe = PerfEnabled()
     if probe then t0 = SysTime() end
 
     if not self:IsVisible() then
@@ -1647,6 +1881,11 @@ function PANEL:Think()
             if self.NearbyMenu and self.NearbyMenu:IsValid() then
                 self.NearbyMenu:Remove()
                 self.NearbyMenu = nil
+            end
+            if self.CraftMenu and self.CraftMenu:IsValid() then
+                self.CraftMenu:Remove()
+                self.CraftMenu = nil
+                self.CraftAnchor = nil
             end
             -- [DEBUG-PINV-PERF] 关闭时输出汇总
             if probe then
@@ -1708,9 +1947,12 @@ function PANEL:Think()
 
     local entry = self.SelectedEntry
     if entry and entry.type == "item" then
-        -- 物品选中：仅在被消耗完时取消，否则保持
+        -- 物品选中：被消耗完时取消；期间手持武器变化 → 跟随切到新手持（切枪优先于物品保持）
         if not (GAMEMODE.ZSInventory and GAMEMODE.ZSInventory[entry.name]) then
             self:UpdateItemInfo(nil)
+        elseif activeclass ~= (self.LastActiveClass or "") then
+            self.LastActiveClass = activeclass
+            self:UpdateItemInfo(activeclass ~= "" and {type = "weapon", class = activeclass} or nil)
         end
     elseif activeclass ~= (self.LastActiveClass or "") then
         -- 武器选中跟随手持（升级/换轨后类名变化自然吸附新武器；类名没变不重刷）
@@ -1744,15 +1986,11 @@ vgui.Register("ZSInventoryPanel", PANEL, "Panel")
 -- 次序照 dsidemenu.lua OpenMenu：显示 → MakePopup → 防抖时间戳 → 刷新 → 鼠标居中
 -- 注意：文件顶层定义须用 GM（加载期别名），加载后引擎令 GAMEMODE=GM，运行期即可用 self 调用
 function GM:OpenInventoryPanel()
-    -- [DEBUG-PINV-PERF] 打开计数（首开时初始化会话统计）
-    
-        PerfState = PerfState or {enabled = PerfCvar:GetBool(), opens = 0, rebuilds = 0, refreshes = 0,
-            thinks = 0, think_max_ms = 0, sig_max_ms = 0, rows_max = 0, blur_last_ms = 0}
-        PerfState.enabled = PerfCvar:GetBool()
+    -- [DEBUG-PINV-PERF] 打开计数（仅探针开启时；统计表在 cvars 回调里惰性创建）
+    if PerfEnabled() then
         PerfState.opens = PerfState.opens + 1
-        if probe then
         chat.AddText(dbgColG, string.format("[DEBUG-PINV-PERF] panel open #%d (pinv_perf 1=探针开)", PerfState.opens))
-        end
+    end
     local panel = self.InventoryPanel
     if not (panel and panel:IsValid()) then
         panel = vgui.Create("ZSInventoryPanel")
@@ -1797,16 +2035,21 @@ hook.Add("PostRender", "PINV_UpdateBlurRT", function()
     local panel = GAMEMODE.InventoryPanel
     if not (panel and panel:IsValid() and panel:IsVisible()) then return end
 
-    -- [DEBUG-PINV-PERF] 计时：每帧拷屏 + 模糊（必打点，观察逐帧开销）
-    local t0 = SysTime()
+    -- [DEBUG-PINV-PERF] 计时仅探针开启时进行（拷屏+模糊本体始终执行）
+    local probe = PerfEnabled()
+    local t0 = probe and SysTime() or nil
+
     render.CopyRenderTargetToTexture(blurRT)
     render.BlurRenderTarget(blurRT, 2, 2, 1)
-    local dt = (SysTime() - t0) * 1000
-    PerfState.blur_last_ms = dt
-    PerfState.blur_count = (PerfState.blur_count or 0) + 1
-    if dt > 2 and (PerfState.blur_count % 20 == 1) then
-        chat.AddText(dbgColY, string.format(
-            "[DEBUG-PINV-PERF] blur copy #%d: %.2fms (>2ms, 1/20 采样输出)", PerfState.blur_count, dt))
+
+    if probe then
+        local dt = (SysTime() - t0) * 1000
+        PerfState.blur_last_ms = dt
+        PerfState.blur_count = (PerfState.blur_count or 0) + 1
+        if dt > 2 and (PerfState.blur_count % 20 == 1) then
+            chat.AddText(dbgColY, string.format(
+                "[DEBUG-PINV-PERF] blur copy #%d: %.2fms (>2ms, 1/20 采样输出)", PerfState.blur_count, dt))
+        end
     end
 end)
 
@@ -1822,6 +2065,7 @@ end)
 --   pinv_variants pinv_variant_standard pinv_stats pinv_description
 --   pinv_upgrade pinv_max_quality pinv_drop pinv_emptyclip pinv_give pinv_dismantle
 --   pinv_sort_trinkets pinv_nopickupprops pinv_buyscrap pinv_need_remantler
+--   pinv_craft pinv_craft_owned
 -- 集成注册行（留给集成代理）：
 --   AddCSLuaFile("gamemode/vgui/pinventory.lua")
 --   include("gamemode/vgui/pinventory.lua")
